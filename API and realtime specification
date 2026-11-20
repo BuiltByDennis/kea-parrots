@@ -1,0 +1,2850 @@
+# KEA PARROT — API & REALTIME SPECIFICATION
+
+**Document ID:** MOMENT-API-004  
+**Document Title:** API & Realtime Specification  
+**Version:** 1.0  
+**Status:** Target Implementation Specification — Subject to Existing-System Audit  
+**Application Name:** Kea Parrot  
+**Previous Project Name:** MOMENT  
+**Platform:** Responsive Web Application / PWA  
+**Backend:** Next.js API / Supabase  
+**Database:** PostgreSQL  
+**Realtime:** Supabase Realtime  
+**API Version Baseline:** `/api/v1`  
+**Related Documents:**
+- MOMENT Master Product Requirements Document (MOMENT-PRD-001)
+- MOMENT Database Design & Security Specification (MOMENT-DBS-002)
+- MOMENT UI/UX Implementation Specification (MOMENT-UX-003)
+
+---
+
+# 1. DOCUMENT PURPOSE
+
+## 1.1 Purpose
+
+This document defines the API and realtime communication architecture for Kea Parrot.
+
+It establishes the expected communication contracts between:
+
+1. The frontend application.
+2. The Next.js backend.
+3. Supabase Authentication.
+4. Supabase PostgreSQL.
+5. Supabase Realtime.
+6. Supabase Storage, where approved.
+7. Authorized administrative interfaces.
+8. External services explicitly approved for the application.
+
+The objective is to ensure that the frontend and backend communicate through consistent, secure, validated, and maintainable interfaces.
+
+The document defines:
+
+- API architecture.
+- Endpoint organization.
+- Request and response conventions.
+- Authentication and authorization.
+- Validation rules.
+- Error handling.
+- Pagination.
+- Idempotency.
+- Database transaction requirements.
+- Realtime architecture.
+- Realtime event contracts.
+- Poll and game transaction behavior.
+- Notifications.
+- Moderation APIs.
+- API security.
+- Rate limiting.
+- Observability.
+- Testing.
+- Deployment and versioning.
+- Acceptance criteria.
+
+## 1.2 Application naming
+
+The current application name is **Kea Parrot**.
+
+MOMENT is the previous project name referenced in the original requirements documents.
+
+The coding agent must:
+
+- Use Kea Parrot for new user-facing application references.
+- Preserve existing database objects, API routes, migration identifiers, package names, and internal identifiers unless an approved migration requires changing them.
+- Avoid unnecessary renaming of production database objects.
+- Avoid breaking existing clients or integrations merely to replace historical identifiers.
+- Record any required naming migration separately.
+
+A product rebrand does not automatically require a database or API redesign.
+
+## 1.3 Specification authority
+
+The following documents control implementation decisions:
+
+| Document | Authority |
+|---|---|
+| Master PRD | Product functionality and approved scope |
+| Database Specification | Database structure, data relationships, RLS and data security |
+| UI/UX Specification | Frontend screens, interaction behavior and UI states |
+| This document | API communication, contracts and realtime behavior |
+
+If any conflict occurs, the coding agent must document it and request clarification where necessary.
+
+Do not silently resolve product-level contradictions by inventing functionality.
+
+---
+
+# 2. NON-NEGOTIABLE ARCHITECTURAL PRINCIPLES
+
+The API implementation MUST follow these principles.
+
+1. PostgreSQL remains the authoritative source of persistent application data.
+2. Supabase Auth remains the authoritative authentication provider unless an existing approved implementation requires otherwise.
+3. The backend remains responsible for authorization and business-critical validation.
+4. The frontend must never be trusted to calculate authoritative game scores.
+5. The frontend must never be trusted to enforce poll voting rules.
+6. Administrative actions must be authorized on the server.
+7. RLS must remain enabled and correctly configured on exposed Supabase tables.
+8. Realtime is a delivery mechanism, not the authoritative database.
+9. Realtime events must not bypass authorization.
+10. API responses must not expose unnecessary sensitive information.
+11. All user-generated content must be validated server-side.
+12. Production database records must be preserved during migrations.
+13. All consequential operations must have predictable failure behavior.
+14. API changes must account for existing frontend consumers and integrations.
+15. The application must not depend on manual page refreshes to receive supported live updates.
+16. The implementation must remain a modular monolith unless an approved architectural change is made.
+17. The system must not introduce unnecessary infrastructure or dependencies.
+18. No endpoint may be declared complete until its authentication, authorization, validation, error handling and tests have been verified.
+
+---
+
+# 3. EXISTING-SYSTEM AUDIT — MANDATORY BEFORE IMPLEMENTATION
+
+The agent MUST NOT assume that the existing Kea Parrot application has no API infrastructure.
+
+Before making changes, inspect the actual repository and production configuration.
+
+## 3.1 Repository audit
+
+Inspect:
+
+- Next.js version.
+- App Router or existing routing architecture.
+- API route handlers.
+- Server actions.
+- Supabase client initialization.
+- Supabase server client configuration.
+- Authentication middleware.
+- Session handling.
+- Existing authorization utilities.
+- Existing Zod schemas.
+- API response helpers.
+- Existing error-handling utilities.
+- Realtime subscriptions.
+- Existing notification implementation.
+- Existing game services.
+- Poll and voting implementation.
+- Existing admin endpoints.
+- Rate-limiting mechanisms.
+- Logging and observability.
+- Existing tests.
+
+## 3.2 Database audit
+
+Inspect:
+
+- Actual production schema.
+- Existing table names.
+- Column names and types.
+- Primary keys.
+- Foreign keys.
+- Unique constraints.
+- Check constraints.
+- Indexes.
+- RLS policies.
+- Database functions.
+- Triggers.
+- Migration history.
+- Existing enum values.
+- Existing database relationships.
+- Existing realtime publication configuration.
+
+The agent must reconcile the Database Specification with the actual database.
+
+Do not create duplicate tables or change existing identifiers merely to match an illustrative schema.
+
+## 3.3 Existing API inventory
+
+Create a report containing:
+
+| Field | Description |
+|---|---|
+| Endpoint | Existing route |
+| Method | HTTP method |
+| Purpose | What it does |
+| Authentication | Required or optional |
+| Authorization | Required permission |
+| Request | Current request structure |
+| Response | Current response structure |
+| Database impact | Tables and functions affected |
+| Realtime impact | Events published or consumed |
+| Consumers | Frontend pages or other services |
+| Status | Working, incomplete, broken or unused |
+| Risk | Potential impact of changing it |
+
+## 3.4 Required audit deliverables
+
+Before implementation begins, produce:
+
+1. Existing API inventory.
+2. Existing realtime subscription inventory.
+3. Authentication and authorization audit.
+4. Database/API compatibility report.
+5. Security gap report.
+6. Duplicate endpoint report.
+7. Missing endpoint report.
+8. Existing client-consumer mapping.
+9. Proposed non-destructive migration plan.
+10. Phased API implementation plan.
+
+**Do not start by replacing the entire API layer.**
+
+---
+
+# 4. TARGET API ARCHITECTURE
+
+## 4.1 Architecture overview
+
+The target architecture is a modular monolith using Next.js and Supabase.
+
+```mermaid
+flowchart TD
+    A["Kea Parrot Frontend"] --> B["Next.js API Layer"]
+    B --> C["Authentication and Authorization"]
+    C --> D["Validation Layer"]
+    D --> E["Application Services"]
+    E --> F["Repository / Data Access"]
+    F --> G["Supabase PostgreSQL"]
+    G --> H["Supabase Realtime"]
+    H --> A
+    E --> I["Supabase Storage"]
+    E --> J["Approved External Services"]
+    B --> K["Logging and Monitoring"]
+```
+
+## 4.2 Responsibilities
+
+### Frontend
+
+Responsible for:
+
+- Displaying application interfaces.
+- Collecting user input.
+- Performing basic client-side validation.
+- Sending API requests.
+- Displaying API responses.
+- Managing temporary UI state.
+- Subscribing to authorized realtime events.
+- Reconciling realtime updates with API data.
+
+The frontend must not be the authority for:
+
+- User permissions.
+- Poll voting eligibility.
+- Final game scores.
+- Moderation permissions.
+- Account status.
+- Protected data visibility.
+- Persistent business rules.
+
+### API layer
+
+Responsible for:
+
+- Request authentication.
+- Authorization.
+- Input validation.
+- Business rule enforcement.
+- Database operations.
+- Transaction coordination.
+- Response formatting.
+- Error normalization.
+- Rate limiting.
+- Audit logging.
+- Idempotency where required.
+
+### Application services
+
+Business logic must be organized into focused services.
+
+Suggested service boundaries:
+
+- `AuthService`
+- `ProfileService`
+- `FeedService`
+- `PostService`
+- `CommentService`
+- `ReactionService`
+- `PollService`
+- `GameService`
+- `NotificationService`
+- `CommunityService`
+- `LocationService`
+- `ReportService`
+- `ModerationService`
+- `AnalyticsService`
+
+These are logical boundaries. The agent should follow existing repository conventions rather than blindly creating files with these names.
+
+### Data access layer
+
+Responsible for:
+
+- Database queries.
+- Transactions.
+- Data mapping.
+- Query optimization.
+- Consistent handling of database errors.
+
+Database access must not be duplicated unnecessarily across unrelated route handlers.
+
+## 4.3 API routing convention
+
+The target API prefix is:
+
+`/api/v1`
+
+Example:
+
+`/api/v1/posts`
+
+However, existing production routes must be inventoried first.
+
+Where an existing route already serves the same purpose, preserve it unless a migration is approved.
+
+Do not create duplicate routes simply to match this document.
+
+## 4.4 HTTP methods
+
+Use HTTP methods consistently.
+
+| Method | Intended use |
+|---|---|
+| GET | Retrieve resources |
+| POST | Create resources or execute defined actions |
+| PATCH | Partially update resources |
+| PUT | Replace a resource where replacement semantics are appropriate |
+| DELETE | Delete a resource where deletion is approved |
+
+Avoid using GET requests to perform state-changing operations.
+
+---
+
+# 5. API DESIGN STANDARDS
+
+## 5.1 Content type
+
+JSON is the default API request and response format.
+
+Expected request header:
+
+`Content-Type: application/json`
+
+Expected response header:
+
+`Content-Type: application/json`
+
+File uploads must use the approved Supabase Storage upload flow or a specifically approved upload endpoint.
+
+## 5.2 Naming conventions
+
+Use consistent naming.
+
+Recommended:
+
+- Plural resource names for collections.
+- Lowercase route segments.
+- Consistent JSON property naming.
+- Stable resource identifiers.
+- ISO 8601 timestamps.
+- Explicit nullable values where required.
+
+Example:
+
+```json
+{
+  "id": "resource-id",
+  "createdAt": "2026-11-20T10:30:00.000Z"
+}
+```
+
+This is an illustrative API representation. Existing public contracts may use different naming conventions and must not be changed without compatibility analysis.
+
+## 5.3 Response envelope
+
+New API endpoints should follow a consistent response structure.
+
+### Successful response
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "resource-id"
+  },
+  "meta": {
+    "requestId": "request-id"
+  }
+}
+```
+
+### Collection response
+
+```json
+{
+  "success": true,
+  "data": [],
+  "meta": {
+    "requestId": "request-id",
+    "pagination": {
+      "hasMore": true,
+      "nextCursor": "opaque-cursor"
+    }
+  }
+}
+```
+
+### Error response
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "The submitted information is invalid.",
+    "details": []
+  },
+  "meta": {
+    "requestId": "request-id"
+  }
+}
+```
+
+The response examples define the target convention for new or migrated endpoints.
+
+If the current application already has a stable response envelope, assess compatibility before replacing it.
+
+## 5.4 Response rules
+
+- Do not return raw database error objects.
+- Do not return stack traces to public clients.
+- Do not expose service-role credentials.
+- Do not expose internal database identifiers unnecessarily.
+- Do not return passwords or authentication secrets.
+- Do not return protected user information without authorization.
+- Do not return success when an operation failed.
+- Do not use HTTP 200 for every error.
+- Keep error messages understandable and non-sensitive.
+
+---
+
+# 6. HTTP STATUS CODES
+
+Use appropriate HTTP status codes.
+
+| Status | Meaning | Example |
+|---|---|---|
+| 200 | Successful request | Resource retrieved or updated |
+| 201 | Resource created | Post created |
+| 202 | Accepted for asynchronous processing | Only where genuinely applicable |
+| 204 | Successful operation with no response body | Resource deleted |
+| 400 | Invalid request | Malformed request |
+| 401 | Authentication required or invalid | Missing/expired session |
+| 403 | Authenticated but unauthorized | Restricted administrative action |
+| 404 | Resource not found or not visible | Missing post |
+| 409 | Conflict | Duplicate or incompatible operation |
+| 413 | Payload too large | Upload or request exceeds approved limit |
+| 415 | Unsupported media type | Invalid content type |
+| 422 | Valid request structure but business validation failed | Invalid voting selection |
+| 429 | Rate limit exceeded | Excessive requests |
+| 500 | Internal server error | Unexpected failure |
+| 503 | Service temporarily unavailable | Required dependency unavailable |
+
+Do not reveal the existence of private resources through inconsistent error behavior.
+
+For example, a private resource may return a not-found response rather than confirming that it exists to an unauthorized user, depending on the approved visibility policy.
+
+---
+
+# 7. AUTHENTICATION AND SESSION MANAGEMENT
+
+## 7.1 Authentication provider
+
+Supabase Auth remains the authentication authority under the existing architecture.
+
+The agent must inspect the current authentication implementation before changing it.
+
+## 7.2 Authentication requirements
+
+For protected API operations:
+
+1. Read the authenticated session using the trusted server-side Supabase client.
+2. Validate the session.
+3. Resolve the authenticated user.
+4. Confirm the user is eligible to perform the operation.
+5. Apply the relevant authorization checks.
+6. Continue only after validation succeeds.
+
+Never trust a user ID supplied by the browser as proof of identity.
+
+The server must derive the authenticated user identity from the verified session.
+
+## 7.3 User identity
+
+For user-owned operations:
+
+- Determine the current user from the authenticated session.
+- Never allow the client to impersonate another user by changing a request body.
+- Use the database's actual primary key type.
+- Preserve the existing relationship between `auth.users` and application profile records.
+
+Do not assume UUID or text identifiers without inspecting the actual production schema.
+
+## 7.4 Session expiration
+
+When a session expires:
+
+- Protected API requests must fail appropriately.
+- The frontend must receive a consistent authentication error.
+- The user should be redirected through the approved login flow.
+- Safe navigation context should be preserved where possible.
+
+## 7.5 Guest access
+
+Guest access must follow the Master PRD.
+
+Do not assume that every GET endpoint is public.
+
+For each endpoint, explicitly define:
+
+- Public access.
+- Authenticated access.
+- Restricted authenticated access.
+- Administrative access.
+
+Guest users must not be allowed to execute authenticated actions.
+
+## 7.6 Account status
+
+The API must enforce restrictions associated with:
+
+- Active accounts.
+- Suspended accounts.
+- Restricted accounts.
+- Deleted or deactivated accounts.
+- Unverified accounts where verification is required.
+
+The exact account-status values must match the existing database and approved authorization model.
+
+---
+
+# 8. AUTHORIZATION MODEL
+
+## 8.1 General rule
+
+Authentication answers:
+
+"Who is making this request?"
+
+Authorization answers:
+
+"Is this user allowed to perform this operation?"
+
+Every protected endpoint must enforce both where applicable.
+
+## 8.2 Authorization layers
+
+Use multiple layers:
+
+1. Authentication.
+2. Account-status verification.
+3. Role and permission verification.
+4. Resource ownership verification.
+5. Resource visibility verification.
+6. Business-rule validation.
+7. Database RLS enforcement.
+
+RLS is an additional protection layer, not a substitute for application-level business logic.
+
+## 8.3 Role security
+
+The existing role model must be inspected.
+
+Never:
+
+- Trust a role supplied by the client.
+- Allow users to update their own privileged role.
+- Allow public endpoints to assign administrative privileges.
+- Infer permissions from frontend navigation visibility.
+- Use a hidden button as the only authorization control.
+
+Administrative roles must be assigned and modified through the approved privileged process.
+
+## 8.4 Resource ownership
+
+For user-owned resources:
+
+- Verify ownership using the authenticated user identity.
+- Check ownership in the backend.
+- Enforce corresponding database policies.
+- Reject attempts to modify another user's protected resource.
+
+## 8.5 Authorization matrix
+
+| Operation | Guest | Authenticated user | Authorized administrator |
+|---|---|---|---|
+| Browse public discovery | According to PRD | Yes | Yes |
+| Create post | No | Yes | Yes |
+| React to content | No | Yes | Yes |
+| Comment | No | Yes | Yes |
+| Vote in poll | No | Yes | Yes |
+| Start game | No | Yes | Yes |
+| View own notifications | No | Yes | According to policy |
+| Submit report | No | Yes | Yes |
+| Block user | No | Yes | Yes |
+| View private user information | No | Restricted | According to permission |
+| Moderate content | No | No | Authorized only |
+| Suspend user | No | No | Authorized only |
+| View audit records | No | No | Authorized only |
+
+The table is a target access model. Exact public visibility and administrator permissions must be reconciled with the approved PRD and existing production authorization rules.
+
+---
+
+# 9. REQUEST VALIDATION
+
+## 9.1 Validation library
+
+Use Zod if it is already part of the approved stack.
+
+Otherwise, inspect the current validation architecture before introducing a new dependency.
+
+## 9.2 Validation requirements
+
+Every endpoint accepting input must validate:
+
+- Required fields.
+- Data types.
+- String length.
+- Numeric ranges.
+- Array length.
+- Enum values.
+- Identifier formats.
+- Nested structures.
+- Allowed content types.
+- Resource relationships.
+- Business constraints.
+
+## 9.3 Validation location
+
+Validation must occur on the server.
+
+Client-side validation may improve user experience but must never be treated as authoritative.
+
+## 9.4 Unknown fields
+
+Reject or safely ignore unknown fields according to the endpoint's documented contract.
+
+Do not allow unexpected fields to be passed directly into database update operations.
+
+## 9.5 SQL injection and query safety
+
+- Use parameterized queries.
+- Use Supabase query builders appropriately.
+- Never concatenate untrusted user input into SQL.
+- Validate dynamic sorting fields.
+- Restrict filterable fields.
+- Avoid unrestricted raw SQL.
+
+## 9.6 Content validation
+
+For user-generated content:
+
+- Validate approved character limits.
+- Reject malformed payloads.
+- Apply approved moderation checks.
+- Sanitize output appropriately.
+- Prevent unsafe HTML execution.
+- Preserve legitimate user text without unsafe rendering.
+
+The exact maximum lengths, allowed formatting, and content restrictions must come from the Master PRD or approved product decisions.
+
+Do not invent limits.
+
+---
+
+# 10. PAGINATION AND FILTERING
+
+## 10.1 General pagination
+
+Large collections must not be returned without pagination.
+
+Examples:
+
+- Discovery feeds.
+- Comments.
+- Notifications.
+- Communities.
+- Reports.
+- Administrative records.
+
+## 10.2 Cursor-based pagination
+
+Cursor-based pagination is preferred for continuously changing feeds.
+
+Illustrative request:
+
+`GET /api/v1/posts?limit=20&cursor=opaque-cursor`
+
+Illustrative response:
+
+```json
+{
+  "success": true,
+  "data": [],
+  "meta": {
+    "pagination": {
+      "hasMore": true,
+      "nextCursor": "opaque-cursor"
+    }
+  }
+}
+```
+
+The actual cursor must be generated and validated by the server.
+
+It must not be trusted as an authorization token.
+
+## 10.3 Pagination rules
+
+- Use stable ordering.
+- Include a unique tie-breaker.
+- Prevent duplicate records between pages.
+- Handle deleted records.
+- Handle newly inserted records.
+- Avoid offset pagination for feeds where it causes unstable results.
+- Enforce maximum page sizes.
+- Do not allow clients to request unlimited records.
+
+The exact default and maximum page sizes are implementation decisions requiring measurement or approval.
+
+## 10.4 Filtering
+
+Filtering must be limited to approved fields.
+
+Never allow arbitrary database column selection through query parameters.
+
+## 10.5 Sorting
+
+Only approved sorting fields and directions may be accepted.
+
+Never pass arbitrary user-provided sorting expressions into SQL.
+
+---
+
+# 11. IDEMPOTENCY AND DUPLICATE REQUEST PROTECTION
+
+## 11.1 Purpose
+
+Users may accidentally submit the same action multiple times because of:
+
+- Repeated taps.
+- Network delays.
+- Browser retries.
+- Connection interruptions.
+- Client-side rendering issues.
+- Request timeouts.
+
+The backend must prevent unintended duplicate operations.
+
+## 11.2 Operations requiring protection
+
+At minimum, evaluate idempotency for:
+
+- Post creation.
+- Comment creation.
+- Poll voting.
+- Game answer submission.
+- Game session completion.
+- Report submission.
+- Administrative actions.
+- Notification state changes.
+
+## 11.3 Idempotency approach
+
+Where appropriate:
+
+1. Client supplies an idempotency key.
+2. Server validates the key.
+3. Server associates it with the authenticated user and operation.
+4. Server records the operation result atomically.
+5. Repeated requests with the same key return the original outcome where supported.
+6. Conflicting payloads using an existing key are rejected.
+
+The storage mechanism must be chosen after reviewing the existing database and transaction architecture.
+
+Do not introduce an idempotency table without a documented need and migration review.
+
+## 11.4 Database constraints
+
+Use appropriate unique constraints and transactional logic to prevent duplicate records.
+
+Application checks alone are insufficient for concurrency-sensitive operations.
+
+---
+
+# 12. TARGET API ENDPOINT CATALOG
+
+The following endpoint structure defines the target API surface.
+
+These routes are proposed contracts, not proof that equivalent routes do not already exist.
+
+Before creating or changing any endpoint, reconcile it with the existing API inventory.
+
+The coding agent must not create duplicate endpoints for existing functionality.
+
+# 12.1 Authentication and account
+
+Authentication is handled through the approved Supabase Auth flow.
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| GET | `/api/v1/me` | Retrieve current user context | Authenticated |
+| PATCH | `/api/v1/me` | Update approved account/profile fields | Authenticated |
+| GET | `/api/v1/me/preferences` | Retrieve preferences | Authenticated |
+| PATCH | `/api/v1/me/preferences` | Update approved preferences | Authenticated |
+| GET | `/api/v1/me/consents` | Retrieve consent status where permitted | Authenticated |
+| POST | `/api/v1/me/consents` | Record consent through approved flow | Authenticated |
+| DELETE | `/api/v1/me/account` | Initiate approved account deletion process | Authenticated |
+
+### `GET /api/v1/me`
+
+Purpose:
+
+Return the current authenticated user's permitted application context.
+
+Illustrative response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "user-id",
+      "username": "example",
+      "status": "active"
+    },
+    "profile": {},
+    "preferences": {}
+  }
+}
+```
+
+Rules:
+
+- User identity comes from the verified session.
+- Return only fields required by the current frontend.
+- Do not return private authentication metadata unnecessarily.
+- Account status must reflect the authoritative backend state.
+
+The example is illustrative; actual fields must match the approved profile model.
+
+### `PATCH /api/v1/me`
+
+Purpose:
+
+Update permitted profile information.
+
+Rules:
+
+- Do not allow updates to privileged roles.
+- Do not allow updates to account ownership identifiers.
+- Validate every field.
+- Apply approved profile visibility rules.
+- Preserve existing data not included in the request.
+
+### Account deletion
+
+Account deletion must follow the approved data lifecycle and legal requirements.
+
+The endpoint must not immediately delete production data merely because a client requests deletion.
+
+Before implementation, determine:
+
+- Whether deletion is immediate or delayed.
+- Whether a grace period exists.
+- Which records are deleted.
+- Which records are anonymized.
+- Which records must be retained.
+- How legal retention requirements are handled.
+- How related content and audit records are treated.
+
+These decisions must be approved and must align with the Database Specification.
+
+---
+
+# 12.2 Profiles
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| GET | `/api/v1/profiles/:username` | Retrieve visible profile | Public or authenticated per policy |
+| PATCH | `/api/v1/profiles/me` | Update own profile | Authenticated |
+| GET | `/api/v1/profiles/:username/posts` | Retrieve visible posts | According to visibility |
+| GET | `/api/v1/profiles/:username/activity` | Retrieve approved public activity | According to PRD |
+
+Requirements:
+
+- Validate usernames using the actual username rules.
+- Respect profile visibility.
+- Do not expose private account data.
+- Do not expose anonymous post ownership.
+- Apply pagination to collections.
+- Handle unavailable or suspended profiles safely.
+
+---
+
+# 12.3 Discovery and feeds
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| GET | `/api/v1/discover` | Retrieve primary discovery content | According to PRD |
+| GET | `/api/v1/discover/nearby` | Retrieve nearby content | According to location policy |
+| GET | `/api/v1/discover/global` | Retrieve global content | According to PRD |
+| GET | `/api/v1/discover/trending` | Retrieve trending content | According to PRD |
+
+### Feed query parameters
+
+Potential approved parameters:
+
+- `limit`
+- `cursor`
+- `type`
+- `communityId`
+- `locationContext`
+
+Only parameters supported by the actual product requirements should be implemented.
+
+Do not invent a public location query that exposes exact coordinates.
+
+### Feed response
+
+Illustrative structure:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "post-id",
+      "content": "Example post",
+      "identityMode": "anonymous",
+      "createdAt": "2026-11-20T10:30:00.000Z",
+      "author": {
+        "displayName": "Anonymous"
+      },
+      "counts": {
+        "reactions": 0,
+        "comments": 0
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "hasMore": false,
+      "nextCursor": null
+    }
+  }
+}
+```
+
+This example is illustrative and must not be used to invent additional author fields or content visibility rules.
+
+### Feed rules
+
+- Enforce visibility server-side.
+- Apply blocking rules.
+- Exclude removed content.
+- Apply moderation restrictions.
+- Use the approved trending algorithm.
+- Use stable ordering.
+- Support cursor pagination.
+- Prevent duplicate entries.
+- Avoid unnecessary location precision.
+
+---
+
+# 12.4 Posts
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| POST | `/api/v1/posts` | Create post | Authenticated |
+| GET | `/api/v1/posts/:id` | Retrieve post | According to visibility |
+| PATCH | `/api/v1/posts/:id` | Update permitted post fields | Owner/authorized admin |
+| DELETE | `/api/v1/posts/:id` | Delete or initiate approved removal | Owner/authorized admin |
+
+### Create post request
+
+Illustrative request:
+
+```json
+{
+  "content": "Example post content",
+  "identityMode": "anonymous"
+}
+```
+
+The actual request must use the identity and content fields supported by the existing database and approved product model.
+
+### Create post requirements
+
+- Authenticate the user.
+- Derive the owner from the session.
+- Validate content.
+- Validate identity mode.
+- Apply content policies.
+- Apply moderation requirements.
+- Save the post.
+- Return the confirmed resource.
+- Publish relevant realtime changes only after successful persistence.
+
+The client must never supply an arbitrary owner ID to create a post.
+
+### Anonymous posts
+
+Anonymous posting must remain internally associated with the authenticated user for authorized platform operations.
+
+Public API responses must not expose the underlying identity.
+
+Administrative access to internal ownership information must be restricted and audited where appropriate.
+
+### Post update
+
+The backend must verify:
+
+- The user owns the post or has the required administrative permission.
+- The post is editable.
+- The requested changes are allowed.
+- The content remains valid.
+
+### Post deletion
+
+Deletion must follow the approved lifecycle policy.
+
+Do not assume that deleting a post means physically deleting every associated database record.
+
+---
+
+# 12.5 Comments
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| POST | `/api/v1/posts/:id/comments` | Create comment | Authenticated |
+| GET | `/api/v1/posts/:id/comments` | Retrieve comments | According to visibility |
+| PATCH | `/api/v1/comments/:id` | Update own permitted comment | Owner/authorized admin |
+| DELETE | `/api/v1/comments/:id` | Remove comment | Owner/authorized admin |
+
+### Create comment request
+
+```json
+{
+  "content": "Example comment"
+}
+```
+
+### Requirements
+
+- Validate parent post visibility.
+- Verify commenting is permitted.
+- Verify the user is eligible.
+- Validate content.
+- Apply moderation rules.
+- Prevent duplicate submissions.
+- Use pagination.
+- Return authoritative counts or resource information.
+
+Comment creation must not succeed for content that the user is not authorized to interact with.
+
+---
+
+# 12.6 Reactions
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| PUT | `/api/v1/posts/:id/reaction` | Set or create permitted reaction | Authenticated |
+| DELETE | `/api/v1/posts/:id/reaction` | Remove current user's reaction | Authenticated |
+
+The target interface should be idempotent where possible.
+
+### Requirements
+
+- Derive the user identity from the session.
+- Validate reaction type.
+- Enforce unique reaction constraints.
+- Handle repeated requests safely.
+- Return the confirmed reaction state.
+- Update counts using authoritative database data.
+
+Do not assume a particular reaction vocabulary beyond what is approved by the product requirements and current database.
+
+---
+
+# 12.7 Polls
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| POST | `/api/v1/polls` | Create poll | Authenticated |
+| GET | `/api/v1/polls/:id` | Retrieve poll | According to visibility |
+| POST | `/api/v1/polls/:id/votes` | Submit vote | Authenticated |
+| GET | `/api/v1/polls/:id/results` | Retrieve results | According to poll rules |
+| GET | `/api/v1/polls/:id/my-vote` | Retrieve current user's voting state | Authenticated |
+
+The exact relationship between posts and polls must follow the approved database model.
+
+Do not create independent poll ownership or relationships that conflict with the existing schema.
+
+## Poll creation
+
+Illustrative request:
+
+```json
+{
+  "question": "Example question",
+  "options": [
+    "Option A",
+    "Option B"
+  ],
+  "selectionMode": "single",
+  "expiresAt": null
+}
+```
+
+All fields are illustrative.
+
+The actual selection modes, option limits, expiration rules, and poll ownership must be taken from approved product decisions.
+
+## Vote submission
+
+Illustrative request:
+
+```json
+{
+  "optionIds": [
+    "option-id"
+  ]
+}
+```
+
+### Voting requirements
+
+The server must verify:
+
+1. The user is authenticated.
+2. The poll exists and is visible.
+3. The poll is open.
+4. The poll has not expired.
+5. The selected options belong to the poll.
+6. The selection matches the configured mode.
+7. The user is eligible to vote.
+8. The user has not already voted, unless vote replacement is explicitly supported.
+
+### Atomicity
+
+Voting must be implemented transactionally.
+
+A successful vote must not partially persist.
+
+The operation must prevent:
+
+- Duplicate voting.
+- Invalid option references.
+- Partial multiple-choice submissions.
+- Concurrent submissions bypassing the voting rule.
+- Votes being counted after expiration.
+
+### Vote replacement
+
+Vote replacement behavior is unresolved until explicitly approved.
+
+The agent must not invent whether users can:
+
+- Change their vote.
+- Remove their vote.
+- Submit a replacement selection.
+- Vote only once permanently.
+
+Implement the behavior specified by the approved PRD and database decision.
+
+### Results
+
+Results must be calculated from authoritative persisted votes.
+
+Do not calculate official poll totals from frontend state.
+
+Realtime poll updates must reflect committed vote changes only.
+
+---
+
+# 12.8 Games
+
+The MVP contains exactly three games:
+
+1. QuickMind.
+2. This or That.
+3. Mystery Word.
+
+No additional game modes should be added without approval.
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| GET | `/api/v1/games` | Retrieve available games | According to PRD |
+| GET | `/api/v1/games/:id` | Retrieve approved game information | According to PRD |
+| POST | `/api/v1/games/:id/sessions` | Start game session | Authenticated |
+| GET | `/api/v1/game-sessions/:id` | Retrieve authorized session state | Owner |
+| POST | `/api/v1/game-sessions/:id/answers` | Submit answer | Owner |
+| POST | `/api/v1/game-sessions/:id/complete` | Complete session where supported | Owner |
+| GET | `/api/v1/game-sessions/:id/result` | Retrieve confirmed result | Owner |
+
+These are target resource patterns. Existing route conventions and actual database relationships must be reconciled first.
+
+## 12.8.1 Game session creation
+
+The server must:
+
+- Verify authentication.
+- Verify game availability.
+- Validate user eligibility.
+- Create a valid session.
+- Assign approved questions or game data.
+- Return only information the user is allowed to see.
+
+Do not expose hidden answers or scoring secrets in the initial response.
+
+## 12.8.2 Answer submission
+
+The server must validate:
+
+- Session ownership.
+- Session status.
+- Question or prompt validity.
+- Answer format.
+- Submission order where applicable.
+- Attempt limits where approved.
+- Duplicate submission behavior.
+
+The exact request structure must match the approved game model.
+
+## 12.8.3 QuickMind
+
+The approved game session contains five trivia questions.
+
+Requirements:
+
+- The server determines the valid questions.
+- The server validates submitted answers.
+- The server calculates the score.
+- The client cannot alter authoritative scoring.
+- Session completion is persisted.
+- Results are returned only when the server confirms completion.
+
+## 12.8.4 This or That
+
+Requirements:
+
+- The server provides the approved binary prompt.
+- The server validates the selected option.
+- The server records the answer.
+- Duplicate submissions follow the approved game rules.
+- The client cannot fabricate a completed session.
+
+## 12.8.5 Mystery Word
+
+Requirements:
+
+- The server controls the secret answer.
+- The server validates guesses.
+- The server enforces approved attempt limits.
+- The server determines completion.
+- The server determines the result.
+- The client must not receive secret answer data prematurely.
+
+## 12.8.6 Game scoring
+
+All authoritative scores must be calculated server-side.
+
+Never trust:
+
+- Client-calculated scores.
+- Client-supplied completion status.
+- Client-supplied correct-answer counts.
+- Modified browser state.
+- Unverified game timing.
+
+If the game uses time-based scoring, the authoritative timing mechanism must be defined by the game specification.
+
+Do not invent timing rules.
+
+---
+
+# 12.9 Notifications
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| GET | `/api/v1/notifications` | Retrieve current user's notifications | Authenticated |
+| GET | `/api/v1/notifications/unread-count` | Retrieve unread count | Authenticated |
+| PATCH | `/api/v1/notifications/:id/read` | Mark one notification read | Owner |
+| POST | `/api/v1/notifications/read` | Mark notifications read according to approved behavior | Owner |
+| GET | `/api/v1/me/notification-preferences` | Retrieve preferences | Authenticated |
+| PATCH | `/api/v1/me/notification-preferences` | Update preferences | Authenticated |
+
+### Notification requirements
+
+- Users can access only their own notifications.
+- Read state must be persisted.
+- Repeated read requests should be safe.
+- Notification links must respect content visibility.
+- Deleted content must not produce broken navigation.
+- Unread counts must reflect authoritative records.
+
+### Notification generation
+
+Notifications must be created through approved backend processes.
+
+Do not rely exclusively on browser events to generate persistent notifications.
+
+The backend must define which events create notifications according to the Master PRD.
+
+Do not introduce notification types that have not been approved.
+
+---
+
+# 12.10 Communities
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| GET | `/api/v1/communities` | List visible communities | According to PRD |
+| POST | `/api/v1/communities` | Create community where approved | According to PRD |
+| GET | `/api/v1/communities/:id` | Retrieve community | According to visibility |
+| PATCH | `/api/v1/communities/:id` | Update permitted community fields | Authorized owner/admin |
+| POST | `/api/v1/communities/:id/join` | Join community | Authenticated |
+| DELETE | `/api/v1/communities/:id/membership` | Leave community | Authenticated |
+| GET | `/api/v1/communities/:id/posts` | Retrieve community content | According to visibility |
+
+### Requirements
+
+- Verify community visibility.
+- Enforce membership rules.
+- Prevent duplicate membership.
+- Prevent unauthorized changes.
+- Apply approved community creation rules.
+- Use server-side authorization.
+- Do not introduce unsupported community messaging functionality.
+
+If the existing application has a different community model, preserve it until an approved migration is defined.
+
+---
+
+# 12.11 Location
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| POST | `/api/v1/me/location` | Submit approved location context | Authenticated |
+| DELETE | `/api/v1/me/location` | Remove stored location context where supported | Authenticated |
+| GET | `/api/v1/discover/nearby` | Retrieve nearby content | According to policy |
+
+### Location requirements
+
+- Request location only when required.
+- Validate submitted location data.
+- Use the approved PostGIS query process.
+- Return only appropriate nearby content.
+- Avoid exposing exact coordinates.
+- Apply approved precision and retention policies.
+- Support location denial.
+- Preserve Global discovery functionality.
+
+### Security
+
+The server must not blindly trust client-submitted coordinates.
+
+Where device-provided coordinates are used, the application must follow the approved location design and privacy rules.
+
+Do not implement background location tracking unless separately approved.
+
+---
+
+# 12.12 Reports and moderation
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| POST | `/api/v1/reports` | Submit report | Authenticated |
+| GET | `/api/v1/admin/reports` | Retrieve reports | Authorized admin |
+| GET | `/api/v1/admin/reports/:id` | Retrieve report details | Authorized admin |
+| PATCH | `/api/v1/admin/reports/:id` | Update report workflow status | Authorized admin |
+| POST | `/api/v1/admin/moderation-actions` | Execute approved moderation action | Authorized admin |
+| GET | `/api/v1/admin/users` | Retrieve permitted user records | Authorized admin |
+| GET | `/api/v1/admin/content` | Retrieve content for moderation | Authorized admin |
+| GET | `/api/v1/admin/audit-logs` | Retrieve permitted audit records | Authorized admin |
+
+### Report submission
+
+Illustrative request:
+
+```json
+{
+  "targetType": "post",
+  "targetId": "target-id",
+  "reason": "approved-reason-code",
+  "description": "Optional explanation"
+}
+```
+
+Actual reason codes must come from the approved moderation policy.
+
+### Report requirements
+
+- Authenticate the reporter.
+- Validate target type and identifier.
+- Verify the target exists and can be reported.
+- Validate reason.
+- Prevent abusive repeated submissions where appropriate.
+- Record the report.
+- Return a confirmed submission result.
+
+### Moderation actions
+
+The backend must verify:
+
+- Administrator identity.
+- Required permission.
+- Target resource.
+- Valid action type.
+- Required reason.
+- Applicable restrictions.
+- Audit requirements.
+
+### Audit logging
+
+Every required privileged action must produce an audit record.
+
+Audit logging should record:
+
+- Actor.
+- Action.
+- Target.
+- Timestamp.
+- Relevant reason.
+- Outcome.
+- Request or correlation identifier where appropriate.
+
+Do not allow the client to manufacture or directly edit audit records.
+
+Audit records must be protected against unauthorized modification.
+
+---
+
+# 12.13 Blocking
+
+The existing database and Master PRD define the blocking behavior.
+
+The API must expose the approved blocking operations.
+
+Target patterns:
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/users/:id/block` | Block a user |
+| DELETE | `/api/v1/users/:id/block` | Unblock a user |
+| GET | `/api/v1/me/blocks` | Retrieve own blocked users |
+
+Requirements:
+
+- Derive the acting user from the authenticated session.
+- Prevent self-blocking if prohibited by product rules.
+- Prevent duplicate block records.
+- Enforce blocking in relevant feed and interaction queries.
+- Do not disclose private information about blocked users.
+- Reconcile any affected content visibility.
+
+The frontend must not be the only enforcement layer.
+
+---
+
+# 12.14 Analytics
+
+Analytics must follow the approved privacy-conscious analytics design.
+
+If a first-party event endpoint is required, use a controlled contract rather than accepting arbitrary event payloads.
+
+Potential target pattern:
+
+`POST /api/v1/analytics/events`
+
+Requirements:
+
+- Validate event names against an approved list.
+- Limit payload size.
+- Exclude passwords and sensitive form content.
+- Avoid exact location collection unless specifically approved.
+- Avoid accepting arbitrary client-defined properties.
+- Apply retention requirements.
+- Prevent analytics failure from unnecessarily breaking core user actions.
+
+Do not introduce a new third-party analytics service without approval.
+
+---
+
+# 13. REALTIME ARCHITECTURE
+
+## 13.1 Purpose
+
+Realtime functionality enables Kea Parrot to update supported interfaces without requiring users to refresh manually.
+
+Supabase Realtime may be used for:
+
+- Relevant feed changes.
+- Reactions.
+- Comments.
+- Poll results.
+- Notifications.
+- Approved account-status changes.
+
+The actual list must match implemented backend functionality and the approved product requirements.
+
+## 13.2 Realtime is not the source of truth
+
+PostgreSQL remains authoritative.
+
+Realtime communicates changes that have already been persisted.
+
+The frontend must not treat an event as proof that an operation succeeded unless the event represents a confirmed server-side state change.
+
+## 13.3 Realtime event flow
+
+```mermaid
+flowchart TD
+    A["User Action"] --> B["Next.js API"]
+    B --> C["Authentication and Validation"]
+    C --> D["Database Transaction"]
+    D --> E{"Transaction Successful?"}
+    E -->|No| F["Return Error"]
+    E -->|Yes| G["Persisted Database Change"]
+    G --> H["Realtime Publication"]
+    H --> I["Authorized Subscribers"]
+    I --> J["Frontend State Reconciliation"]
+```
+
+## 13.4 Realtime subscription principles
+
+Every subscription must:
+
+- Be necessary.
+- Have a clearly defined purpose.
+- Use the correct user or resource context.
+- Respect RLS and channel authorization.
+- Clean up when no longer needed.
+- Handle disconnections.
+- Avoid duplicate subscriptions.
+- Avoid unnecessary broad table subscriptions.
+
+Do not subscribe every client to every application table.
+
+## 13.5 Subscription lifecycle
+
+A subscription should follow this lifecycle:
+
+1. Establish the authenticated session.
+2. Determine the resource or user context.
+3. Create the subscription.
+4. Listen only for relevant events.
+5. Update or invalidate the appropriate UI state.
+6. Handle subscription errors.
+7. Reconnect where appropriate.
+8. Remove the subscription when the component or context is no longer active.
+
+Subscriptions must not leak across users when authentication changes.
+
+---
+
+# 14. REALTIME CHANNEL DESIGN
+
+The following channel names are proposed logical patterns.
+
+They must be checked against existing channels and authorization policies before use.
+
+| Channel pattern | Purpose | Intended audience |
+|---|---|---|
+| `user:{userId}:notifications` | User-specific notifications | That user |
+| `post:{postId}:comments` | Comments for an accessible post | Authorized viewers |
+| `post:{postId}:reactions` | Reaction changes | Authorized viewers |
+| `poll:{pollId}:results` | Poll result changes | Authorized viewers |
+| `feed:global` | Approved global discovery updates | Eligible subscribers |
+| `community:{communityId}` | Approved community updates | Eligible members |
+| `user:{userId}:account` | Relevant account-status updates | That user |
+
+These names do not automatically create authorization.
+
+The implementation must define actual Supabase channel authorization, topic policies, or database publication policies based on the selected Realtime mechanism.
+
+## 14.1 User-specific channels
+
+User-specific channels must be isolated.
+
+A user must not subscribe to another user's private notification channel by modifying a client-side identifier.
+
+## 14.2 Resource-specific channels
+
+Post, poll, and community channels must enforce resource visibility.
+
+An inaccessible resource must not become accessible merely because the client knows its ID.
+
+## 14.3 Global channels
+
+Global channels must not expose:
+
+- Private content.
+- Anonymous author identities.
+- Protected user records.
+- Internal moderation data.
+- Exact location information.
+
+Use global broadcasts carefully to avoid unnecessary fan-out and privacy leaks.
+
+---
+
+# 15. REALTIME EVENT CONTRACTS
+
+Realtime event payloads must be deliberately designed.
+
+Do not broadcast entire database rows by default.
+
+Use minimal payloads.
+
+## 15.1 General event structure
+
+Illustrative event:
+
+```json
+{
+  "event": "post.created",
+  "version": 1,
+  "eventId": "event-id",
+  "occurredAt": "2026-11-20T10:30:00.000Z",
+  "resource": {
+    "type": "post",
+    "id": "post-id"
+  },
+  "data": {}
+}
+```
+
+This is a logical event envelope. Supabase's actual transport format may differ.
+
+The application must not invent a second event-broker infrastructure simply to match this JSON structure.
+
+## 15.2 Proposed event catalog
+
+| Event | Purpose |
+|---|---|
+| `post.created` | A new eligible post is available |
+| `post.updated` | An accessible post has changed |
+| `post.deleted` | A post is no longer available |
+| `comment.created` | A comment was created |
+| `comment.deleted` | A comment was removed |
+| `reaction.updated` | Reaction state or count changed |
+| `poll.vote_recorded` | A valid vote was committed |
+| `poll.results_updated` | Poll results changed |
+| `notification.created` | A notification was created |
+| `notification.read` | Notification read state changed |
+| `community.updated` | Approved community data changed |
+| `account.status_changed` | Relevant account status changed |
+
+Only events required by approved MVP behavior should be implemented.
+
+Do not create events for future-only functionality.
+
+## 15.3 Event versioning
+
+Event contracts should be versioned where consumers may depend on their shape.
+
+Breaking changes must be coordinated.
+
+Do not silently remove event fields or change their meaning while existing consumers still depend on them.
+
+## 15.4 Event duplication
+
+The frontend must handle possible duplicate delivery.
+
+Where the transport does not guarantee exactly-once delivery:
+
+- Use stable event identifiers where available.
+- Make updates idempotent.
+- Avoid incrementing counts repeatedly for duplicate events.
+- Prefer state reconciliation over blind counter increments.
+
+## 15.5 Event ordering
+
+Do not assume events always arrive in perfect order.
+
+Where ordering matters:
+
+- Include authoritative timestamps or version information where available.
+- Compare the event against the current resource state.
+- Refetch authoritative data when events conflict or appear stale.
+
+## 15.6 Event failure
+
+If realtime delivery fails after a database transaction succeeds:
+
+- The database operation remains successful.
+- The API response must reflect the committed operation.
+- The client must be able to recover through a normal data fetch.
+- The system must not roll back a valid database transaction merely because a subscriber was disconnected.
+
+---
+
+# 16. REALTIME IMPLEMENTATION PATTERNS
+
+## 16.1 Feed updates
+
+The feed may receive approved notifications that new content exists.
+
+The client should not automatically insert every new post into every user's current feed.
+
+It must respect:
+
+- Feed ordering.
+- Content visibility.
+- Blocking.
+- Moderation.
+- Pagination.
+- Current user context.
+
+If insertion would disrupt the user's reading position, show a non-intrusive indication that new content is available.
+
+## 16.2 Comments
+
+When a comment is created:
+
+1. The backend validates and persists it.
+2. The authorized resource channel receives the relevant event.
+3. The client updates or invalidates the comment list.
+4. The UI avoids inserting duplicates if the creating client already received the API response.
+
+## 16.3 Reactions
+
+Reaction changes must not produce inaccurate counts.
+
+The client should reconcile the current user's reaction state and the confirmed aggregate count.
+
+Do not blindly increment a counter on every event.
+
+## 16.4 Poll results
+
+Poll results must reflect committed votes.
+
+If multiple votes occur concurrently:
+
+- The database must maintain consistency.
+- The server must produce authoritative totals.
+- Realtime updates must not count the same vote more than once.
+- Clients must reconcile against authoritative results.
+
+Do not expose individual voters unless the approved poll privacy design explicitly permits it.
+
+## 16.5 Notifications
+
+User notification channels must be isolated.
+
+When a notification is created:
+
+- Persist it first.
+- Publish the appropriate user-specific event.
+- Update the unread count through a reliable reconciliation method.
+- Avoid duplicate notification cards.
+
+## 16.6 Communities
+
+Community events must be visible only to users permitted to access the associated community information.
+
+Do not broadcast private membership details to global subscribers.
+
+---
+
+# 17. DATA CONSISTENCY AND TRANSACTION MANAGEMENT
+
+## 17.1 General principle
+
+Operations involving multiple related database records must be atomic where partial persistence would create inconsistent application state.
+
+Use PostgreSQL transactions or appropriately designed database functions.
+
+## 17.2 Transaction-sensitive operations
+
+At minimum, evaluate transactional execution for:
+
+- Post creation with dependent records.
+- Poll creation with options.
+- Poll vote submission.
+- Game session creation.
+- Game answer submission.
+- Game session completion.
+- Notification generation.
+- Moderation actions with audit records.
+- Account deletion or anonymization workflows.
+
+## 17.3 Poll transaction example
+
+The logical transaction is:
+
+```mermaid
+flowchart TD
+    A["Receive Vote Request"] --> B["Authenticate User"]
+    B --> C["Validate Poll and Options"]
+    C --> D["Check Voting Rules"]
+    D --> E["Begin Transaction"]
+    E --> F["Persist Vote Selection"]
+    F --> G["Commit Transaction"]
+    G --> H["Return Confirmed Result"]
+    G --> I["Allow Realtime Update"]
+    F --> J["Rollback on Failure"]
+```
+
+A failed transaction must not leave partial vote records.
+
+## 17.4 Game transaction example
+
+A game answer must be validated against:
+
+- The session.
+- The authenticated owner.
+- The current game state.
+- The question or prompt.
+- The permitted answer format.
+- The approved attempt and completion rules.
+
+The backend determines whether the answer is valid and how the game state changes.
+
+## 17.5 Moderation transaction example
+
+Where a moderation action changes account or content state and creates an audit record, those operations must be designed so that the audit record cannot be silently omitted after a successful action.
+
+The exact transaction boundary must be implemented in the approved database architecture.
+
+---
+
+# 18. DATABASE ACCESS AND SUPABASE SECURITY
+
+## 18.1 Server-side database access
+
+Use the appropriate Supabase client for each context.
+
+The agent must distinguish between:
+
+- Browser-side authenticated client.
+- Server-side authenticated client.
+- Privileged administrative client.
+
+## 18.2 Service-role key
+
+The Supabase service-role key:
+
+- Must never be included in browser bundles.
+- Must never be exposed through public environment variables.
+- Must never be returned by an API.
+- Must never be logged.
+- Must only be used in appropriately protected server-side contexts.
+
+## 18.3 RLS
+
+RLS must remain enabled on tables exposed through Supabase APIs.
+
+Do not disable RLS to make a failing query work.
+
+Do not introduce broad policies that allow every authenticated user to read or modify all records.
+
+## 18.4 Server-side Supabase access
+
+For ordinary user operations:
+
+- Use the authenticated user's context.
+- Preserve RLS enforcement.
+- Apply business-level checks.
+- Return only approved data.
+
+For privileged operations:
+
+- Use the privileged client only where necessary.
+- Perform explicit authorization checks before the operation.
+- Restrict the operation to a narrow service function.
+- Record required audit events.
+
+## 18.5 Direct client database access
+
+If the existing architecture permits direct authenticated Supabase access from the browser, each exposed table must have correctly verified RLS policies.
+
+Do not assume that using a Supabase client automatically makes an operation safe.
+
+Sensitive operations should be routed through the trusted server-side business logic where appropriate.
+
+## 18.6 Database error handling
+
+Map internal database errors to safe application-level errors.
+
+Never return raw SQL errors to public clients.
+
+Log the technical details securely with a request identifier.
+
+---
+
+# 19. RATE LIMITING AND ABUSE PROTECTION
+
+## 19.1 Purpose
+
+Protect Kea Parrot from abusive requests, automated spam, accidental request storms, and resource exhaustion.
+
+## 19.2 Endpoints requiring special attention
+
+Evaluate rate limiting for:
+
+- Authentication-related operations.
+- Post creation.
+- Comment creation.
+- Reactions.
+- Poll voting.
+- Game session creation.
+- Game answer submission.
+- Report submission.
+- Location requests.
+- Notification operations.
+- Administrative actions.
+
+## 19.3 Rate-limit dimensions
+
+Depending on the operation, rate limits may consider:
+
+- Authenticated user.
+- IP address.
+- Resource identifier.
+- Account status.
+- Operation type.
+
+Do not rely exclusively on client-side throttling.
+
+## 19.4 Rate-limit responses
+
+Use HTTP 429 with a safe error response.
+
+Where appropriate, include retry guidance.
+
+Do not disclose internal rate-limit configuration or security mechanisms.
+
+## 19.5 Implementation
+
+Inspect existing infrastructure before introducing Redis or another rate-limiting service.
+
+Do not add Redis merely because it is common in high-traffic applications.
+
+Use the simplest reliable implementation that meets measured needs.
+
+---
+
+# 20. FILE AND MEDIA UPLOADS
+
+Media functionality must follow the Master PRD and existing application capabilities.
+
+Do not invent a new media-upload feature if it is not approved.
+
+If uploads are already supported or explicitly approved:
+
+- Use approved Supabase Storage buckets.
+- Enforce upload authorization.
+- Validate file types.
+- Validate file sizes.
+- Generate safe object paths.
+- Avoid trusting file extensions alone.
+- Prevent unauthorized overwrites.
+- Apply approved access policies.
+- Handle failed uploads.
+- Avoid exposing private storage objects.
+
+Do not send large binary files through ordinary JSON API endpoints unless specifically required by the existing architecture.
+
+---
+
+# 21. API SECURITY REQUIREMENTS
+
+## 21.1 Transport security
+
+Production API traffic must use HTTPS.
+
+## 21.2 Input security
+
+- Validate all external input.
+- Restrict payload size.
+- Prevent SQL injection.
+- Prevent unsafe HTML rendering.
+- Validate resource ownership.
+- Reject unexpected fields where appropriate.
+
+## 21.3 Authentication security
+
+- Verify server-side sessions.
+- Never trust user IDs from request bodies.
+- Protect privileged operations.
+- Handle session expiration.
+- Avoid leaking authentication details.
+
+## 21.4 Authorization security
+
+- Enforce permissions server-side.
+- Enforce resource ownership.
+- Respect account restrictions.
+- Apply RLS.
+- Protect administrative functions.
+
+## 21.5 Abuse prevention
+
+- Rate limit sensitive endpoints.
+- Prevent duplicate operations.
+- Validate state transitions.
+- Protect against unauthorized enumeration.
+- Apply approved reporting and moderation rules.
+
+## 21.6 CORS and CSRF
+
+The implementation agent must inspect the existing Next.js deployment and authentication model.
+
+Configure CORS narrowly where cross-origin API access is required.
+
+For cookie-authenticated state-changing requests, evaluate CSRF protection based on the actual cookie, origin and deployment configuration.
+
+Do not apply arbitrary CORS wildcard settings to solve development issues.
+
+## 21.7 Logging security
+
+Never log:
+
+- Passwords.
+- Authentication tokens.
+- Service-role keys.
+- Sensitive personal data without an approved operational need.
+- Private location coordinates.
+- Confidential moderation information in public logs.
+
+## 21.8 Security review
+
+Every new endpoint must be reviewed for:
+
+- Broken object-level authorization.
+- Broken function-level authorization.
+- Excessive data exposure.
+- Mass assignment.
+- Injection.
+- Rate-limit weaknesses.
+- Insecure direct object references.
+- Privilege escalation.
+- Sensitive data leakage.
+
+---
+
+# 22. OBSERVABILITY AND ERROR MONITORING
+
+## 22.1 Request identifiers
+
+Every API request should have a correlation or request identifier.
+
+The identifier should be available in:
+
+- Server logs.
+- Error reports.
+- API response metadata where appropriate.
+- Relevant administrative diagnostics.
+
+## 22.2 Logging
+
+Log:
+
+- Endpoint.
+- HTTP method.
+- Request identifier.
+- Authenticated user identifier where appropriate.
+- Execution outcome.
+- Error category.
+- Duration.
+- Relevant resource identifiers where safe.
+
+Do not log sensitive payloads.
+
+## 22.3 Error monitoring
+
+Use the existing Sentry integration if present.
+
+Capture:
+
+- Unexpected server errors.
+- Failed database operations.
+- Realtime subscription failures where useful.
+- Unexpected authorization failures.
+- Important frontend/API integration failures.
+
+Do not capture sensitive information in error payloads.
+
+## 22.4 Metrics
+
+Where available, monitor:
+
+- Request volume.
+- Error rate.
+- Endpoint latency.
+- Database query latency.
+- Rate-limit activity.
+- Realtime connection health.
+- Realtime reconnect frequency.
+- Failed background operations.
+
+Performance targets and alert thresholds must be established from actual usage and operational requirements rather than invented.
+
+---
+
+# 23. API VERSIONING AND BACKWARD COMPATIBILITY
+
+## 23.1 Versioning
+
+The target version prefix is:
+
+`/api/v1`
+
+## 23.2 Compatibility requirements
+
+Changes must be classified as:
+
+- Backward-compatible.
+- Potentially breaking.
+- Breaking.
+
+Examples of potentially breaking changes:
+
+- Removing response fields.
+- Renaming fields.
+- Changing field types.
+- Changing endpoint paths.
+- Changing authorization requirements.
+- Changing error codes.
+- Changing pagination behavior.
+- Changing realtime event payloads.
+
+## 23.3 Migration strategy
+
+For an existing endpoint that needs a breaking change:
+
+1. Identify consumers.
+2. Document the current contract.
+3. Define the new contract.
+4. Assess migration impact.
+5. Implement compatibility where practical.
+6. Migrate consumers.
+7. Test both paths where required.
+8. Deprecate the old path only after approval.
+9. Remove the old path only after confirming it is unused.
+
+Do not break existing production clients without a controlled migration.
+
+---
+
+# 24. API CONTRACT DOCUMENTATION
+
+The project should maintain a centralized API contract.
+
+OpenAPI is an appropriate option if it fits the existing tooling.
+
+The documentation should describe:
+
+- Endpoint paths.
+- HTTP methods.
+- Authentication requirements.
+- Authorization requirements.
+- Request schemas.
+- Response schemas.
+- Error responses.
+- Query parameters.
+- Pagination.
+- Rate limits where appropriate.
+- Realtime dependencies.
+- Idempotency behavior.
+
+The contract must reflect the actual implemented API.
+
+Do not publish undocumented or speculative endpoints as if they were available in production.
+
+The coding agent must keep API documentation synchronized with implementation changes.
+
+---
+
+# 25. TESTING REQUIREMENTS
+
+Testing must verify both successful and unsuccessful behavior.
+
+## 25.1 Unit tests
+
+Test:
+
+- Validation schemas.
+- Authorization helpers.
+- Business services.
+- Error mapping.
+- Pagination logic.
+- Idempotency logic.
+- Poll rules.
+- Game rules.
+- Moderation permissions.
+
+## 25.2 API integration tests
+
+Test:
+
+- Successful requests.
+- Invalid requests.
+- Missing authentication.
+- Expired sessions.
+- Unauthorized access.
+- Missing resources.
+- Duplicate submissions.
+- Database failures.
+- Transaction rollback.
+- Rate-limit behavior.
+
+## 25.3 Authentication tests
+
+Verify:
+
+- Authenticated users can perform permitted operations.
+- Guests cannot perform protected operations.
+- Users cannot impersonate other users.
+- Suspended users receive the correct restrictions.
+- Session expiration is handled correctly.
+
+## 25.4 Authorization tests
+
+Test cross-user access attempts.
+
+Examples:
+
+- User A attempts to edit User B's post.
+- User A attempts to delete User B's comment.
+- User A attempts to read User B's private notifications.
+- User A attempts to access an unauthorized community.
+- An ordinary user attempts an administrative action.
+- A user attempts to modify their own role.
+
+Every unauthorized attempt must fail safely.
+
+## 25.5 Poll tests
+
+Verify:
+
+- Valid poll creation.
+- Invalid poll creation.
+- Invalid option references.
+- Single-choice validation.
+- Multiple-choice validation.
+- Expired poll rejection.
+- Duplicate voting behavior.
+- Concurrent voting.
+- Vote replacement behavior if approved.
+- Accurate results.
+- Transaction rollback.
+
+## 25.6 Game tests
+
+Verify:
+
+- Valid session creation.
+- Session ownership.
+- Question validity.
+- Answer validation.
+- Duplicate submission behavior.
+- Invalid session state.
+- Session expiration.
+- Server-side scoring.
+- Result retrieval authorization.
+- Attempt limits where approved.
+
+Attempt to manipulate browser-submitted scores and verify that the server rejects or ignores them.
+
+## 25.7 Realtime tests
+
+Verify:
+
+- Authorized subscription.
+- Unauthorized subscription rejection.
+- Correct user isolation.
+- Event delivery.
+- Duplicate event handling.
+- Reconnection.
+- Subscription cleanup.
+- Stale event handling.
+- Event ordering where relevant.
+- No sensitive information leakage.
+
+## 25.8 Database and RLS tests
+
+Verify:
+
+- RLS is enabled where required.
+- Policies enforce the intended access model.
+- Users cannot read protected rows.
+- Users cannot modify other users' records.
+- Administrative operations require appropriate privileges.
+- Realtime access respects the approved authorization design.
+
+## 25.9 Performance tests
+
+Test:
+
+- Feed retrieval.
+- Pagination.
+- Poll result retrieval.
+- Comment retrieval.
+- Notification retrieval.
+- Realtime connection behavior.
+- Concurrent voting.
+- Game answer submission.
+
+Use realistic datasets and measured results.
+
+Do not claim production readiness based on small test datasets alone.
+
+---
+
+# 26. ENVIRONMENT AND DEPLOYMENT REQUIREMENTS
+
+## 26.1 Environments
+
+Maintain clear separation between:
+
+- Local development.
+- Testing or staging.
+- Production.
+
+Use the actual project environment structure if it already exists.
+
+## 26.2 Environment variables
+
+Document required environment variables.
+
+Examples of configuration categories:
+
+- Supabase project URL.
+- Supabase public/anonymous key.
+- Server-only privileged credentials where necessary.
+- Application URL.
+- Monitoring configuration.
+- Approved external service credentials.
+
+Do not include real secrets in documentation, source control, browser bundles, or logs.
+
+## 26.3 Database migrations
+
+All schema changes must use the approved migration process.
+
+Before a migration:
+
+1. Inspect the current schema.
+2. Confirm the migration is compatible.
+3. Create or verify a backup.
+4. Review destructive operations.
+5. Test against a representative database.
+6. Validate rollback or recovery options.
+7. Obtain approval for destructive changes.
+
+Never reset the production database to resolve a migration problem.
+
+## 26.4 Deployment sequence
+
+Recommended sequence:
+
+1. Build and static checks.
+2. Unit tests.
+3. API integration tests.
+4. Database migration validation.
+5. Staging deployment.
+6. Realtime verification.
+7. Security verification.
+8. Frontend integration verification.
+9. Production deployment.
+10. Post-deployment monitoring.
+
+The deployment sequence must follow the actual existing CI/CD pipeline.
+
+---
+
+# 27. UNRESOLVED API AND REALTIME DECISIONS
+
+The agent must track these decisions and avoid inventing answers.
+
+| ID | Decision | Required resolution |
+|---|---|---|
+| API-OD-001 | Existing API contract and route naming | Existing-system audit |
+| API-OD-002 | Exact guest browsing permissions | Master PRD |
+| API-OD-003 | Exact post and comment limits | Product approval |
+| API-OD-004 | Poll selection and replacement behavior | Product/database approval |
+| API-OD-005 | Poll option limits and expiration behavior | Product approval |
+| API-OD-006 | Game scoring and attempt rules | Approved game specification |
+| API-OD-007 | Game session expiration behavior | Product approval |
+| API-OD-008 | Feed pagination defaults and maximums | Performance and product approval |
+| API-OD-009 | Trending calculation | Approved product/backend logic |
+| API-OD-010 | Location precision and retention | Privacy/database approval |
+| API-OD-011 | Notification event categories | Master PRD |
+| API-OD-012 | Notification retention | Database/product approval |
+| API-OD-013 | Account deletion and anonymization | Privacy/legal/database approval |
+| API-OD-014 | Realtime transport and channel authorization | Architecture audit |
+| API-OD-015 | Rate-limit thresholds | Security/performance review |
+| API-OD-016 | Idempotency storage strategy | Existing architecture review |
+| API-OD-017 | Existing endpoint migration strategy | API inventory |
+| API-OD-018 | OpenAPI tooling and publication | Engineering approval |
+
+When an unresolved decision blocks implementation:
+
+1. Identify the affected feature.
+2. Explain why the decision is necessary.
+3. Present the available options.
+4. Recommend an option with reasoning.
+5. Identify security, database, API, and compatibility implications.
+6. Wait for approval before implementing a consequential product decision.
+
+---
+
+# 28. IMPLEMENTATION PHASES
+
+Implementation must proceed in controlled phases.
+
+## Phase 0 — Existing API and Realtime Audit
+
+Tasks:
+
+- Inspect existing API routes.
+- Inspect Supabase client configuration.
+- Inspect authentication.
+- Inspect authorization.
+- Inspect database schema.
+- Inspect RLS policies.
+- Inspect existing realtime subscriptions.
+- Inspect endpoint consumers.
+- Inspect existing error handling.
+- Inspect rate limiting.
+- Inspect tests and monitoring.
+
+Deliverables:
+
+- API inventory.
+- Realtime inventory.
+- Security report.
+- Database compatibility report.
+- Missing functionality report.
+- Migration and implementation plan.
+
+**No destructive modifications are permitted during this phase.**
+
+## Phase 1 — API Foundation
+
+Tasks:
+
+- Establish or verify API versioning.
+- Establish response conventions.
+- Establish error handling.
+- Establish request validation.
+- Establish authorization utilities.
+- Establish request identifiers.
+- Establish logging and monitoring integration.
+
+Acceptance:
+
+- Shared API conventions work.
+- Existing endpoints remain functional.
+- Authentication and authorization are tested.
+- No service secrets are exposed.
+
+## Phase 2 — Account and Profile APIs
+
+Tasks:
+
+- Current-user context.
+- Profile retrieval.
+- Profile updates.
+- Preferences.
+- Consent handling.
+- Account lifecycle integration where approved.
+
+Acceptance:
+
+- Identity is derived from the authenticated session.
+- Profile privacy is enforced.
+- Protected account fields cannot be modified by ordinary users.
+
+## Phase 3 — Discovery and Social APIs
+
+Tasks:
+
+- Discovery feeds.
+- Nearby discovery.
+- Global discovery.
+- Trending discovery.
+- Posts.
+- Comments.
+- Reactions.
+- Blocking.
+- Reporting.
+
+Acceptance:
+
+- Feed visibility is correct.
+- Pagination works.
+- Anonymous identity remains protected.
+- Ownership is enforced.
+- Duplicate operations are handled safely.
+
+## Phase 4 — Poll APIs
+
+Tasks:
+
+- Poll creation.
+- Poll retrieval.
+- Voting.
+- Results.
+- Voting-state retrieval.
+- Transaction and concurrency controls.
+
+Acceptance:
+
+- Votes are authoritative.
+- Voting rules are enforced.
+- Results are accurate.
+- Concurrent submissions do not bypass constraints.
+
+## Phase 5 — Game APIs
+
+Tasks:
+
+- Game catalogue.
+- Session creation.
+- Session retrieval.
+- Answer submission.
+- Completion.
+- Result retrieval.
+
+Acceptance:
+
+- Exactly three approved MVP games are supported.
+- Scores are calculated server-side.
+- Game secrets are not prematurely exposed.
+- Session ownership is enforced.
+
+## Phase 6 — Notifications, Communities and Location
+
+Tasks:
+
+- Notification retrieval.
+- Read-state updates.
+- Notification preferences.
+- Community endpoints.
+- Membership operations.
+- Approved location functionality.
+
+Acceptance:
+
+- User isolation is enforced.
+- Location privacy is respected.
+- Membership rules are enforced.
+- Notification states remain consistent.
+
+## Phase 7 — Moderation APIs
+
+Tasks:
+
+- Report submission.
+- Report retrieval.
+- Moderation actions.
+- User restrictions.
+- Audit records.
+
+Acceptance:
+
+- Privileged actions are protected.
+- Audit records are generated.
+- Unauthorized users cannot access administrative data.
+
+## Phase 8 — Realtime Integration
+
+Tasks:
+
+- Define approved event contracts.
+- Implement required channels.
+- Configure channel authorization.
+- Integrate frontend subscriptions.
+- Handle reconnection.
+- Handle duplicate events.
+- Verify privacy boundaries.
+
+Acceptance:
+
+- Required changes appear without manual refresh.
+- User-specific data is isolated.
+- Realtime failures do not corrupt database state.
+- The frontend can recover through normal API requests.
+
+## Phase 9 — Security, Performance and Production Readiness
+
+Tasks:
+
+- Run security tests.
+- Run cross-user authorization tests.
+- Run RLS tests.
+- Run concurrency tests.
+- Run realtime isolation tests.
+- Run API performance tests.
+- Verify logging and monitoring.
+- Verify deployment and rollback procedures.
+
+Acceptance:
+
+- No unresolved critical security findings.
+- No known destructive data risks.
+- API and realtime contracts are documented.
+- All critical tests pass.
+- Production deployment is verified.
+
+---
+
+# 29. REQUIRED PHASE COMPLETION REPORT
+
+At the end of each phase, provide a formal report.
+
+## KEA PARROT API & REALTIME IMPLEMENTATION REPORT
+
+**Specification:** MOMENT-API-004  
+**Phase:**  
+**Status:**  
+**Date:**  
+**Git checkpoint:**  
+
+### 1. Work completed
+
+List all completed requirements.
+
+### 2. Existing functionality preserved
+
+List the existing routes, integrations, database objects, and subscriptions preserved.
+
+### 3. Files changed
+
+List created, modified, and removed files with reasons.
+
+### 4. API changes
+
+For each endpoint, document:
+
+- Method.
+- Path.
+- Authentication.
+- Authorization.
+- Request schema.
+- Response schema.
+- Error behavior.
+- Database impact.
+
+### 5. Database impact
+
+Document:
+
+- Tables affected.
+- Functions affected.
+- Triggers affected.
+- Constraints.
+- Indexes.
+- RLS policies.
+- Migrations.
+
+### 6. Realtime impact
+
+Document:
+
+- Channels.
+- Events.
+- Authorization.
+- Subscription behavior.
+- Reconnection behavior.
+- Frontend consumers.
+
+### 7. Security verification
+
+Document:
+
+- Authentication tests.
+- Authorization tests.
+- Cross-user tests.
+- RLS tests.
+- Input validation tests.
+- Secret exposure checks.
+
+### 8. Performance verification
+
+Provide measured results where available.
+
+### 9. Tests
+
+List actual commands and results.
+
+### 10. Defects and limitations
+
+Identify unresolved defects and their severity.
+
+### 11. Open decisions
+
+List decisions requiring product or engineering approval.
+
+### 12. Regression findings
+
+Identify any existing functionality affected by the changes.
+
+### 13. Production readiness
+
+State whether the phase is:
+
+- Ready for review.
+- Blocked.
+- Ready for staging.
+- Ready for production approval.
+
+Never claim a test passed unless it was executed.
+
+---
+
+# 30. DEFINITION OF DONE
+
+The API and realtime implementation is complete only when all applicable criteria are satisfied.
+
+## API foundation
+
+- [ ] Existing API architecture has been audited.
+- [ ] Existing routes have been inventoried.
+- [ ] Response conventions are consistent.
+- [ ] Error handling is consistent.
+- [ ] Request validation is enforced.
+- [ ] API documentation reflects the actual implementation.
+
+## Authentication and authorization
+
+- [ ] Server-side authentication is verified.
+- [ ] Resource ownership is enforced.
+- [ ] Account restrictions are enforced.
+- [ ] Privileged operations are protected.
+- [ ] Cross-user access tests pass.
+- [ ] RLS policies are verified.
+
+## Functional APIs
+
+- [ ] Profile APIs work.
+- [ ] Discovery APIs work.
+- [ ] Post APIs work.
+- [ ] Comment APIs work.
+- [ ] Reaction APIs work.
+- [ ] Poll APIs work.
+- [ ] Game APIs work.
+- [ ] Notification APIs work.
+- [ ] Community APIs work.
+- [ ] Reporting and moderation APIs work.
+- [ ] Approved location APIs work.
+
+## Realtime
+
+- [ ] Required events are defined.
+- [ ] Channels are authorized.
+- [ ] User isolation is verified.
+- [ ] Duplicate event handling is implemented.
+- [ ] Reconnection behavior is tested.
+- [ ] Subscription cleanup works.
+- [ ] Sensitive data is not exposed.
+- [ ] API recovery works when realtime delivery fails.
+
+## Reliability and security
+
+- [ ] Critical operations are transaction-safe.
+- [ ] Duplicate requests are handled.
+- [ ] Rate limiting is implemented where required.
+- [ ] Sensitive data is excluded from logs.
+- [ ] Service-role credentials are protected.
+- [ ] No critical authorization vulnerabilities remain.
+- [ ] No destructive production migration is pending without approval.
+
+## Production readiness
+
+- [ ] Unit tests pass.
+- [ ] Integration tests pass.
+- [ ] Security tests pass.
+- [ ] RLS tests pass.
+- [ ] Realtime tests pass.
+- [ ] Build succeeds.
+- [ ] Staging verification is complete.
+- [ ] Monitoring is operational.
+- [ ] Rollback and recovery procedures are documented.
+- [ ] Git checkpoint is created.
+
+---
+
+# 31. FINAL INSTRUCTION TO THE IMPLEMENTATION AGENT
+
+You are implementing the API and realtime infrastructure for **Kea Parrot**, the current name of the application previously known as MOMENT.
+
+The Master PRD, Database Design & Security Specification, and UI/UX Implementation Specification collectively define the approved product requirements.
+
+This document defines how those requirements must be communicated and implemented through APIs and realtime systems.
+
+Your responsibility is not simply to create endpoints.
+
+You must establish a secure, consistent, reliable, and maintainable communication layer that connects the frontend to the authoritative backend.
+
+Before changing code:
+
+1. Audit the existing repository.
+2. Inspect the production database structure.
+3. Inspect current authentication and authorization.
+4. Inventory existing API routes.
+5. Inventory existing realtime subscriptions.
+6. Identify existing frontend consumers.
+7. Identify security and reliability weaknesses.
+8. Produce a non-destructive migration and implementation plan.
+
+During implementation:
+
+- Preserve existing production data.
+- Preserve working production APIs.
+- Avoid unnecessary architectural changes.
+- Do not introduce duplicate functionality.
+- Do not invent unresolved business rules.
+- Do not trust client-supplied identity or permissions.
+- Do not trust client-calculated game scores.
+- Do not trust client-side poll validation.
+- Do not bypass RLS.
+- Do not expose privileged credentials.
+- Do not publish sensitive information through realtime.
+- Do not declare success before the database confirms the operation.
+
+Implement one phase at a time.
+
+Test every phase before moving forward.
+
+Document all API contracts and realtime event behavior.
+
+Create Git checkpoints before risky changes and verify backup and recovery procedures before database migrations.
+
+**The final objective is a secure, production-ready API and realtime architecture for Kea Parrot that supports the approved product experience without compromising existing production functionality, data integrity, privacy, or security.**
