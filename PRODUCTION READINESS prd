@@ -1,0 +1,1554 @@
+# KEA PARROT — PROTOTYPE-TO-PRODUCTION READINESS
+## MASTER PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+**Document Type:** Product Hardening, Stabilisation & Production Readiness Specification  
+**Product:** KEA PARROT  
+**Version:** 1.0  
+**Status:** Implementation Baseline  
+**Target:** Existing MOMENT prototype → Production-ready application  
+**Platform:** Responsive Web Application / Progressive Web App (PWA)  
+**Initial Market:** Ghana  
+**Long-Term Vision:** Global  
+**Governing Document:** MOMENT Master Product Requirements Document (PRD)
+
+---
+
+# 1. EXECUTIVE OBJECTIVE
+
+## 1.1 Purpose
+
+MOMENT has an existing prototype and an established product direction. The objective of this project is to transform that prototype into a complete, dependable, secure, maintainable, performant and production-ready application.
+
+This is not a request to redesign the entire product, rebuild everything from scratch, or introduce new features indiscriminately.
+
+The coding agent must investigate the existing implementation, determine what works, identify what is incomplete or defective, and progressively bring every approved component to production standards.
+
+The transformation must cover:
+
+- Functional completeness.
+- Frontend and backend integration.
+- Database integrity.
+- Authentication and authorisation.
+- Application security.
+- Real-time functionality.
+- User experience and interface consistency.
+- Mobile and desktop responsiveness.
+- Performance and scalability.
+- Error handling and recovery.
+- Testing and quality assurance.
+- Monitoring and observability.
+- Deployment and release management.
+- Documentation and maintainability.
+- Privacy and regulatory readiness.
+
+## 1.2 Final objective
+
+At completion, MOMENT must no longer behave like a demonstration or experimental prototype.
+
+It must function as a real application where:
+
+1. Every production-approved feature performs its intended function.
+2. Every interactive interface is connected to its correct backend operation.
+3. Every important action is validated and securely processed.
+4. Data persists correctly and remains consistent.
+5. Real-time functionality works without requiring manual page refreshes.
+6. Users can navigate the application reliably on mobile, tablet and desktop.
+7. Errors are handled gracefully and do not silently corrupt application state.
+8. Administrative and moderation capabilities operate securely.
+9. Critical user journeys are tested and demonstrably functional.
+10. The application can be deployed, monitored, maintained and recovered.
+
+**Definition of success:** A user should be able to use MOMENT as a real product, not encounter a collection of partially functional screens.
+
+---
+
+# 2. GOVERNING PRINCIPLES
+
+These requirements are mandatory.
+
+## 2.1 Existing implementation comes first
+
+The coding agent MUST inspect the existing repository before making changes.
+
+It must not assume:
+
+- The project is empty.
+- The current architecture is incorrect.
+- Existing database tables can be replaced.
+- Existing authentication can be discarded.
+- Existing components need to be rewritten.
+- Existing features are incomplete without testing them.
+- Existing production data is disposable.
+
+Existing working functionality must be preserved unless a documented defect or approved improvement requires a change.
+
+## 2.2 No invented functionality
+
+The existing MOMENT Master PRD remains the source of truth for product functionality.
+
+The agent MUST NOT independently introduce:
+
+- New product features.
+- New user roles.
+- New business models.
+- New payment systems.
+- New database entities without justification.
+- Unapproved external services.
+- Unapproved architecture changes.
+- Unapproved user permissions.
+- Unapproved data collection.
+
+If an implementation detail is missing, the agent must document the ambiguity and propose a decision before proceeding.
+
+## 2.3 No cosmetic completion
+
+A button is not complete because it looks clickable.
+
+A page is not complete because it renders successfully.
+
+A feature is not complete because it works with hardcoded data.
+
+A real-time feature is not complete because it displays a simulated notification.
+
+A form is not complete because it accepts input.
+
+Completion requires a verified end-to-end workflow, including the frontend, backend, database, security controls, error handling and tests.
+
+## 2.4 No destructive shortcuts
+
+The agent MUST NOT:
+
+- Drop existing production tables.
+- Reset production databases.
+- Delete existing user records.
+- Replace existing authentication identifiers.
+- Remove existing database policies without reviewing their effects.
+- Disable security policies to make features work.
+- Replace real backend functionality with mock data.
+- Bypass failing tests by removing the tests.
+- Hide errors instead of fixing their causes.
+
+All potentially destructive changes require a documented impact assessment, backup or recovery strategy, and explicit approval.
+
+---
+
+# 3. PHASE 0 — FULL SYSTEM DISCOVERY AND BASELINE AUDIT
+
+**Priority: Critical**
+
+No implementation changes should begin until the agent understands the current system.
+
+## 3.1 Repository investigation
+
+Inspect:
+
+- Complete repository structure.
+- Application entry points.
+- Frontend framework and configuration.
+- Backend architecture.
+- Shared libraries and components.
+- Routing and navigation.
+- State management.
+- API endpoints and server actions.
+- Authentication implementation.
+- Database integration.
+- Realtime subscriptions.
+- File storage.
+- Environment configuration.
+- Background jobs and scheduled tasks.
+- Existing tests.
+- Build and deployment configuration.
+- Dependency versions.
+- Existing documentation.
+
+Identify abandoned, duplicated, disconnected, experimental and unused code.
+
+Do not delete anything merely because it appears unused. Establish whether it is referenced or required first.
+
+## 3.2 Database investigation
+
+Inspect the actual connected database and migration history.
+
+Review:
+
+- All existing tables.
+- Columns and data types.
+- Primary and foreign keys.
+- Unique constraints.
+- Indexes.
+- Enums.
+- Triggers.
+- Functions.
+- Views.
+- RLS policies.
+- Database permissions.
+- Storage buckets and policies.
+- Realtime publication configuration.
+- Existing records and relationships.
+- Migration ordering and inconsistencies.
+
+Identify:
+
+1. Missing relationships.
+2. Duplicate or conflicting constraints.
+3. Missing indexes.
+4. Unsafe access policies.
+5. Unprotected tables.
+6. Orphaned records.
+7. Inconsistent data.
+8. Incorrect assumptions between frontend and database.
+9. Schema differences between environments.
+10. Potential migration and data-loss risks.
+
+The audit must be read-only unless an independently approved audit operation requires otherwise.
+
+## 3.3 Feature inventory
+
+Create a complete inventory of every existing application feature.
+
+For each feature, document:
+
+| Field | Required information |
+|---|---|
+| Feature ID | Unique identifier |
+| Feature name | Existing feature |
+| Frontend status | Implemented, partial, missing |
+| Backend status | Implemented, partial, missing |
+| Database status | Implemented, partial, missing |
+| Security status | Verified, unverified, defective |
+| Test status | Passing, failing, absent |
+| Dependencies | Related modules |
+| Defects | Confirmed issues |
+| Priority | P0, P1, P2 or P3 |
+| Recommended action | Preserve, fix, complete, replace or remove |
+
+Use these implementation classifications:
+
+- **Verified:** Works end to end and passes required tests.
+- **Partial:** Some functionality exists but the complete workflow is missing.
+- **Broken:** Exists but does not work correctly.
+- **UI-only:** Interface exists without functional backend integration.
+- **Missing:** Required functionality does not exist.
+- **Unsafe:** Functionality exists but fails security or data-integrity requirements.
+- **Unverified:** Evidence is insufficient to establish its status.
+
+## 3.4 Audit deliverables
+
+Before implementation, produce:
+
+1. Repository Architecture Audit.
+2. Database and Data Integrity Audit.
+3. Authentication and Authorisation Audit.
+4. Feature Completeness Matrix.
+5. Security Vulnerability Report.
+6. UI/UX and Accessibility Audit.
+7. Performance Audit.
+8. Realtime and Notification Audit.
+9. Test Coverage Report.
+10. Deployment and Infrastructure Audit.
+11. Technical Debt Register.
+12. Prioritised Remediation Roadmap.
+
+Each finding must contain:
+
+- Finding ID.
+- Severity.
+- Affected component.
+- Evidence.
+- Reproduction steps where applicable.
+- Impact.
+- Root cause, where established.
+- Recommended solution.
+- Dependencies.
+- Acceptance criteria.
+
+Do not report speculative defects as confirmed vulnerabilities.
+
+### Phase 0 exit gate
+
+Implementation cannot begin until:
+
+- The existing system has been mapped.
+- Critical data risks have been identified.
+- Existing functionality has been classified.
+- Production and staging environments have been identified.
+- A remediation plan has been produced.
+- Destructive or architectural changes have been flagged for approval.
+- A Git checkpoint has been created or its absence documented.
+- Database backup and recovery arrangements have been verified before risky work.
+
+---
+
+# 4. PHASE 1 — FUNCTIONAL COMPLETENESS AND INTEGRATION
+
+**Priority: Critical**
+
+The goal is to make every approved MVP feature genuinely functional.
+
+Use the existing MOMENT Master PRD to determine the expected functionality.
+
+## 4.1 Application shell and navigation
+
+Verify:
+
+- Landing page loads correctly.
+- Navigation links lead to the correct destinations.
+- Mobile navigation works.
+- Desktop navigation works.
+- Protected routes enforce authentication.
+- Guest restrictions are respected.
+- Loading and error states are implemented.
+- Page refreshes do not break routing.
+- Deep links work.
+- Browser back and forward navigation work.
+- Unknown routes show a proper not-found page.
+
+## 4.2 Authentication and account management
+
+Verify end-to-end:
+
+- Registration.
+- Email verification.
+- Login.
+- Logout.
+- Password recovery.
+- Password reset.
+- Session persistence.
+- Session expiration.
+- Protected routes.
+- User profile creation.
+- Username uniqueness.
+- Profile editing.
+- Account deletion lifecycle.
+- Account suspension handling.
+- Authentication error handling.
+
+Requirements:
+
+- Never trust client-side role or identity claims without server verification.
+- Prevent users from accessing another user's private account data.
+- Handle expired and revoked sessions.
+- Do not expose authentication tokens or service-role credentials.
+- Ensure account deletion follows the approved data-retention and deletion policy.
+
+## 4.3 User profiles
+
+Verify:
+
+- Profile creation.
+- Profile retrieval.
+- Profile updates.
+- Avatar handling, where enabled.
+- Username validation.
+- Display name validation.
+- Bio validation.
+- Profile visibility.
+- Privacy settings.
+- Account status.
+
+All user-specific information must be protected by appropriate database and API permissions.
+
+## 4.4 Discovery and feeds
+
+Verify:
+
+- Nearby feed.
+- Global feed.
+- Trending feed.
+- Feed filtering.
+- Feed pagination.
+- Content loading.
+- Empty states.
+- Error states.
+- Refresh and update behaviour.
+- Duplicate prevention during pagination.
+- Content visibility restrictions.
+- Moderation-aware content filtering.
+
+Feeds must use actual backend data.
+
+The application must not present fake activity, fabricated users or hardcoded content as genuine user activity.
+
+## 4.5 Posts and comments
+
+Verify:
+
+- Post creation.
+- Anonymous posting.
+- Attributed posting.
+- Post retrieval.
+- Post editing where permitted.
+- Post deletion.
+- Reactions.
+- Reaction removal or modification.
+- Comment creation.
+- Comment editing.
+- Comment deletion.
+- Comment pagination.
+- Reporting.
+- Blocking.
+- Authorisation and ownership checks.
+
+Anonymous posts must remain internally associated with their authenticated creator for moderation and abuse prevention. The creator's identity must not be exposed publicly.
+
+## 4.6 Polls
+
+Verify:
+
+- Poll creation.
+- Option validation.
+- Single-choice voting.
+- Multiple-choice voting.
+- Vote submission.
+- Vote updates, where permitted.
+- Poll expiration.
+- Result calculation.
+- Duplicate vote prevention.
+- Poll visibility.
+- Realtime result updates.
+
+Voting must be transaction-safe.
+
+The backend must enforce voting rules. Client-side restrictions alone are insufficient.
+
+## 4.7 Micro-games
+
+The MVP must retain the three approved games:
+
+- QuickMind.
+- This or That.
+- Mystery Word.
+
+Verify:
+
+- Game discovery.
+- Game instructions.
+- Session creation.
+- Question delivery.
+- Answer submission.
+- Server-side validation.
+- Scoring.
+- Session completion.
+- Result presentation.
+- Duplicate submission prevention.
+- Invalid session handling.
+
+The agent must not invent scoring formulas, question difficulty, game rules or attempt limits where the governing specification has not approved them.
+
+## 4.8 Communities
+
+Verify all existing MVP community functionality against the governing PRD.
+
+Where implemented, confirm:
+
+- Community retrieval.
+- Membership.
+- Membership restrictions.
+- Community-specific discovery.
+- Community activity.
+- Visibility and permissions.
+
+Do not silently introduce advanced community-management functionality reserved for a later phase.
+
+## 4.9 Notifications
+
+Verify:
+
+- Notification generation.
+- Notification delivery.
+- Notification persistence.
+- Read/unread status.
+- Notification preferences.
+- Duplicate prevention.
+- Relevant user targeting.
+- Notification permissions.
+- Failed delivery handling.
+
+In-app notifications are mandatory.
+
+Web push must only be considered complete if permission handling, subscription management, delivery and failure handling all work.
+
+## 4.10 Feature integration rule
+
+Every feature must be tested across the entire path:
+
+**User interaction → frontend validation → authenticated backend operation → database transaction → response → UI update.**
+
+For realtime functionality:
+
+**Database change → authorised realtime event → correct subscriber → UI update.**
+
+Any incomplete part must be documented and resolved before that feature is marked production-ready.
+
+---
+
+# 5. PHASE 2 — DATABASE, BACKEND AND DATA INTEGRITY HARDENING
+
+**Priority: Critical**
+
+## 5.1 Database integrity
+
+Verify that all relevant tables have:
+
+- Appropriate primary keys.
+- Correct foreign keys.
+- Necessary unique constraints.
+- Appropriate nullability.
+- Correct data types.
+- Appropriate indexes.
+- Referential integrity.
+- Consistent timestamp handling.
+- Suitable deletion behaviour.
+
+Review every relationship against actual application workflows.
+
+## 5.2 Transaction safety
+
+Critical operations must use safe database transactions or equivalent atomic operations.
+
+Examples:
+
+- Poll voting.
+- Reaction creation and updates.
+- Game completion and score recording.
+- Account deletion.
+- Moderation enforcement.
+- Membership changes.
+
+Prevent race conditions, duplicate submissions and partial writes.
+
+## 5.3 API and backend validation
+
+All server-side inputs must be validated.
+
+Requirements:
+
+- Validate request bodies and parameters.
+- Reject malformed requests.
+- Enforce business rules server-side.
+- Enforce ownership.
+- Enforce role permissions.
+- Return consistent errors.
+- Avoid exposing database internals.
+- Avoid leaking private information.
+- Apply rate limits to abuse-prone endpoints.
+
+Use the existing approved validation approach unless a documented change is necessary.
+
+## 5.4 Row Level Security
+
+Review all exposed Supabase tables.
+
+For each table, document:
+
+- Whether RLS is enabled.
+- Which roles can read records.
+- Which roles can insert records.
+- Which roles can update records.
+- Which roles can delete records.
+- Whether ownership is enforced.
+- Whether privileged access is isolated.
+
+Test policies using realistic authenticated and unauthenticated user scenarios.
+
+Never disable RLS as a shortcut.
+
+Never expose the Supabase service-role key to the browser.
+
+## 5.5 Migration safety
+
+All schema modifications must use version-controlled migrations.
+
+For each migration, provide:
+
+- Purpose.
+- Affected objects.
+- Compatibility assessment.
+- Data migration requirements.
+- Rollback or forward-recovery plan.
+- Validation steps.
+
+Production migrations must be reviewed and approved before execution.
+
+A migration that could destroy or invalidate existing user data must never be executed without explicit approval.
+
+---
+
+# 6. PHASE 3 — SECURITY AND PRIVACY HARDENING
+
+**Priority: Critical — Release Blocking**
+
+Conduct a comprehensive security review.
+
+## 6.1 Authentication security
+
+Verify:
+
+- Secure session handling.
+- Token validation.
+- Session revocation.
+- Password reset security.
+- Email verification.
+- Protection against account enumeration where appropriate.
+- OAuth callback validation, if enabled.
+- Protection against session fixation.
+- Appropriate cookie settings.
+
+## 6.2 Authorisation security
+
+Test:
+
+- Horizontal privilege escalation.
+- Vertical privilege escalation.
+- Access to another user's resources.
+- Moderator privilege boundaries.
+- Administrator privilege boundaries.
+- Super-administrator protection.
+- Unauthorised role changes.
+- Direct API access that bypasses UI restrictions.
+
+The backend must enforce all permissions.
+
+## 6.3 Application vulnerability testing
+
+Assess:
+
+- Cross-site scripting (XSS).
+- SQL injection.
+- Cross-site request forgery (CSRF), where applicable.
+- Broken access control.
+- Insecure direct object references.
+- Server-side request forgery (SSRF), where applicable.
+- Open redirects.
+- File upload abuse.
+- Dependency vulnerabilities.
+- Secret exposure.
+- Rate-limit bypass.
+- Brute-force attacks.
+- Spam and automated abuse.
+- Insecure error messages.
+
+Use established security testing tools and manual review where appropriate.
+
+Do not claim that the application is penetration-tested unless actual testing has been conducted.
+
+## 6.4 Privacy controls
+
+Verify:
+
+- Collection minimisation.
+- User consent records.
+- Account data access.
+- Data correction.
+- Account deletion.
+- Data retention rules.
+- Anonymous content privacy.
+- Location privacy.
+- Notification preferences.
+- Administrative access restrictions.
+- Audit logging.
+
+Exact GPS coordinates must never be exposed in public content or profiles.
+
+Location-based discovery must use the approved approximate-location model.
+
+Do not introduce background location tracking.
+
+## 6.5 Moderation and abuse prevention
+
+Verify:
+
+- Reporting functionality.
+- Report persistence.
+- Report status management.
+- Moderator access controls.
+- Content removal.
+- User restrictions.
+- Account suspension.
+- Blocking.
+- Moderation audit logs.
+- Enforcement consistency.
+- Appropriate user feedback.
+- Incident escalation.
+
+Moderation actions must be auditable.
+
+Privileged users must not be able to silently alter or erase moderation history.
+
+## 6.6 Compliance readiness
+
+Assess readiness for:
+
+- Ghana Data Protection Act, 2012 (Act 843).
+- Applicable Data Protection Commission requirements.
+- Relevant privacy and consumer protection obligations in future markets.
+- Appropriate terms of service.
+- Privacy policy.
+- Cookie and tracking disclosures where applicable.
+- Age eligibility and consent requirements.
+
+Obtain qualified legal review where necessary.
+
+Do not describe the application as legally compliant merely because technical controls have been implemented.
+
+---
+
+# 7. PHASE 4 — UI/UX, RESPONSIVENESS AND ACCESSIBILITY
+
+**Priority: High**
+
+The objective is to make the existing application feel coherent, polished and dependable across devices.
+
+This phase is not permission to redesign the product's identity or introduce new features.
+
+## 7.1 Design system consistency
+
+Audit and standardise:
+
+- Typography.
+- Colour palette.
+- Spacing.
+- Buttons.
+- Form controls.
+- Cards.
+- Navigation.
+- Dialogs.
+- Dropdowns.
+- Toast notifications.
+- Loading indicators.
+- Empty states.
+- Error states.
+- Confirmation dialogs.
+- Icons.
+- Responsive breakpoints.
+
+Reuse existing components where possible.
+
+Avoid creating duplicate components that perform the same function.
+
+## 7.2 Mobile experience
+
+Test on narrow mobile screens and real devices where possible.
+
+Verify:
+
+- Navigation.
+- Feed scrolling.
+- Post creation.
+- Poll participation.
+- Game interactions.
+- Profile editing.
+- Notifications.
+- Modals and dialogs.
+- Keyboard behaviour.
+- Input visibility.
+- Safe-area spacing.
+- Viewport height behaviour.
+- Sticky and fixed elements.
+- Touch targets.
+- Horizontal overflow.
+
+There must be no:
+
+- Unintended blank spaces.
+- Overlapping interface elements.
+- Hidden primary actions.
+- Unusable forms.
+- Broken scrolling.
+- Content trapped behind fixed navigation.
+- Unintentional horizontal scrolling.
+
+## 7.3 Desktop and tablet
+
+Verify:
+
+- Appropriate content width.
+- Consistent layout.
+- Navigation alignment.
+- Sidebar behaviour.
+- Grid layouts.
+- Responsive cards.
+- Modal positioning.
+- Table usability.
+- Keyboard navigation.
+
+## 7.4 Interaction quality
+
+Every interactive component must provide appropriate:
+
+- Loading feedback.
+- Success feedback.
+- Failure feedback.
+- Disabled states.
+- Validation feedback.
+- Confirmation for destructive actions.
+- Prevention of accidental duplicate submissions.
+
+Do not use fake progress indicators or success messages.
+
+## 7.5 Accessibility
+
+Target WCAG 2.2 AA.
+
+Verify:
+
+- Semantic HTML.
+- Keyboard accessibility.
+- Visible focus indicators.
+- Accessible labels.
+- Appropriate contrast.
+- Screen-reader compatibility.
+- Form error announcements.
+- Dialog focus management.
+- Reduced-motion support.
+- Alternative text for meaningful images.
+
+Accessibility must be tested, not assumed.
+
+---
+
+# 8. PHASE 5 — REALTIME, BACKGROUND PROCESSING AND RELIABILITY
+
+**Priority: High**
+
+MOMENT must provide dependable updates without requiring users to refresh pages manually.
+
+## 8.1 Realtime functionality
+
+Review all realtime subscriptions.
+
+Verify:
+
+- Correct subscription channels.
+- Authorisation.
+- User-specific event delivery.
+- Subscription cleanup.
+- Reconnection behaviour.
+- Duplicate event prevention.
+- Stale state prevention.
+- Database consistency.
+- Event ordering where required.
+
+Realtime events must never replace the database as the source of truth.
+
+## 8.2 Background jobs
+
+Review scheduled and asynchronous processes.
+
+Where required by approved functionality, verify:
+
+- Poll expiration.
+- Notification processing.
+- Scheduled maintenance.
+- Analytics processing.
+- Cleanup tasks.
+- Retry handling.
+- Failed-job visibility.
+- Idempotency.
+
+Do not introduce a new queue infrastructure without a documented need.
+
+## 8.3 Failure recovery
+
+The application must handle:
+
+- Network interruption.
+- Database unavailability.
+- Authentication expiration.
+- Realtime disconnection.
+- Failed requests.
+- Slow responses.
+- Partial operation failures.
+- Duplicate requests.
+- Server errors.
+
+Users must receive meaningful feedback and safe retry options.
+
+Critical operations must not be silently repeated in a way that duplicates data.
+
+---
+
+# 9. PHASE 6 — PERFORMANCE AND SCALABILITY
+
+**Priority: High**
+
+Performance optimisation must be based on measurement.
+
+## 9.1 Frontend performance
+
+Assess:
+
+- Initial page load.
+- JavaScript bundle size.
+- Image optimisation.
+- Font loading.
+- Rendering performance.
+- Unnecessary component rerenders.
+- Lazy loading.
+- Code splitting.
+- Caching.
+- Network requests.
+
+Target Core Web Vitals at the 75th percentile:
+
+| Metric | Target |
+|---|---:|
+| Largest Contentful Paint | ≤ 2.5 seconds |
+| Interaction to Next Paint | ≤ 200 ms |
+| Cumulative Layout Shift | ≤ 0.1 |
+
+## 9.2 Backend performance
+
+Assess:
+
+- API response times.
+- Database query performance.
+- Missing indexes.
+- N+1 queries.
+- Connection usage.
+- Pagination.
+- Realtime overhead.
+- Expensive aggregation.
+- Unnecessary database calls.
+
+Initial standard read API target: p95 below 500 ms under the agreed test workload.
+
+## 9.3 Feed and query efficiency
+
+Verify:
+
+- Cursor-based pagination.
+- Efficient feed retrieval.
+- Appropriate indexes.
+- Limited payload sizes.
+- Avoidance of unnecessary joins.
+- Efficient reaction and comment counts.
+- Appropriate caching where safe.
+
+Do not introduce caching that causes incorrect privacy behaviour or stale critical data.
+
+## 9.4 Load testing
+
+Develop a load-testing plan using realistic application workflows.
+
+Test:
+
+- Concurrent users.
+- Feed requests.
+- Poll participation.
+- Post creation.
+- Realtime subscriptions.
+- Game sessions.
+- Authentication.
+- Notification processing.
+
+The expected launch workload must be agreed before final capacity targets are approved.
+
+Document bottlenecks and actual test results.
+
+Do not claim scalability without evidence.
+
+---
+
+# 10. PHASE 7 — TESTING AND QUALITY ASSURANCE
+
+**Priority: Critical**
+
+No feature can be declared production-ready without appropriate testing.
+
+## 10.1 Unit testing
+
+Test:
+
+- Business logic.
+- Validation.
+- Permission rules.
+- Utility functions.
+- Scoring logic.
+- Data transformations.
+- Error handling.
+
+## 10.2 Integration testing
+
+Test:
+
+- Frontend/backend communication.
+- Authentication.
+- Database operations.
+- RLS.
+- Realtime.
+- Notifications.
+- Storage.
+- Moderation.
+- API validation.
+
+## 10.3 End-to-end testing
+
+Create automated user journeys.
+
+### Journey A: Guest
+
+1. Open MOMENT.
+2. Browse public content.
+3. Navigate feeds.
+4. Attempt a protected action.
+5. Receive the correct authentication requirement.
+
+### Journey B: Registration and login
+
+1. Register.
+2. Verify email.
+3. Log in.
+4. Complete profile setup.
+5. Navigate the application.
+6. Log out.
+7. Confirm protected access is revoked.
+
+### Journey C: Social interaction
+
+1. Create an attributed post.
+2. Create an anonymous post.
+3. View posts.
+4. React to a post.
+5. Comment.
+6. Edit or delete permitted content.
+7. Verify persistence.
+
+### Journey D: Poll participation
+
+1. Create a poll.
+2. Publish it.
+3. Participate as another user.
+4. Verify vote integrity.
+5. Confirm result calculations.
+6. Confirm realtime updates.
+7. Test duplicate voting restrictions.
+
+### Journey E: Micro-games
+
+1. Open a game.
+2. Start a session.
+3. Submit answers.
+4. Complete the session.
+5. Verify server-calculated results.
+6. Attempt invalid or duplicate submission.
+
+### Journey F: Safety and moderation
+
+1. Report content.
+2. Verify report creation.
+3. Access the moderator dashboard.
+4. Review the report.
+5. Apply an authorised action.
+6. Verify audit records.
+7. Confirm the appropriate user-facing result.
+
+## 10.4 Regression testing
+
+After every significant change, test affected existing functionality.
+
+A fix must not introduce new defects in unrelated modules.
+
+## 10.5 Browser and device testing
+
+Test supported current versions of:
+
+- Chrome.
+- Safari.
+- Firefox.
+- Edge.
+
+Include representative:
+
+- Android devices.
+- iPhones.
+- Tablets.
+- Desktop screens.
+
+Document any unsupported browsers or platform limitations.
+
+## 10.6 Release-blocking test failures
+
+The following failures block production release:
+
+- Authentication bypass.
+- Unauthorised data access.
+- Data loss.
+- Broken database relationships.
+- Poll vote corruption.
+- Incorrect permissions.
+- Exposed secrets.
+- Critical security vulnerabilities.
+- Broken account deletion.
+- Unusable primary mobile journeys.
+- Critical application crashes.
+
+---
+
+# 11. PHASE 8 — OBSERVABILITY, ADMINISTRATION AND OPERATIONS
+
+**Priority: High**
+
+The application must be manageable after launch.
+
+## 11.1 Error monitoring
+
+Implement or verify error monitoring.
+
+Capture:
+
+- Frontend errors.
+- Backend exceptions.
+- Failed API operations.
+- Database errors.
+- Realtime failures.
+- Background job failures.
+- Deployment failures.
+
+Errors should include sufficient diagnostic context without exposing passwords, tokens, private content or unnecessary personal information.
+
+## 11.2 Logging
+
+Establish consistent structured logging.
+
+Include:
+
+- Timestamp.
+- Environment.
+- Severity.
+- Component.
+- Operation.
+- Correlation or request identifier.
+- Relevant diagnostic information.
+
+Avoid logging secrets and sensitive user information.
+
+## 11.3 Monitoring dashboard
+
+Monitor:
+
+- Application availability.
+- Error rates.
+- API latency.
+- Database health.
+- Authentication failures.
+- Realtime connection health.
+- Background job failures.
+- User registrations.
+- Active users.
+- Feed activity.
+- Poll activity.
+- Game completion.
+- Reports and moderation activity.
+
+## 11.4 Alerts
+
+Establish alerts for:
+
+- Application downtime.
+- Significant error-rate increases.
+- Unusual authentication activity.
+- Database failures.
+- Failed background jobs.
+- High API latency.
+- Critical security events.
+- Storage capacity concerns.
+
+Alert thresholds must be documented and configurable.
+
+## 11.5 Administration
+
+Verify existing administrative functionality:
+
+- User management.
+- Content management.
+- Reports.
+- Moderation actions.
+- Role management.
+- Audit logs.
+- Platform configuration.
+- Operational visibility.
+
+Administrative interfaces must enforce backend permissions and record privileged actions.
+
+---
+
+# 12. PHASE 9 — DEPLOYMENT AND PRODUCTION INFRASTRUCTURE
+
+**Priority: Critical**
+
+## 12.1 Environment separation
+
+Maintain clearly separated:
+
+- Local development.
+- Staging.
+- Production.
+
+Each environment must use the correct:
+
+- Database.
+- Authentication configuration.
+- API credentials.
+- Storage configuration.
+- Realtime configuration.
+- Monitoring configuration.
+- Environment variables.
+
+Never accidentally connect local or staging operations to production resources.
+
+## 12.2 Environment secrets
+
+Verify:
+
+- Secrets are not committed to Git.
+- Public and private environment variables are distinguished.
+- Service-role credentials remain server-only.
+- Credentials can be rotated.
+- Production secrets are configured securely.
+- Example environment files contain placeholders only.
+
+## 12.3 Continuous integration
+
+The CI pipeline must include:
+
+1. Dependency installation.
+2. Formatting checks.
+3. Linting.
+4. Type checking.
+5. Unit tests.
+6. Integration tests.
+7. Build verification.
+8. Security and dependency checks.
+9. Migration validation.
+10. Required approval gates.
+
+A failed critical check must prevent deployment.
+
+## 12.4 Deployment process
+
+Establish a documented release process:
+
+1. Complete development.
+2. Run automated tests.
+3. Deploy to staging.
+4. Run staging smoke tests.
+5. Review migrations.
+6. Obtain release approval.
+7. Back up production data where required.
+8. Apply approved production migrations.
+9. Deploy the application.
+10. Verify critical workflows.
+11. Monitor application health.
+12. Record release details.
+
+## 12.5 Rollback and recovery
+
+Document:
+
+- Application rollback procedure.
+- Database recovery strategy.
+- Migration recovery strategy.
+- Backup schedule.
+- Backup retention.
+- Recovery access.
+- Incident escalation.
+
+A database rollback must never be assumed safe if it could discard user-generated data.
+
+Where reversing a migration is unsafe, define a forward-recovery strategy.
+
+Verify that backups can actually be restored.
+
+## 12.6 Production smoke tests
+
+After deployment, verify:
+
+- Landing page.
+- Registration.
+- Login.
+- Session management.
+- Feed loading.
+- Post creation.
+- Poll voting.
+- Game sessions.
+- Notifications.
+- Moderation access.
+- Database connectivity.
+- Realtime updates.
+- Mobile navigation.
+
+---
+
+# 13. PHASE 10 — DOCUMENTATION AND MAINTAINABILITY
+
+**Priority: Medium**
+
+Produce and maintain:
+
+- Repository architecture documentation.
+- Database schema documentation.
+- API documentation.
+- Environment setup guide.
+- Authentication and permissions documentation.
+- Realtime documentation.
+- Migration procedures.
+- Deployment guide.
+- Backup and recovery guide.
+- Testing guide.
+- Security controls documentation.
+- Incident response procedures.
+- Known issues register.
+
+All documentation must reflect the actual implementation.
+
+Do not document intended behaviour as completed behaviour without verification.
+
+---
+
+# 14. PRODUCTION READINESS ACCEPTANCE GATES
+
+The application must pass every mandatory gate before public production release.
+
+| Gate | Requirement | Release condition |
+|---|---|---|
+| PR-01 | Repository audit | Complete |
+| PR-02 | Feature completeness | All approved MVP features verified |
+| PR-03 | Authentication | Critical flows pass |
+| PR-04 | Authorisation | No unresolved critical access-control defects |
+| PR-05 | Database integrity | No unresolved critical data-integrity defects |
+| PR-06 | RLS and backend security | Required policies tested |
+| PR-07 | Realtime | Critical approved flows verified |
+| PR-08 | Mobile UX | Primary journeys pass |
+| PR-09 | Accessibility | Agreed WCAG 2.2 AA checks completed |
+| PR-10 | Performance | Agreed performance targets measured |
+| PR-11 | Automated testing | Required suites pass |
+| PR-12 | Monitoring | Operational monitoring active |
+| PR-13 | Backups | Backup and recovery verified |
+| PR-14 | Deployment | Staging and production procedures verified |
+| PR-15 | Privacy | Required technical controls and legal review completed |
+| PR-16 | Documentation | Operational documentation complete |
+
+A gate cannot be marked complete without evidence.
+
+## 14.1 Severity definitions
+
+**P0 — Critical**
+
+Immediate security, privacy, data-loss or system-integrity threat. Blocks release and may require immediate incident response.
+
+**P1 — High**
+
+Major feature failure, serious access-control weakness, broken primary journey or significant reliability problem. Blocks release.
+
+**P2 — Medium**
+
+Non-critical defect or degraded functionality with an acceptable documented workaround. Requires a planned fix and approval before release.
+
+**P3 — Low**
+
+Minor visual or operational issue with limited user impact. May be deferred with documented acceptance.
+
+No P0 or P1 issue may remain unresolved at production release.
+
+---
+
+# 15. IMPLEMENTATION ROADMAP
+
+The work must be executed in controlled phases.
+
+| Phase | Scope | Exit requirement |
+|---|---|---|
+| 0 | System discovery and audits | Approved baseline and remediation plan |
+| 1 | Functional completion and integration | Approved MVP features work end to end |
+| 2 | Database and backend hardening | Integrity and permissions verified |
+| 3 | Security and privacy | Critical security findings resolved |
+| 4 | UI/UX and accessibility | Responsive and accessible primary journeys |
+| 5 | Realtime and reliability | Verified updates and recovery |
+| 6 | Performance and scalability | Measured targets achieved or formally approved |
+| 7 | Testing and regression | Required test suites pass |
+| 8 | Monitoring and operations | Operational visibility established |
+| 9 | Deployment and infrastructure | Release and recovery processes verified |
+| 10 | Documentation and final sign-off | Production readiness approved |
+
+Phases may overlap only where dependencies permit and the change is documented.
+
+The agent must not skip a phase simply because the implementation appears visually complete.
+
+---
+
+# 16. CHANGE CONTROL AND AI CODING AGENT GOVERNANCE
+
+These instructions govern every implementation session.
+
+## 16.1 Before each phase
+
+Produce a phase execution plan containing:
+
+- Objectives.
+- Requirement IDs.
+- Existing implementation affected.
+- Files and modules affected.
+- Database objects affected.
+- API and integration changes.
+- Security implications.
+- Dependencies.
+- Tests required.
+- Migration requirements.
+- Backup requirements.
+- Rollback or recovery approach.
+- Acceptance criteria.
+
+## 16.2 During implementation
+
+The agent MUST:
+
+- Work incrementally.
+- Preserve existing functionality.
+- Follow existing conventions unless a change is approved.
+- Use shared components where appropriate.
+- Avoid unnecessary duplication.
+- Validate all server-side inputs.
+- Enforce server-side permissions.
+- Write or update tests.
+- Keep migrations version-controlled.
+- Report unexpected discoveries.
+- Stop when a change creates an unapproved architectural or data-integrity risk.
+
+## 16.3 Git discipline
+
+Before risky work:
+
+- Check Git status.
+- Identify uncommitted user changes.
+- Do not overwrite unrelated work.
+- Create an appropriate checkpoint after confirming the working tree is safe.
+
+After completing each phase:
+
+- Review the diff.
+- Run relevant tests.
+- Record changes.
+- Commit using a descriptive message where authorised.
+- Preserve a clear rollback point.
+
+Never use destructive Git operations to clean up the repository without explicit approval.
+
+## 16.4 Phase completion report
+
+Every phase must end with a formal report:
+
+1. Phase name.
+2. Objectives completed.
+3. Requirement IDs addressed.
+4. Files created.
+5. Files modified.
+6. Files removed and justification.
+7. Database changes.
+8. API changes.
+9. Security changes.
+10. Tests executed.
+11. Test results.
+12. Defects discovered.
+13. Outstanding issues.
+14. Risks.
+15. Deployment implications.
+16. Git commit or checkpoint reference.
+17. Exit-gate assessment.
+
+The agent must distinguish between completed, partially completed, blocked and unverified work.
+
+## 16.5 Mandatory approval points
+
+Obtain explicit approval before:
+
+- Replacing the existing architecture.
+- Introducing a new infrastructure service.
+- Changing authentication architecture.
+- Changing user roles or permissions.
+- Performing destructive database operations.
+- Removing existing product functionality.
+- Changing the approved product scope.
+- Running risky production migrations.
+- Deleting production records.
+- Changing billing or payment functionality.
+- Launching public production.
+
+---
+
+# 17. FINAL DEFINITION OF DONE
+
+MOMENT can be declared production-ready only when all the following are true:
+
+- [ ] Existing application has been fully audited.
+- [ ] All approved MVP features have verified implementation status.
+- [ ] All required MVP user journeys work end to end.
+- [ ] No critical feature depends on mock data.
+- [ ] Authentication and authorisation are verified.
+- [ ] Database relationships and integrity are verified.
+- [ ] RLS and backend permissions are tested.
+- [ ] Critical security findings are resolved.
+- [ ] Privacy and account lifecycle requirements are implemented.
+- [ ] Moderation and abuse-prevention workflows function.
+- [ ] Realtime features work reliably.
+- [ ] Mobile, tablet and desktop experiences are verified.
+- [ ] Accessibility checks have been completed.
+- [ ] Performance has been measured.
+- [ ] Unit, integration and end-to-end tests pass.
+- [ ] Regression testing is complete.
+- [ ] Monitoring and alerting are configured.
+- [ ] Backup and recovery procedures are tested.
+- [ ] CI/CD and deployment processes are documented.
+- [ ] Production environment configuration is verified.
+- [ ] No P0 or P1 defects remain.
+- [ ] Documentation reflects the actual system.
+- [ ] Final production readiness report is approved.
+
+---
+
+# 18. FINAL INSTRUCTION TO THE AI CODING AGENT
+
+You are responsible for transforming the existing MOMENT prototype into a production-ready application.
+
+You are not authorised to independently reinterpret the product, expand its scope, replace its architecture or discard existing implementation.
+
+Your first responsibility is to understand the system exactly as it currently exists.
+
+Your second responsibility is to establish the gap between the current implementation and the approved MOMENT product requirements.
+
+Your third responsibility is to close those gaps systematically, safely and with verifiable evidence.
+
+**Execution rules:**
+
+1. Begin with Phase 0 only.
+2. Do not begin large-scale implementation before completing the audit.
+3. Do not assume that an existing feature is broken or complete without verification.
+4. Do not replace working functionality simply because you prefer another implementation.
+5. Do not introduce unapproved features.
+6. Do not compromise security to make a feature work.
+7. Do not perform destructive database or Git operations without approval.
+8. Do not mark a task complete without evidence.
+9. Do not hide incomplete work behind polished UI.
+10. Do not skip tests or release gates.
+11. Maintain a requirement-to-implementation-to-test traceability record.
+12. Report blockers honestly and request decisions when requirements are ambiguous.
+
+**Your first deliverable must be the MOMENT Prototype-to-Production Baseline Audit Report.**
+
+It must establish:
+
+- What currently exists.
+- What genuinely works.
+- What is partially implemented.
+- What is broken.
+- What is missing.
+- What is unsafe.
+- What must be preserved.
+- What must be repaired.
+- What must be completed.
+- What requires approval.
+- The recommended implementation sequence.
+
+Do not start modifying the application until the baseline audit and Phase 0 exit criteria have been reviewed and approved.
+
+**The ultimate standard is not whether MOMENT builds successfully. It is whether MOMENT works reliably, securely and consistently as a real application for real users.**
