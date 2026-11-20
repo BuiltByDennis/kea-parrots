@@ -1,0 +1,2089 @@
+# kea parrot — UI/UX IMPLEMENTATION SPECIFICATION
+
+**Document ID:** kea parrot-UX-003  
+**Version:** 1.0  
+**Status:** Implementation Specification — Subject to Product and Design Approval  
+**Product:** kea parrot  
+**Platform:** Responsive Web Application / Progressive Web App (PWA)  
+**Related Documents:**
+- MOMENT Master Product Requirements Document (MOMENT-PRD-001)
+- MOMENT Database Design & Security Specification (MOMENT-DBS-002)
+
+---
+
+# 1. DOCUMENT PURPOSE
+
+## 1.1 Purpose
+
+This document defines how MOMENT's approved product requirements must be translated into a consistent, responsive, accessible, and production-ready user interface.
+
+It provides the implementation blueprint for:
+
+- User-facing screens and page layouts.
+- Navigation and information architecture.
+- Design system and reusable UI components.
+- Responsive behavior across mobile, tablet, and desktop.
+- User interactions and expected application behavior.
+- Loading, empty, error, offline, and permission states.
+- Authentication and onboarding experiences.
+- Discovery feeds, posts, polls, and games.
+- Notifications, profiles, and moderation interfaces.
+- Accessibility and usability requirements.
+- UI testing and acceptance criteria.
+
+The objective is to ensure that the implementation agent builds a cohesive application rather than a collection of disconnected pages.
+
+## 1.2 Authority and precedence
+
+The Master PRD remains the authoritative source for product functionality and scope.
+
+This document governs the presentation and interaction of those approved capabilities.
+
+The Database Design & Security Specification governs data access and database-related behavior.
+
+If any conflict exists:
+
+1. Master PRD controls product scope and functional requirements.
+2. Database Specification controls database and data-security requirements.
+3. This document controls approved interface and interaction requirements.
+4. Existing production behavior and data must be investigated before changes are made.
+
+The implementation agent must not use this document to justify introducing unapproved functionality.
+
+## 1.3 Implementation principles
+
+Every interface must follow these principles:
+
+1. **Mobile-first:** Design and implement the mobile experience first, then enhance it for larger screens.
+2. **Fast participation:** Users should be able to understand and interact with the main experience quickly.
+3. **Clarity:** Every button, icon, navigation item, and interaction must have a clear purpose.
+4. **Consistency:** Reuse established components instead of creating slightly different versions of the same interface.
+5. **Accessibility:** Interfaces must be usable with assistive technologies and keyboard navigation.
+6. **Privacy:** Anonymous participation and location features must not expose information users have not agreed to share.
+7. **Real functionality:** No decorative controls that appear interactive but do nothing.
+8. **Responsive integrity:** No horizontal overflow, clipped content, broken layouts, or obstructed input fields.
+9. **Progressive enhancement:** Core functionality must remain usable when optional browser capabilities are unavailable.
+10. **Production quality:** Loading, errors, empty states, and unexpected behavior must be intentionally designed.
+
+---
+
+# 2. DESIGN DIRECTION
+
+## 2.1 Product experience
+
+MOMENT should feel like a modern social discovery and micro-entertainment platform.
+
+The interface should communicate:
+
+- Discovery.
+- Spontaneity.
+- Participation.
+- Entertainment.
+- Human connection.
+- Community activity.
+
+The application must not visually or functionally become a conventional follower-centric social network.
+
+The main experience should encourage users to discover something interesting, participate, and continue exploring without unnecessary complexity.
+
+## 2.2 Visual design principles
+
+The implementation should use:
+
+- Clear visual hierarchy.
+- Readable typography.
+- Consistent spacing.
+- Well-defined content cards.
+- Distinct primary and secondary actions.
+- Subtle and purposeful motion.
+- Consistent iconography.
+- Appropriate contrast.
+- Clean, uncluttered layouts.
+- Predictable navigation.
+
+Avoid:
+
+- Excessive gradients.
+- Excessive shadows.
+- Unnecessary animations.
+- Overloaded dashboards.
+- Excessively rounded components used inconsistently.
+- Tiny interactive targets.
+- Unnecessary confirmation dialogs.
+- Uncontrolled visual differences between pages.
+
+## 2.3 Brand and design decisions requiring approval
+
+The following values must not be treated as approved brand decisions unless confirmed by the existing project or product owner:
+
+| Design decision | Status |
+|---|---|
+| Official brand logo | Inspect existing assets |
+| Primary brand color | Approval required |
+| Secondary brand color | Approval required |
+| Accent colors | Approval required |
+| Typography family | Approval required |
+| Official icon style | Inspect existing implementation |
+| Border radius system | Proposed |
+| Shadow system | Proposed |
+| Animation language | Proposed |
+| Dark mode | Product decision required |
+| Light mode | Product decision required |
+| Final illustrations | Approval required |
+
+The agent must first inspect existing branding, assets, design tokens, and implemented screens.
+
+Do not replace an existing approved brand identity simply because a different visual direction seems more attractive.
+
+---
+
+# 3. INFORMATION ARCHITECTURE
+
+## 3.1 Primary navigation
+
+The MVP contains five product pillars:
+
+1. Discover
+2. Interact
+3. Play
+4. Explore
+5. Evolve
+
+These pillars must be represented consistently in the interface, but their presentation must not imply functionality that is outside the MVP.
+
+### Navigation responsibilities
+
+| Pillar | MVP responsibility |
+|---|---|
+| Discover | Nearby, global, and trending content discovery |
+| Interact | Posts, comments, reactions, and polls |
+| Play | QuickMind, This or That, and Mystery Word |
+| Explore | Discovery through available communities and approved location experiences |
+| Evolve | Profile, activity-related information, and currently approved account experiences |
+
+**Important:** Evolve must not expose future-only achievements, collectible economies, virtual pets, or progression systems as functioning MVP features.
+
+The implementation agent must verify the Master PRD's exact MVP feature mapping before assigning additional functionality to these navigation destinations.
+
+## 3.2 Proposed route structure
+
+The following is a proposed route map, not permission to break existing routes or routing conventions.
+
+| Route | Screen | Access |
+|---|---|---|
+| `/` | Landing page | Public |
+| `/login` | Sign in | Public |
+| `/signup` | Registration | Public |
+| `/forgot-password` | Password recovery | Public |
+| `/reset-password` | Password reset | Recovery flow |
+| `/discover` | Discovery feed | Guest/authenticated, subject to PRD |
+| `/discover/nearby` | Nearby feed | Authenticated/location permission where required |
+| `/discover/global` | Global feed | Guest/authenticated, subject to PRD |
+| `/discover/trending` | Trending feed | Guest/authenticated, subject to PRD |
+| `/post/[id]` | Post details | According to content visibility |
+| `/poll/[id]` | Poll details | According to content visibility |
+| `/play` | Games hub | According to PRD |
+| `/play/quickmind` | QuickMind | Authenticated |
+| `/play/this-or-that` | This or That | Authenticated |
+| `/play/mystery-word` | Mystery Word | Authenticated |
+| `/notifications` | Notifications | Authenticated |
+| `/profile/[username]` | Public profile | According to profile visibility |
+| `/settings` | Account settings | Authenticated |
+| `/settings/privacy` | Privacy settings | Authenticated |
+| `/settings/notifications` | Notification preferences | Authenticated |
+| `/settings/account` | Account management | Authenticated |
+| `/communities` | Communities | According to PRD |
+| `/communities/[id]` | Community details | According to membership and visibility |
+| `/admin` | Moderation dashboard | Authorized administrators |
+| `/admin/reports` | Reports management | Authorized administrators |
+| `/admin/users` | User management | Authorized administrators |
+| `/admin/content` | Content moderation | Authorized administrators |
+| `/admin/audit-logs` | Audit records | Authorized administrators with permission |
+
+The agent must reconcile this proposed route map with the existing repository before implementation.
+
+Do not create empty or nonfunctional routes simply to make every route appear implemented.
+
+## 3.3 Navigation behavior
+
+### Mobile
+
+Use a persistent bottom navigation pattern for the primary destinations where appropriate.
+
+Requirements:
+
+- Navigation must remain visible without covering page content.
+- The active destination must be visually distinguishable.
+- Icons must have accessible labels.
+- Safe-area insets must be respected.
+- Navigation must not obstruct the keyboard or message/input controls.
+- Scrollable content must have sufficient bottom padding.
+- The selected tab must remain consistent with the current route.
+
+The bottom navigation must not be implemented using a fixed-height layout that causes content to become stuck at the top or leaves unused blank space.
+
+### Desktop
+
+Use a desktop navigation layout that provides clear access to the same primary destinations.
+
+The navigation may use a sidebar or another established project pattern, provided that:
+
+- It is consistent across authenticated screens.
+- The content area remains readable.
+- Navigation does not consume excessive horizontal space.
+- The layout adapts to narrower desktop and tablet widths.
+
+Do not maintain two independent implementations of the same navigation behavior unless required by the existing architecture.
+
+---
+
+# 4. GLOBAL APPLICATION LAYOUT
+
+## 4.1 Shared application shell
+
+The application shell should contain the following reusable regions:
+
+1. Main navigation.
+2. Page header or contextual title.
+3. Main content region.
+4. Optional contextual sidebar on larger screens.
+5. Notification entry point.
+6. User/account menu.
+7. Mobile bottom navigation where applicable.
+
+All authenticated product pages should use a consistent application shell.
+
+The landing page and authentication screens may use a separate public shell.
+
+## 4.2 Layout rules
+
+- Use a consistent maximum content width.
+- Maintain readable line lengths.
+- Avoid unnecessary full-width content on desktop.
+- Use responsive grids where appropriate.
+- Ensure cards do not become excessively narrow.
+- Avoid fixed dimensions that break on smaller screens.
+- Use flexible layouts rather than arbitrary positioning.
+- Keep primary actions visible without excessive scrolling where practical.
+
+## 4.3 Responsive breakpoints
+
+The following are proposed implementation breakpoints. The agent should inspect existing project tokens and reuse them where possible.
+
+| Device category | Proposed width |
+|---|---|
+| Small mobile | 320–374px |
+| Standard mobile | 375–479px |
+| Large mobile | 480–767px |
+| Tablet | 768–1023px |
+| Small desktop | 1024–1279px |
+| Large desktop | 1280px and above |
+
+These ranges are design guidance, not a reason to introduce unnecessary breakpoint-specific code.
+
+The interface must be tested at intermediate widths, not only at standard device presets.
+
+## 4.4 Mobile viewport and keyboard behavior
+
+Mobile behavior is a critical production requirement.
+
+The agent must:
+
+- Use appropriate viewport configuration.
+- Handle dynamic mobile browser viewport changes.
+- Prevent input fields from being hidden behind the keyboard.
+- Avoid fixed elements overlapping content.
+- Respect `env(safe-area-inset-bottom)` and other applicable safe-area values.
+- Ensure scrolling remains natural.
+- Keep forms and interactive controls reachable.
+- Verify behavior in actual mobile browsers or realistic device emulation.
+
+Do not use arbitrary spacer elements to compensate for incorrect viewport calculations.
+
+---
+
+# 5. DESIGN SYSTEM AND REUSABLE COMPONENTS
+
+## 5.1 Design tokens
+
+Create a centralized design token system.
+
+At minimum, define tokens for:
+
+### Colors
+
+- Brand primary.
+- Brand secondary.
+- Accent.
+- Background.
+- Surface.
+- Elevated surface.
+- Primary text.
+- Secondary text.
+- Muted text.
+- Borders.
+- Success.
+- Warning.
+- Error.
+- Information.
+- Disabled states.
+
+Use accessible contrast ratios.
+
+### Typography
+
+Define:
+
+- Font family.
+- Display sizes.
+- Page title size.
+- Section heading sizes.
+- Body text sizes.
+- Caption sizes.
+- Font weights.
+- Line heights.
+- Letter spacing.
+
+Typography must remain readable across all supported viewport sizes.
+
+### Spacing
+
+Establish a consistent spacing scale.
+
+Use the scale for:
+
+- Page padding.
+- Card padding.
+- Component gaps.
+- Section spacing.
+- Form spacing.
+- Navigation spacing.
+
+### Radius
+
+Establish consistent values for:
+
+- Small controls.
+- Inputs.
+- Buttons.
+- Cards.
+- Modals.
+- Large surfaces.
+
+### Elevation
+
+Establish consistent elevation levels for:
+
+- Base surfaces.
+- Cards.
+- Dropdowns.
+- Popovers.
+- Modals.
+
+Avoid excessive shadow usage.
+
+## 5.2 Shared component inventory
+
+The implementation should create or reuse components for the following:
+
+### Application components
+
+- `AppShell`
+- `PublicLayout`
+- `AuthenticatedLayout`
+- `AdminLayout`
+- `DesktopNavigation`
+- `MobileNavigation`
+- `PageHeader`
+- `UserMenu`
+- `NotificationButton`
+
+### Content components
+
+- `PostCard`
+- `PostAuthor`
+- `PostContent`
+- `PostActions`
+- `CommentList`
+- `CommentComposer`
+- `ReactionButton`
+- `AnonymousAuthorLabel`
+- `ContentVisibilityIndicator`
+
+### Poll components
+
+- `PollCard`
+- `PollOption`
+- `PollResults`
+- `PollCountdown`
+- `PollComposer`
+- `PollSubmissionState`
+
+### Discovery components
+
+- `DiscoveryTabs`
+- `FeedList`
+- `FeedSkeleton`
+- `EmptyFeedState`
+- `LocationPermissionPrompt`
+- `TrendingIndicator`
+
+### Game components
+
+- `GameCard`
+- `GameInstructions`
+- `GameQuestion`
+- `GameTimer` where applicable and approved
+- `GameProgress`
+- `GameResult`
+- `GameSessionSummary`
+
+### Form components
+
+- `FormField`
+- `TextInput`
+- `PasswordInput`
+- `Textarea`
+- `SelectInput`
+- `CheckboxField`
+- `RadioField`
+- `FormError`
+- `FormSuccess`
+
+### Feedback components
+
+- `LoadingSpinner`
+- `Skeleton`
+- `EmptyState`
+- `ErrorState`
+- `Toast`
+- `ConfirmationDialog`
+- `Modal`
+- `Popover`
+- `Tooltip`
+
+### Moderation components
+
+- `ReportDialog`
+- `ReportCard`
+- `ModerationActionDialog`
+- `ModerationStatus`
+- `AuditLogTable`
+
+These names are suggested component boundaries, not mandatory filenames. The implementation agent must follow the repository's existing component organization.
+
+## 5.3 Component requirements
+
+Every reusable component must:
+
+- Have a clearly defined responsibility.
+- Accept typed props.
+- Avoid unnecessary internal data fetching.
+- Support appropriate loading and disabled states.
+- Have accessible labels.
+- Handle errors predictably.
+- Avoid duplicating business logic.
+- Be reusable without introducing excessive abstraction.
+
+Do not create one enormous component responsible for the entire application.
+
+Do not create abstractions that add complexity without improving maintainability.
+
+---
+
+# 6. SCREEN-BY-SCREEN SPECIFICATION
+
+# 6.1 Landing Page
+
+**Route:** `/`
+
+**Purpose:** Introduce MOMENT and communicate its value to visitors.
+
+### Required interface elements
+
+- MOMENT logo and brand identity.
+- Primary headline.
+- Short product explanation.
+- Primary call to action.
+- Secondary sign-in action.
+- Visual introduction to the product pillars.
+- Responsive footer.
+- Links to approved legal and policy pages.
+
+### Primary interactions
+
+- Sign-up CTA navigates to registration.
+- Sign-in CTA navigates to login.
+- Product exploration links navigate to available public content.
+- Footer links open the corresponding approved pages.
+
+### Design requirements
+
+- The value proposition must be immediately understandable.
+- The landing page must work on mobile without excessive scrolling.
+- Avoid overwhelming visitors with too many CTAs.
+- Use genuine product imagery or approved illustrations.
+- Do not present future features as currently available.
+
+### States
+
+- Initial loading.
+- Normal display.
+- Authentication-aware CTA behavior.
+- Unavailable content or service error.
+
+### Acceptance criteria
+
+- The page loads without layout shifts that materially affect usability.
+- Every CTA works.
+- The page is responsive.
+- Branding is consistent with the approved assets.
+- No broken links or placeholder sections remain.
+
+# 6.2 Registration
+
+**Route:** `/signup`
+
+**Purpose:** Allow eligible users to create an account.
+
+### Required interface elements
+
+- MOMENT branding.
+- Registration form.
+- Email field.
+- Password field.
+- Required account fields defined in the Master PRD.
+- Required consent and eligibility controls.
+- Password visibility control.
+- Submit button.
+- Link to sign in.
+- Validation and error feedback.
+
+### Interaction requirements
+
+- Validate fields before submission.
+- Display field-specific validation errors.
+- Prevent repeated submission while a request is pending.
+- Show clear success or failure feedback.
+- Handle duplicate accounts without exposing unnecessary account information.
+- Do not assume successful registration until the server confirms it.
+- Handle email verification if required by the configured authentication flow.
+
+### Security and privacy
+
+- Never expose password values in logs or analytics.
+- Never store passwords in application-managed client storage.
+- Do not treat client-side validation as authoritative.
+- Consent must be recorded through the approved backend flow.
+
+### Acceptance criteria
+
+- Valid registration succeeds.
+- Invalid registration is rejected with understandable feedback.
+- The submit button prevents accidental duplicate submissions.
+- Mobile keyboard behavior is correct.
+- The user receives clear next-step instructions.
+
+# 6.3 Login
+
+**Route:** `/login`
+
+**Purpose:** Authenticate existing users.
+
+### Required elements
+
+- Email or approved login identifier.
+- Password.
+- Password visibility control.
+- Sign-in action.
+- Forgot-password link.
+- Registration link.
+
+### Interaction requirements
+
+- Display a pending state during authentication.
+- Handle invalid credentials safely.
+- Handle unverified accounts according to the authentication configuration.
+- Handle suspended or restricted accounts according to moderation rules.
+- Redirect only after authentication and authorization checks succeed.
+- Prevent unintended redirects to unauthorized pages.
+
+### Acceptance criteria
+
+- Authentication state is correctly reflected in the application.
+- Protected routes cannot be accessed through UI manipulation.
+- Error messages are clear and do not disclose sensitive authentication details.
+- The layout works across supported mobile and desktop sizes.
+
+# 6.4 Password Recovery
+
+**Routes:** `/forgot-password` and `/reset-password`
+
+### Required elements
+
+- Email input.
+- Recovery submission action.
+- Success or neutral confirmation state.
+- New password input.
+- Password confirmation.
+- Expired or invalid recovery token state.
+
+### Interaction requirements
+
+- Follow the configured Supabase Auth recovery process.
+- Do not reveal whether an arbitrary email address has an account.
+- Validate new passwords according to approved authentication requirements.
+- Prevent reuse of expired recovery links.
+- Return users to the appropriate authentication flow after success.
+
+# 6.5 Discovery Feed
+
+**Route:** `/discover`
+
+**Purpose:** Provide the primary content discovery experience.
+
+### Required interface elements
+
+- Page title or contextual header.
+- Discovery navigation.
+- Nearby, Global, and Trending feed destinations.
+- Feed content.
+- Post cards.
+- Poll cards where applicable.
+- Content loading indicators.
+- Empty states.
+- Refresh behavior where supported.
+
+### Feed requirements
+
+The feed must display only content that the user is authorized to see.
+
+Each content card must support the appropriate approved actions:
+
+- View content.
+- React.
+- Comment.
+- Open poll.
+- Vote where applicable.
+- Report.
+- Access author profile where permitted.
+
+Anonymous content must not expose the author's identity.
+
+### Interaction requirements
+
+- Use server-backed pagination or another approved loading strategy.
+- Prevent duplicate feed entries when additional pages load.
+- Avoid losing the user's position unnecessarily.
+- Display loading feedback when fetching more content.
+- Handle deleted or unavailable content.
+- Do not count a failed reaction as successful.
+- Keep displayed reaction and comment counts synchronized with authoritative server responses or confirmed realtime updates.
+
+### Feed states
+
+**Loading:** Display skeleton cards or another non-disruptive loading indicator.
+
+**Empty:** Explain that there is currently no content and provide an appropriate next action.
+
+**Error:** Display a retry action.
+
+**Offline:** Display a clear connectivity message and preserve any safe local UI state.
+
+**End of feed:** Display a non-intrusive end-of-feed message.
+
+**Restricted content:** Explain that the content is unavailable without revealing protected information.
+
+### Acceptance criteria
+
+- Feed pagination works.
+- Content is displayed in the correct visibility context.
+- Actions reflect actual server results.
+- Anonymous identity is protected.
+- Mobile scrolling is smooth.
+- Empty and error states are implemented.
+
+# 6.6 Nearby Discovery
+
+**Route:** `/discover/nearby`
+
+**Purpose:** Show relevant nearby content using the approved location-discovery functionality.
+
+### Required interface elements
+
+- Nearby feed.
+- Location permission status.
+- Location explanation.
+- Permission request action where appropriate.
+- Manual recovery path to Global discovery.
+
+### Permission states
+
+**Not requested:** Explain why approximate location may improve nearby discovery.
+
+**Granted:** Display nearby content using the approved location process.
+
+**Denied:** Explain that nearby discovery is unavailable and provide a path to Global discovery.
+
+**Unavailable:** Display a clear message if the browser or device cannot provide the required location information.
+
+**Location error:** Offer a retry option without blocking other application functionality.
+
+### Privacy requirements
+
+- Do not expose exact GPS coordinates publicly.
+- Do not imply continuous background tracking.
+- Do not request location unnecessarily.
+- Do not block Global discovery when location permission is denied.
+- Follow the Database Specification for location precision, storage, and retention.
+
+### Acceptance criteria
+
+- Permission is requested only when needed.
+- Denied permission does not break the application.
+- Nearby content uses the approved server-side location process.
+- Public interfaces do not reveal precise user coordinates.
+
+# 6.7 Global Discovery
+
+**Route:** `/discover/global`
+
+**Purpose:** Allow users to discover content without requiring location access.
+
+### Requirements
+
+- Display eligible global content.
+- Use the same content component system as the main discovery feed.
+- Support approved post and poll interactions.
+- Support pagination.
+- Provide loading, empty, and error states.
+
+Global discovery must remain accessible even if the user denies location permission.
+
+# 6.8 Trending Discovery
+
+**Route:** `/discover/trending`
+
+**Purpose:** Surface content determined by the approved trending logic.
+
+### Requirements
+
+- Display content returned by the backend trending process.
+- Reuse existing content cards.
+- Support approved interactions.
+- Handle empty and unavailable trending results.
+
+Do not invent trending scores or implement arbitrary client-side popularity calculations.
+
+# 6.9 Create Post
+
+**Interface:** Creation flow from the discovery experience.
+
+**Purpose:** Allow eligible users to publish an approved post.
+
+### Required elements
+
+- Text input.
+- Character counter if a maximum length is configured.
+- Anonymous/attributed identity choice where approved.
+- Submit action.
+- Cancel or close action.
+- Validation feedback.
+
+### Requirements
+
+- Enforce post length using the authoritative server-side limit.
+- Do not assume an unapproved character limit.
+- Clearly show whether the post will be anonymous or attributed.
+- Explain anonymous identity visibility accurately.
+- Do not imply that anonymous posting makes the user untraceable to the platform.
+- Prevent duplicate submission.
+- Confirm successful publication only after server confirmation.
+
+### Failure handling
+
+- Validation error.
+- Network failure.
+- Authentication expiration.
+- Moderation or policy rejection.
+- Submission timeout.
+
+If a submission times out, the UI must avoid encouraging accidental duplicate posts. Use an approved idempotency strategy where available.
+
+# 6.10 Post Details
+
+**Route:** `/post/[id]`
+
+### Required elements
+
+- Post content.
+- Author presentation appropriate to the identity mode.
+- Timestamp.
+- Reaction controls.
+- Comment count.
+- Comment list.
+- Comment composer.
+- Report action.
+
+### Requirements
+
+- Respect visibility and moderation status.
+- Handle deleted posts.
+- Handle comments disabled or restricted according to the product rules.
+- Use pagination for large comment collections.
+- Avoid exposing anonymous authors.
+- Ensure comment submission is validated and confirmed by the server.
+
+### States
+
+- Loading.
+- Available.
+- Deleted.
+- Restricted.
+- Not found.
+- Error.
+- Authentication required for restricted actions.
+
+# 6.11 Comments and Reactions
+
+### Comment composer
+
+- Clearly labelled text field.
+- Submit action.
+- Pending state.
+- Validation feedback.
+- Character limit only where configured.
+
+### Reaction behavior
+
+- Show the user's current reaction state.
+- Allow only the reaction types approved in the PRD.
+- Prevent accidental duplicate requests.
+- Reconcile optimistic UI changes with the server response.
+- Restore the correct state when an action fails.
+
+The frontend must never assume that a reaction was permanently stored merely because the user tapped a button.
+
+# 6.12 Polls
+
+**Routes:** Poll cards within feeds and `/poll/[id]`.
+
+**Purpose:** Allow users to participate in approved polls and view results.
+
+### Poll card elements
+
+- Poll question.
+- Creator information according to visibility rules.
+- Available options.
+- Voting status.
+- Expiration information where applicable.
+- Results display where permitted.
+
+### Poll participation
+
+- Show clearly selectable options.
+- Support single or multiple selection according to the poll configuration.
+- Display a clear submit action where required.
+- Prevent accidental duplicate submissions.
+- Display the confirmed result after server acceptance.
+
+### Results
+
+- Display the approved result representation.
+- Show option totals or percentages only when returned by the authoritative backend.
+- Clearly indicate when a poll has expired.
+- Avoid showing misleading or stale results.
+
+### States
+
+- Not voted.
+- Submitting.
+- Vote accepted.
+- Already voted.
+- Poll expired.
+- Poll closed.
+- Poll unavailable.
+- Submission failed.
+
+### Acceptance criteria
+
+- Users can only vote according to the configured poll rules.
+- Results reflect authoritative data.
+- Multiple-choice behavior matches the poll configuration.
+- Expiration behavior is consistent across the UI and backend.
+- Realtime updates, if enabled, do not double-count votes.
+
+# 6.13 Games Hub
+
+**Route:** `/play`
+
+**Purpose:** Provide a clear entry point to the three approved MVP games.
+
+### Required games
+
+<Only the following three games are included in the MVP:>
+
+1. QuickMind.
+2. This or That.
+3. Mystery Word.
+
+### Game cards
+
+Each card should contain:
+
+- Game name.
+- Short explanation.
+- Appropriate visual identity.
+- Play action.
+- Relevant approved status information.
+
+Do not invent rewards, cash prizes, currencies, or game features.
+
+### Acceptance criteria
+
+- Exactly the three approved MVP games are presented as playable games.
+- Each game card navigates to its correct experience.
+- Unsupported or future games are not presented as available.
+
+# 6.14 QuickMind
+
+**Route:** `/play/quickmind`
+
+**Purpose:** Present the approved five-question trivia experience.
+
+### Required interface elements
+
+- Game title.
+- Instructions.
+- Start action.
+- Current question.
+- Available answer options.
+- Question progress.
+- Submission feedback.
+- Results screen.
+
+### Interaction requirements
+
+- Retrieve questions from the approved backend source.
+- Present the configured five-question session.
+- Prevent invalid answer submission.
+- Record answers through the authoritative backend flow.
+- Do not calculate final scores solely in the browser.
+- Handle session expiration and interrupted gameplay.
+- Show the confirmed result after the server calculates it.
+
+### States
+
+- Introduction.
+- Session starting.
+- Active question.
+- Answer submitted.
+- Session completed.
+- Session expired.
+- Network failure.
+- Results unavailable.
+
+### Acceptance criteria
+
+- The game presents five questions per approved session.
+- The backend remains authoritative for scoring.
+- Users cannot manipulate scores by editing browser state.
+- Session completion is handled correctly.
+
+# 6.15 This or That
+
+**Route:** `/play/this-or-that`
+
+**Purpose:** Allow users to participate in binary preference questions.
+
+### Required elements
+
+- Game instructions.
+- Question or prompt.
+- Two clearly distinguishable choices.
+- Selection feedback.
+- Submission confirmation.
+- Results or summary according to the approved game design.
+
+### Interaction requirements
+
+- Only valid choices can be submitted.
+- Prevent duplicate submissions where prohibited.
+- Use backend-confirmed results.
+- Handle expired or unavailable sessions.
+- Do not invent social comparison features or global statistics unless approved.
+
+# 6.16 Mystery Word
+
+**Route:** `/play/mystery-word`
+
+**Purpose:** Allow users to guess a hidden word through the approved game mechanics.
+
+### Required elements
+
+- Game instructions.
+- Guess input or approved guessing controls.
+- Submission action.
+- Feedback for valid and invalid guesses.
+- Game progress.
+- Completion result.
+
+### Interaction requirements
+
+- Validate guesses.
+- Display meaningful feedback.
+- Enforce attempt limits only according to the approved game rules.
+- Keep authoritative game state on the backend.
+- Do not expose the answer through client-side data before it should be revealed.
+- Handle session expiration and network interruption.
+
+# 6.17 Notifications
+
+**Route:** `/notifications`
+
+**Purpose:** Present relevant in-app notifications.
+
+### Required elements
+
+- Notification list.
+- Notification type or context.
+- Timestamp.
+- Read/unread visual state.
+- Appropriate navigation destination.
+
+### Requirements
+
+- Display notifications returned by the backend.
+- Mark notifications as read through the approved API.
+- Prevent repeated actions from creating inconsistent read states.
+- Support loading and empty states.
+- Handle deleted or inaccessible referenced content.
+
+### Notification preferences
+
+The user must be able to manage the notification preferences supported by the Master PRD.
+
+Do not invent new notification categories or channels.
+
+### Push notifications
+
+If web push is enabled in the MVP:
+
+- Explain the purpose before requesting permission.
+- Do not repeatedly prompt after denial.
+- Respect user preferences.
+- Handle unsupported browsers.
+- Do not make push notification permission a requirement for using the application.
+
+# 6.18 User Profile
+
+**Route:** `/profile/[username]`
+
+**Purpose:** Display approved profile information and user-associated public activity.
+
+### Required elements
+
+- Profile identity.
+- Approved profile information.
+- Public activity where permitted.
+- Appropriate profile actions.
+- Report or block actions where applicable.
+
+### Privacy requirements
+
+- Do not expose private account information.
+- Respect content visibility.
+- Preserve anonymous posting identity.
+- Do not reveal hidden information through page metadata or client-side payloads.
+
+### Profile states
+
+- Existing profile.
+- Profile not found.
+- Suspended or unavailable account.
+- Restricted profile.
+- Loading.
+- Error.
+
+# 6.19 Account Settings
+
+**Route:** `/settings`
+
+Settings should provide clear access to the approved account-management areas.
+
+### Proposed sections
+
+- Account information.
+- Privacy.
+- Notifications.
+- Location preferences.
+- Security.
+- Account deletion or deactivation, as approved by the Master PRD.
+
+Only implement settings that have an approved backend behavior.
+
+Do not introduce unsupported profile customization or account-management features.
+
+# 6.20 Communities
+
+**Routes:** `/communities` and `/communities/[id]`
+
+**Purpose:** Support the approved MVP community functionality.
+
+### Community discovery
+
+- Community name.
+- Approved description.
+- Membership status.
+- Relevant community content.
+- Join or leave actions where supported.
+
+### Community details
+
+- Community information.
+- Membership information.
+- Approved content feed.
+- Membership action.
+- Appropriate reporting controls.
+
+### Requirements
+
+- Respect membership and visibility rules.
+- Handle private or unavailable communities.
+- Prevent duplicate join actions.
+- Do not present unapproved community messaging functionality.
+- Do not introduce community owner privileges beyond the approved authorization model.
+
+# 6.21 Reporting and Blocking
+
+### Report interface
+
+Reports may be initiated from supported content and user interfaces.
+
+The report dialog must:
+
+- Identify the reported object clearly.
+- Present only approved report reasons.
+- Allow any approved additional explanation.
+- Require confirmation before submission.
+- Display submission success or failure.
+
+### Blocking interface
+
+The user must receive a clear explanation of the consequences of blocking another user.
+
+The interface must:
+
+- Require confirmation where appropriate.
+- Show the resulting blocked state.
+- Handle repeated block attempts safely.
+- Respect the backend's block enforcement rules.
+
+The frontend must not attempt to enforce blocking solely through client-side filtering.
+
+# 6.22 Moderation Dashboard
+
+**Route:** `/admin`
+
+**Access:** Authorized administrative users only.
+
+The moderation interface must be separate from ordinary user navigation.
+
+### Dashboard sections
+
+- Moderation overview.
+- Reports.
+- Content moderation.
+- User management.
+- Moderation actions.
+- Audit records.
+
+### Reports management
+
+Each report should display only information the administrator is authorized to access.
+
+Supported interactions include:
+
+- Open report details.
+- Review associated content.
+- Review relevant user context.
+- Apply authorized moderation actions.
+- Record the action and its reason.
+
+### User management
+
+Display:
+
+- User identifier and permitted profile information.
+- Current account status.
+- Relevant moderation history where authorized.
+- Available administrative actions.
+
+### Security requirements
+
+- Hide admin navigation from unauthorized users.
+- Enforce authorization on the backend for every privileged action.
+- Do not rely on hidden buttons as an authorization mechanism.
+- Require confirmation for consequential actions.
+- Display the actual outcome of every administrative operation.
+- Preserve auditability.
+
+### Acceptance criteria
+
+- Ordinary users cannot access moderation data.
+- Administrative actions are authorized server-side.
+- Every required privileged action is auditable.
+- Failed actions do not produce misleading success messages.
+
+---
+
+# 7. GLOBAL INTERACTION STANDARDS
+
+## 7.1 Buttons
+
+Every button must:
+
+- Have a clear action.
+- Have an accessible name.
+- Display appropriate hover, focus, pressed, and disabled states.
+- Prevent duplicate submission where necessary.
+- Provide feedback for asynchronous actions.
+
+Do not use a button where a navigation link is more appropriate.
+
+## 7.2 Forms
+
+Every form must:
+
+- Use semantic labels.
+- Provide useful validation messages.
+- Preserve entered values when safe to do so.
+- Prevent unintended repeated submission.
+- Display loading feedback.
+- Handle server-side errors.
+- Support keyboard interaction.
+
+## 7.3 Modals and dialogs
+
+Modals must:
+
+- Have an accessible title.
+- Support keyboard navigation.
+- Manage focus correctly.
+- Prevent interaction with inaccessible background content.
+- Close through appropriate actions.
+- Avoid losing important user input unexpectedly.
+
+Destructive or consequential actions must have a clear confirmation experience.
+
+## 7.4 Toasts and feedback
+
+Use concise feedback messages for:
+
+- Successful actions.
+- Failed actions.
+- Pending actions where appropriate.
+- Important warnings.
+
+Do not use toast messages as the only way to communicate critical errors.
+
+Important errors must remain visible long enough to be understood and must not disappear before the user can act.
+
+## 7.5 Optimistic UI
+
+Optimistic updates may be used only where appropriate.
+
+Examples include reactions and other low-risk interactions.
+
+Requirements:
+
+1. Update the interface optimistically only when the action is safe to represent temporarily.
+2. Send the actual request.
+3. Reconcile the interface with the server response.
+4. Roll back if the operation fails.
+5. Prevent conflicting repeated requests.
+
+Never use optimistic updates to bypass server validation or authorization.
+
+Voting, game scoring, account status, moderation actions, and other consequential operations must remain authoritative on the backend.
+
+---
+
+# 8. APPLICATION STATES
+
+Every major screen must intentionally handle the following states where applicable.
+
+## 8.1 Loading
+
+Use skeletons or contextual indicators.
+
+Avoid:
+
+- Blank screens.
+- Infinite spinners.
+- Layout shifts caused by missing placeholders.
+- Blocking the entire application for a small background request.
+
+## 8.2 Empty
+
+Every empty state should communicate:
+
+- What is empty.
+- Why it may be empty, if known.
+- What the user can do next.
+
+Never fabricate content to make an empty screen appear populated.
+
+## 8.3 Error
+
+Error interfaces must:
+
+- Explain the problem in plain language.
+- Offer retry where appropriate.
+- Avoid displaying raw database or stack-trace errors.
+- Avoid exposing internal system information.
+
+## 8.4 Offline
+
+The application should:
+
+- Detect loss of connectivity where practical.
+- Communicate when server-dependent operations cannot proceed.
+- Preserve safe form input where possible.
+- Avoid presenting unsaved changes as completed.
+- Reconcile state after connectivity returns.
+
+Offline support must not imply that unsupported actions are being queued or synchronized.
+
+## 8.5 Authentication expiration
+
+When an authenticated session expires:
+
+- Do not silently present protected data as accessible.
+- Explain that authentication is required.
+- Preserve safe navigation context.
+- Redirect through the approved login flow.
+- Avoid infinite redirect loops.
+
+## 8.6 Restricted and suspended accounts
+
+Display the appropriate account status message.
+
+Do not expose internal moderation notes or confidential administrative information.
+
+Ensure the interface reflects the actual backend authorization result.
+
+---
+
+# 9. ACCESSIBILITY REQUIREMENTS
+
+The implementation should target WCAG 2.2 Level AA.
+
+## 9.1 Keyboard accessibility
+
+- All interactive controls must be keyboard accessible.
+- Focus indicators must be visible.
+- Focus order must be logical.
+- Modal focus must be managed correctly.
+- No keyboard traps.
+- Escape behavior must be appropriate for dismissible overlays.
+
+## 9.2 Screen readers
+
+- Use semantic HTML.
+- Provide accessible labels for icon-only controls.
+- Use appropriate heading hierarchy.
+- Associate validation errors with their fields.
+- Announce important asynchronous status changes appropriately.
+- Do not communicate state through color alone.
+
+## 9.3 Color and contrast
+
+- Maintain sufficient contrast for text and controls.
+- Support visible focus states.
+- Ensure disabled and selected states remain understandable.
+- Avoid color-only success and error indicators.
+
+## 9.4 Touch accessibility
+
+- Interactive controls should generally provide at least a 44 × 44 CSS pixel touch area where practical.
+- Provide adequate spacing between adjacent actions.
+- Avoid tiny reaction, menu, and navigation controls.
+
+## 9.5 Motion
+
+- Avoid unnecessary motion.
+- Respect `prefers-reduced-motion`.
+- Do not use animations that obstruct interaction.
+- Avoid motion that can trigger discomfort.
+
+## 9.6 Forms
+
+- Use persistent field labels.
+- Do not rely solely on placeholder text.
+- Clearly identify required fields.
+- Provide understandable error descriptions.
+- Maintain appropriate focus after validation failures.
+
+---
+
+# 10. RESPONSIVE TESTING REQUIREMENTS
+
+The agent must test at minimum:
+
+| Viewport | Required verification |
+|---|---|
+| 320 × 568 | Small mobile layout |
+| 360 × 800 | Standard mobile layout |
+| 390 × 844 | Modern mobile layout |
+| 430 × 932 | Large mobile layout |
+| 768 × 1024 | Tablet portrait |
+| 1024 × 768 | Tablet landscape / small desktop |
+| 1280 × 800 | Desktop |
+| 1440 × 900 | Large desktop |
+| 1920 × 1080 | Wide desktop |
+
+These are representative test viewports, not the only supported dimensions.
+
+For each relevant screen, verify:
+
+- No horizontal overflow.
+- No clipped text.
+- No overlapping buttons.
+- No inaccessible controls.
+- No navigation obstruction.
+- No unexpected blank regions.
+- No broken grid or card layouts.
+- No hidden form fields.
+- No keyboard obstruction.
+- Correct scrolling behavior.
+- Correct modal placement.
+- Correct safe-area handling.
+
+The agent must also test intermediate widths and real mobile browser behavior.
+
+---
+
+# 11. PERFORMANCE AND VISUAL STABILITY
+
+## 11.1 Rendering
+
+- Avoid unnecessary client-side rendering.
+- Use server components where appropriate.
+- Keep client components focused on genuine interactivity.
+- Avoid loading large libraries unnecessarily.
+- Reuse existing optimized assets.
+
+## 11.2 Images and media
+
+- Use appropriate image dimensions.
+- Avoid unnecessary image downloads.
+- Use responsive image loading.
+- Provide meaningful alternative text where appropriate.
+- Prevent large image elements from causing layout shifts.
+
+## 11.3 Loading behavior
+
+- Avoid blocking the entire page for independent content requests.
+- Use component-level loading states.
+- Avoid repeated network requests caused by incorrect component lifecycle behavior.
+- Prevent duplicate pagination requests.
+
+## 11.4 Visual stability
+
+The implementation should be tested for:
+
+- Cumulative Layout Shift.
+- Unexpected component resizing.
+- Font loading shifts.
+- Image loading shifts.
+- Navigation movement.
+- Mobile viewport changes.
+
+Performance targets must be measured against the actual deployed application and approved performance requirements. Do not claim compliance without measurements.
+
+---
+
+# 12. REALTIME UI REQUIREMENTS
+
+MOMENT must reflect approved live changes without requiring users to refresh constantly.
+
+Where realtime functionality is implemented:
+
+- Use the approved Supabase Realtime architecture.
+- Subscribe only to necessary events.
+- Clean up subscriptions when components unmount.
+- Handle reconnection.
+- Avoid duplicate subscriptions.
+- Reconcile realtime events with existing UI state.
+- Prevent duplicate notifications or feed entries.
+- Respect authorization and RLS.
+
+Potential realtime UI areas include:
+
+- New eligible feed content.
+- Reaction counts.
+- Comment updates.
+- Poll results.
+- Notifications.
+- Relevant moderation or account-status changes.
+
+Only implement events supported by the approved backend contracts.
+
+Realtime events are not proof of authorization. The backend remains authoritative.
+
+---
+
+# 13. PRIVACY AND SECURITY IN THE INTERFACE
+
+The UI must preserve the security boundaries defined by the Master PRD and Database Specification.
+
+Mandatory requirements:
+
+1. Anonymous posts must not expose their author through public UI.
+2. Private account information must never be displayed in public components.
+3. Administrative controls must be hidden from unauthorized users and protected by backend authorization.
+4. Client-side role checks must never replace server-side authorization.
+5. Location permission must be optional where the product requirements allow it.
+6. Exact GPS coordinates must not appear in public UI.
+7. Report submission must not reveal confidential moderation processes.
+8. Suspended users must receive the correct restrictions.
+9. The interface must not expose raw database errors.
+10. Analytics must not capture passwords, sensitive form contents, or private user data.
+
+The agent must inspect API responses and client-side state to ensure that protected fields are not being delivered unnecessarily.
+
+Hiding sensitive fields visually is not sufficient if those fields remain exposed in browser payloads.
+
+---
+
+# 14. PWA AND INSTALLATION EXPERIENCE
+
+The web application should support the approved PWA capabilities.
+
+Where implemented:
+
+- Provide the correct application manifest.
+- Use approved application icons.
+- Configure a suitable theme color.
+- Support the approved installation experience.
+- Handle unsupported browser capabilities gracefully.
+- Ensure the application remains functional when installation is unavailable.
+
+Service worker caching must not accidentally expose authenticated data or serve stale private content to another user.
+
+Do not implement offline publishing, background synchronization, or other offline features unless they are separately approved.
+
+---
+
+# 15. ADMINISTRATIVE AND MODERATION UI DESIGN RULES
+
+The admin interface must prioritize clarity, traceability, and safe action execution.
+
+### Tables
+
+- Clear column labels.
+- Responsive behavior.
+- Pagination for large datasets.
+- Loading states.
+- Empty states.
+- Error states.
+- Clear status indicators.
+
+### Consequential actions
+
+Actions such as suspension, restriction, or content removal must:
+
+- Identify the affected object.
+- Explain the intended action.
+- Require confirmation where appropriate.
+- Capture the required reason.
+- Display server-confirmed outcomes.
+
+### Audit visibility
+
+Audit records must be presented only to authorized users.
+
+Do not allow ordinary users to access administrative audit information through manipulated routes or API requests.
+
+---
+
+# 16. UI TESTING STRATEGY
+
+## 16.1 Component tests
+
+Test:
+
+- Buttons.
+- Forms.
+- Inputs.
+- Navigation.
+- Post cards.
+- Poll options.
+- Game controls.
+- Modals.
+- Dialogs.
+- Empty states.
+- Error states.
+
+## 16.2 Screen tests
+
+Test:
+
+- Landing page.
+- Registration.
+- Login.
+- Password recovery.
+- Discovery feeds.
+- Nearby permission handling.
+- Post details.
+- Polls.
+- Games.
+- Notifications.
+- Profiles.
+- Settings.
+- Communities.
+- Moderation dashboard.
+
+## 16.3 Interaction tests
+
+Verify:
+
+- Registration and login.
+- Form validation.
+- Navigation.
+- Creating posts.
+- Anonymous and attributed presentation.
+- Reactions.
+- Comments.
+- Poll voting.
+- Game sessions.
+- Notification actions.
+- Reporting.
+- Blocking.
+- Settings changes.
+- Administrative actions.
+
+## 16.4 Responsive tests
+
+Use automated viewport tests and manual browser verification.
+
+Test mobile navigation, keyboard behavior, scrolling, overlays, and responsive layouts.
+
+## 16.5 Accessibility tests
+
+Use automated accessibility checks as well as manual keyboard and screen-reader testing.
+
+Automated checks alone are insufficient.
+
+## 16.6 Visual regression
+
+Where practical, introduce visual regression testing for important screens.
+
+Baseline screenshots must represent approved designs, not unapproved prototypes.
+
+## 16.7 Browser testing
+
+Test supported versions of:
+
+- Chrome.
+- Safari.
+- Firefox.
+- Edge.
+
+Pay particular attention to mobile Safari and mobile Chrome.
+
+---
+
+# 17. DESIGN AND PRODUCT DECISIONS REQUIRING APPROVAL
+
+The implementation agent must not silently finalize unresolved product or visual decisions.
+
+Track the following as open decisions.
+
+| ID | Decision | Required approval |
+|---|---|---|
+| UX-OD-001 | Final primary and secondary brand colors | Yes |
+| UX-OD-002 | Typography family and type scale | Yes |
+| UX-OD-003 | Light mode, dark mode, or both | Yes |
+| UX-OD-004 | Final desktop navigation pattern | Yes |
+| UX-OD-005 | Final mobile navigation labels and ordering | Yes |
+| UX-OD-006 | Exact post and comment character limits | Use PRD |
+| UX-OD-007 | Exact poll option and selection limits | Use PRD |
+| UX-OD-008 | Final game visuals and approved game mechanics | Use PRD |
+| UX-OD-009 | Whether guest users can interact or only browse | Use PRD |
+| UX-OD-010 | Profile visibility and public activity rules | Use PRD |
+| UX-OD-011 | Final animation and transition language | Yes |
+| UX-OD-012 | Exact empty-state illustrations and copy | Yes |
+| UX-OD-013 | PWA installation prompt behavior | Yes |
+| UX-OD-014 | Exact content pagination behavior | Coordinate with API specification |
+
+The agent must inspect the existing application for decisions that have already been made.
+
+Do not repeatedly ask for approval on a decision that is already explicitly established in the approved PRD or existing approved design system.
+
+---
+
+# 18. IMPLEMENTATION PHASES
+
+UI implementation must be performed in controlled phases.
+
+## Phase 0 — Existing UI Audit
+
+Before changing anything:
+
+1. Inspect the entire repository.
+2. Identify the current framework and UI architecture.
+3. Inspect existing routes and page layouts.
+4. Inspect existing components.
+5. Inspect styling and design tokens.
+6. Identify existing brand assets.
+7. Inspect authentication and navigation behavior.
+8. Inspect existing mobile and desktop implementations.
+9. Identify broken layouts and duplicated components.
+10. Produce a UI gap analysis.
+
+Deliverables:
+
+- Existing screen inventory.
+- Route inventory.
+- Component inventory.
+- Responsive behavior report.
+- Accessibility findings.
+- Design inconsistency report.
+- Proposed implementation plan.
+
+Do not begin with a complete redesign.
+
+## Phase 1 — Design System and Application Shell
+
+Implement:
+
+- Approved design tokens.
+- Typography.
+- Spacing.
+- Shared controls.
+- Application shell.
+- Public layout.
+- Authenticated layout.
+- Mobile navigation.
+- Desktop navigation.
+- Responsive foundations.
+
+Acceptance:
+
+- Consistent visual system.
+- No navigation overflow.
+- Correct responsive behavior.
+- Reusable component foundation.
+
+## Phase 2 — Authentication and Account Screens
+
+Implement:
+
+- Landing page.
+- Registration.
+- Login.
+- Password recovery.
+- Account settings foundation.
+
+Acceptance:
+
+- Authentication flows work.
+- Validation is correct.
+- Responsive behavior is correct.
+- Protected routes behave correctly.
+
+## Phase 3 — Discovery and Social Interfaces
+
+Implement:
+
+- Main discovery feed.
+- Nearby feed.
+- Global feed.
+- Trending feed.
+- Create post.
+- Post details.
+- Comments.
+- Reactions.
+- Reporting.
+- Blocking.
+
+Acceptance:
+
+- All approved interactions work.
+- Visibility rules are respected.
+- Anonymous identity is protected.
+- Pagination and error states work.
+
+## Phase 4 — Polls
+
+Implement:
+
+- Poll creation.
+- Poll cards.
+- Poll details.
+- Voting.
+- Results.
+- Expiration states.
+
+Acceptance:
+
+- Poll behavior matches backend rules.
+- Results are accurate.
+- Duplicate submissions are handled.
+- Realtime behavior is consistent where enabled.
+
+## Phase 5 — Games
+
+Implement:
+
+- Games hub.
+- QuickMind.
+- This or That.
+- Mystery Word.
+- Game results.
+
+Acceptance:
+
+- Exactly three approved MVP games are playable.
+- Backend-controlled scoring works.
+- Session states are handled correctly.
+
+## Phase 6 — Notifications, Profiles and Communities
+
+Implement the approved interfaces for:
+
+- Notifications.
+- Notification preferences.
+- Profiles.
+- Communities.
+- Account and privacy settings.
+
+Acceptance:
+
+- Data visibility is correct.
+- Actions work against real backend functionality.
+- Empty and restricted states are implemented.
+
+## Phase 7 — Moderation UI
+
+Implement:
+
+- Moderation dashboard.
+- Report management.
+- Content moderation.
+- User management.
+- Audit log presentation.
+
+Acceptance:
+
+- Authorization is enforced.
+- Administrative actions are auditable.
+- No unauthorized data is exposed.
+
+## Phase 8 — Production UI Audit
+
+Perform:
+
+- Full responsive testing.
+- Accessibility audit.
+- Visual regression review.
+- Browser compatibility checks.
+- Interaction testing.
+- Performance review.
+- Realtime behavior testing.
+- Error-state verification.
+
+No phase should be declared complete based only on successful compilation.
+
+---
+
+# 19. NON-NEGOTIABLE IMPLEMENTATION RULES
+
+The coding agent MUST:
+
+1. Read the Master PRD and Database Specification before implementation.
+2. Audit the existing repository before changing UI architecture.
+3. Preserve existing working functionality unless a documented change is approved.
+4. Reuse existing components where appropriate.
+5. Use the approved design system consistently.
+6. Keep components maintainable and appropriately scoped.
+7. Implement every required state for each major screen.
+8. Ensure all visible controls perform their intended actions.
+9. Connect interfaces to real backend functionality.
+10. Enforce authorization through the backend.
+11. Preserve anonymous-post privacy.
+12. Prevent location information from being unnecessarily exposed.
+13. Test actual mobile behavior.
+14. Test keyboard and accessibility behavior.
+15. Avoid unnecessary dependencies.
+16. Avoid duplicated UI logic.
+17. Avoid hardcoded fake data in production interfaces.
+18. Avoid placeholder buttons and fake interactions.
+19. Avoid unnecessary animations and visual distractions.
+20. Record all deviations and unresolved decisions.
+
+The coding agent MUST NOT:
+
+- Invent new MVP features.
+- Add direct messaging.
+- Add followers or following systems.
+- Add live streaming.
+- Add virtual currencies or cash rewards.
+- Add virtual pets or collectible economies.
+- Add unapproved AI recommendation features.
+- Add unsupported game modes.
+- Add unapproved monetization interfaces.
+- Change the approved brand identity without approval.
+- Replace the existing UI architecture without justification.
+- Remove existing routes without impact analysis.
+- Hide backend errors by pretending actions succeeded.
+- Use client-side authorization as a security boundary.
+- Introduce fake content to make screens look complete.
+
+---
+
+# 20. DEFINITION OF DONE
+
+The UI/UX implementation is complete only when all applicable criteria below are satisfied.
+
+### Visual consistency
+
+- [ ] Approved design tokens are implemented.
+- [ ] Typography is consistent.
+- [ ] Spacing and component styles are consistent.
+- [ ] Branding is correct.
+- [ ] Major screens follow the approved design system.
+
+### Functional completeness
+
+- [ ] All required screens exist.
+- [ ] All navigation works.
+- [ ] All visible controls work.
+- [ ] All required forms validate correctly.
+- [ ] All approved interactions connect to real functionality.
+- [ ] No fake functionality remains.
+
+### Responsive integrity
+
+- [ ] Mobile layouts work.
+- [ ] Tablet layouts work.
+- [ ] Desktop layouts work.
+- [ ] No horizontal overflow.
+- [ ] No obstructed controls.
+- [ ] No broken mobile keyboard behavior.
+- [ ] Safe areas are handled.
+
+### Accessibility
+
+- [ ] Keyboard navigation works.
+- [ ] Focus indicators are visible.
+- [ ] Form labels are accessible.
+- [ ] Screen-reader semantics are appropriate.
+- [ ] Contrast requirements are satisfied.
+- [ ] Reduced-motion preferences are respected.
+
+### Security and privacy
+
+- [ ] Anonymous identity is protected.
+- [ ] Protected data is not unnecessarily exposed.
+- [ ] Administrative access is enforced server-side.
+- [ ] Location privacy is respected.
+- [ ] Sensitive data is not leaked through client-side analytics.
+
+### Reliability
+
+- [ ] Loading states work.
+- [ ] Empty states work.
+- [ ] Error states work.
+- [ ] Offline behavior is understandable.
+- [ ] Authentication expiration is handled.
+- [ ] Realtime updates do not create duplicate or inconsistent UI state.
+
+### Testing and release
+
+- [ ] Component tests pass.
+- [ ] Screen and interaction tests pass.
+- [ ] Responsive tests pass.
+- [ ] Accessibility checks are completed.
+- [ ] No critical UI defects remain.
+- [ ] Build succeeds.
+- [ ] Production preview is reviewed.
+- [ ] Git checkpoint is created.
+
+---
+
+# 21. REQUIRED PHASE COMPLETION REPORT
+
+At the end of every implementation phase, the coding agent must produce a report using this structure:
+
+## MOMENT UI/UX IMPLEMENTATION REPORT
+
+**Phase:**  
+**Status:**  
+**Date:**  
+**Git checkpoint:**  
+
+### 1. Work completed
+List every completed requirement.
+
+### 2. Files changed
+List created, updated, and removed files with reasons.
+
+### 3. Screens implemented
+List the screens and their current implementation status.
+
+### 4. Components created or updated
+Identify reusable components and their responsibilities.
+
+### 5. Responsive verification
+Provide actual tested viewport sizes and findings.
+
+### 6. Accessibility verification
+Report automated and manual checks.
+
+### 7. Functional verification
+List tested interactions and results.
+
+### 8. Backend integration
+Identify endpoints and realtime integrations used.
+
+### 9. Defects and limitations
+List unresolved defects and their severity.
+
+### 10. Open decisions
+List decisions requiring product owner approval.
+
+### 11. Regression findings
+Identify existing functionality affected by the changes.
+
+### 12. Build and test results
+Provide actual command results and test outcomes.
+
+### 13. Release readiness
+State whether the phase is ready for review, blocked, or approved for the next phase.
+
+Never report a test as passed unless it was actually executed.
+
+---
+
+# 22. FINAL INSTRUCTION TO THE IMPLEMENTATION AGENT
+
+Treat this document as the authoritative UI/UX implementation specification for MOMENT, subordinate to the Master PRD and consistent with the Database Design & Security Specification.
+
+Your responsibility is not simply to make the application visually attractive.
+
+Your responsibility is to transform MOMENT into a cohesive, usable, responsive, accessible, reliable, and production-ready application.
+
+Begin with Phase 0: Existing UI Audit.
+
+Do not immediately redesign the application.
+
+First establish what already exists, what works, what is incomplete, what is broken, and what must be preserved.
+
+Then produce a detailed gap analysis and phase-by-phase implementation plan.
+
+Implement one approved phase at a time. Test each phase before proceeding. Preserve existing production functionality and data. Do not invent features, make silent product decisions, or declare work complete without evidence.
+
+**The objective is a production-quality MOMENT experience that faithfully implements the approved product—not a visually impressive prototype with incomplete functionality.**
