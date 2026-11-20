@@ -1,0 +1,2084 @@
+# KEA PARROT
+# TESTING & PRODUCTION READINESS SPECIFICATION
+
+**Document ID:** MOMENT-TPR-005  
+**Document Version:** 1.0  
+**Application Name:** KEA PARROT  
+**Document Type:** Quality Assurance, Testing, Security Validation & Production Readiness  
+**Status:** Implementation Specification  
+**Audience:** AI Coding Agents, Software Engineers, QA Engineers, Security Engineers, DevOps Engineers, Technical Leads and Product Owners  
+**Architecture Baseline:** Existing application architecture, aligned with the approved Master PRD and supporting technical specifications  
+**Database Baseline:** Existing PostgreSQL/Supabase implementation, aligned with the Database Design & Security Specification  
+**API Baseline:** Existing application API and realtime implementation, aligned with the API & Realtime Specification  
+
+---
+
+# 1. DOCUMENT PURPOSE
+
+This document defines the complete testing and production-readiness framework for KEA PARROT.
+
+Its purpose is to ensure that the application is not considered production-ready merely because:
+
+- The application builds successfully.
+- The landing page loads.
+- Users can sign in.
+- Database connections work.
+- A few features appear to function.
+- The application looks correct on a developer's device.
+- The deployment platform reports a successful deployment.
+
+Production readiness requires evidence that the complete application works correctly, securely, reliably and consistently under realistic conditions.
+
+The testing process must establish that:
+
+1. All approved product requirements are implemented.
+2. Existing application functionality has not been unintentionally broken.
+3. Authentication and authorization work correctly.
+4. Database relationships, constraints and Row Level Security (RLS) are effective.
+5. API endpoints enforce the intended authorization and validation rules.
+6. Realtime functionality works without requiring unnecessary page refreshes.
+7. The interface works across supported screen sizes and devices.
+8. User data is protected from unauthorized access, modification or deletion.
+9. Application performance is acceptable under defined test conditions.
+10. Production deployment, rollback, monitoring and incident response procedures are documented and tested.
+11. Existing production users, records, integrations and business operations remain protected throughout the process.
+
+This specification is mandatory for implementation and release validation.
+
+# 2. GOVERNING DOCUMENTS AND REQUIREMENT AUTHORITY
+
+The following documents collectively define the approved implementation baseline.
+
+| Document | Authority |
+|---|---|
+| Document 01 — Master Product Requirements Document | Defines approved product scope, features, user journeys and business rules |
+| Document 02 — Database Design & Security Specification | Defines target database structure, data relationships, RLS, permissions and data protection |
+| Document 03 — UI/UX Implementation Specification | Defines screens, navigation, components, responsive behavior and interface acceptance criteria |
+| Document 04 — API & Realtime Specification | Defines API contracts, validation, authorization, error handling and realtime communication |
+| Document 05 — Testing & Production Readiness Specification | Defines how the implementation is verified and approved for production |
+
+## 2.1 Requirement hierarchy
+
+When implementing and testing the application, follow this hierarchy:
+
+1. Approved Master PRD.
+2. Approved supporting technical specifications.
+3. Explicitly approved product-owner decisions and change records.
+4. Existing production behavior and compatibility requirements.
+5. This testing and production-readiness specification.
+
+This document does not independently authorize new product features or changes to approved product behavior.
+
+Where specifications conflict, the AI coding agent must document the conflict and request a decision rather than silently choosing one.
+
+## 2.2 Unresolved requirements
+
+The agent must not invent values for unresolved requirements.
+
+Examples include:
+
+- Post character limits.
+- Poll option limits.
+- Location discovery radius.
+- Game scoring and difficulty rules.
+- Trending calculation coefficients.
+- Data retention periods.
+- Account deletion grace periods.
+- Performance targets not yet approved.
+- Traffic and concurrency expectations.
+- Recovery Point Objective (RPO).
+- Recovery Time Objective (RTO).
+
+For each unresolved requirement:
+
+1. Identify the relevant document and requirement.
+2. Explain why the decision affects implementation or testing.
+3. Propose a reasonable option where useful.
+4. Explain the technical, security and operational implications.
+5. Obtain approval before treating the proposal as an approved requirement.
+
+The agent may create provisional test cases using explicitly labelled assumptions, but must not represent assumed values as approved product requirements.
+
+# 3. NON-NEGOTIABLE PRODUCTION PRESERVATION RULES
+
+KEA PARROT may already contain working features, user accounts, production data, database structures, integrations and operational configurations.
+
+Testing and production-readiness work must preserve them.
+
+## 3.1 Existing-system-first approach
+
+Before changing anything, the agent MUST inspect the existing system.
+
+The inspection must cover:
+
+- Repository structure.
+- Current application framework and version.
+- Existing package dependencies.
+- Build and deployment configuration.
+- Existing routes and application modules.
+- Authentication implementation.
+- Authorization and role management.
+- Database schema and relationships.
+- Migration history.
+- RLS policies.
+- Database functions and triggers.
+- Storage buckets and access policies.
+- Existing API routes and integrations.
+- Realtime subscriptions and event handling.
+- Environment variables and secrets management.
+- Existing automated tests.
+- Existing monitoring and logging.
+- Production deployment configuration.
+- Existing user-facing workflows.
+
+The agent must not assume that the application matches the target architecture exactly.
+
+## 3.2 Prohibited operations without explicit approval
+
+The agent MUST NOT:
+
+- Reset the production database.
+- Drop production tables to recreate them.
+- Delete existing user records.
+- Delete existing administrator records.
+- Replace authentication tables.
+- Change existing primary-key types without an approved migration plan.
+- Change production user identifiers.
+- Remove existing database relationships without approval.
+- Disable RLS to make application requests work.
+- Replace working authentication with a new implementation without approval.
+- Remove existing API routes without compatibility analysis.
+- Delete existing storage objects or buckets.
+- Overwrite production environment variables without validation.
+- Remove working integrations because they are not part of a new specification.
+- Run destructive test suites against production.
+- Introduce test data into production without an approved cleanup strategy.
+- Expose service-role credentials or privileged secrets to the browser.
+- Hide failing tests by weakening assertions or skipping tests.
+- Modify security controls simply to make automated tests pass.
+
+## 3.3 Database migration safety
+
+Every database change must follow a controlled migration process.
+
+Required steps:
+
+1. Inspect the current production schema.
+2. Inspect migration history.
+3. Compare the current schema with the approved target design.
+4. Identify affected tables, columns, indexes, policies, triggers and functions.
+5. Identify possible data loss or compatibility issues.
+6. Prepare a migration plan.
+7. Test the migration against a representative non-production database.
+8. Verify existing records remain intact.
+9. Verify application compatibility.
+10. Obtain approval for risky production changes.
+11. Execute the migration through the approved deployment process.
+12. Verify the resulting schema and application behavior.
+
+Prefer backward-compatible changes.
+
+Use expand-and-contract migrations where appropriate:
+
+- Add compatible structures first.
+- Deploy code that supports both old and new structures where necessary.
+- Migrate existing data safely.
+- Verify the new implementation.
+- Remove obsolete structures only after explicit approval and confirmation that they are no longer required.
+
+A successful migration must not be judged solely by the absence of SQL errors.
+
+## 3.4 Required preservation evidence
+
+Before and after every risky operation, maintain appropriate evidence of:
+
+- Database schema.
+- Migration version.
+- Relevant record counts.
+- Existing user and administrator records.
+- Important foreign-key relationships.
+- RLS policy configuration.
+- Storage configuration.
+- Application build and deployment version.
+
+Do not expose sensitive personal data in test reports.
+
+# 4. TESTING GOVERNANCE AND RESPONSIBILITIES
+
+## 4.1 Testing principles
+
+All testing must be:
+
+- Requirement-driven.
+- Repeatable.
+- Measurable.
+- Automated where practical.
+- Risk-based.
+- Traceable.
+- Non-destructive.
+- Environment-aware.
+- Documented.
+
+Every critical requirement must have one or more corresponding test cases.
+
+Every failed test must be recorded and tracked until resolved or formally accepted as a release exception by an authorized decision-maker.
+
+## 4.2 Testing categories
+
+The testing framework must include:
+
+1. Static code analysis.
+2. Type checking.
+3. Dependency and package validation.
+4. Unit testing.
+5. Integration testing.
+6. Database testing.
+7. RLS and authorization testing.
+8. API contract testing.
+9. Realtime testing.
+10. UI component testing.
+11. End-to-end testing.
+12. Responsive testing.
+13. Accessibility testing.
+14. Security testing.
+15. Performance testing.
+16. Reliability testing.
+17. Regression testing.
+18. Migration testing.
+19. Backup and recovery testing.
+20. Deployment and rollback testing.
+21. User acceptance testing.
+
+## 4.3 Risk classification
+
+Every defect must be assigned a severity.
+
+| Severity | Definition | Release treatment |
+|---|---|---|
+| P0 — Critical | Data loss, unauthorized privileged access, widespread outage, critical security compromise | Release blocked |
+| P1 — High | Major functionality unavailable, cross-user data exposure, broken authentication, serious authorization failure | Release blocked |
+| P2 — Medium | Important feature degraded, significant workflow failure, limited functional defect | Normally blocks release when core functionality is affected |
+| P3 — Low | Minor visual, usability or non-critical functional defect | May be deferred with approval |
+| P4 — Cosmetic | Cosmetic inconsistency without meaningful functional impact | May be deferred and tracked |
+
+A security vulnerability that permits unauthorized access or modification of user information must not be downgraded merely because it is difficult to reproduce.
+
+# 5. PHASED IMPLEMENTATION AND TESTING STRATEGY
+
+Testing must proceed in controlled phases.
+
+Do not jump directly into production deployment.
+
+## PHASE 0 — EXISTING SYSTEM BASELINE AND RISK AUDIT
+
+**Objective:** Establish the actual state of KEA PARROT before modifying it.
+
+### 5.1 Required activities
+
+Inspect and document:
+
+- Application architecture.
+- Repository health.
+- Existing features.
+- Existing database.
+- Authentication and authorization.
+- API routes.
+- Realtime implementation.
+- Existing UI workflows.
+- Deployment configuration.
+- Environment configuration.
+- Existing automated tests.
+- Known technical debt.
+- Existing production incidents or known defects.
+- Third-party dependencies and integrations.
+
+Identify:
+
+- Broken functionality.
+- Incomplete implementations.
+- Dead code.
+- Duplicate functionality.
+- Unused dependencies.
+- Missing validation.
+- Insecure access patterns.
+- Missing RLS policies.
+- Missing tests.
+- Unhandled errors.
+- Performance bottlenecks.
+- Inconsistent API contracts.
+- Realtime subscription leaks.
+- Unprotected privileged operations.
+
+### 5.2 Required deliverables
+
+1. Existing System Audit Report.
+2. Current Feature Inventory.
+3. Existing Database and Migration Inventory.
+4. Existing API and Realtime Inventory.
+5. Existing Security Assessment.
+6. Existing Test Coverage Report.
+7. Production Risk Register.
+8. Specification Gap Analysis.
+9. Proposed Remediation Plan.
+10. Baseline Git checkpoint.
+
+### 5.3 Exit criteria
+
+- Existing architecture is documented.
+- Production-sensitive systems are identified.
+- Existing data structures are understood.
+- All P0 and P1 baseline findings are documented.
+- No destructive changes have been made.
+- The proposed remediation plan has been reviewed.
+
+**Do not proceed with risky implementation changes while critical production-preservation questions remain unresolved.**
+
+## PHASE 1 — CODE QUALITY AND BUILD VALIDATION
+
+**Objective:** Establish a stable codebase that can be built, checked and maintained reliably.
+
+### 5.4 Required checks
+
+Run the applicable checks supported by the existing project:
+
+- Dependency installation using the approved lockfile.
+- Production build.
+- TypeScript type checking.
+- ESLint or the project's existing linting tool.
+- Formatting validation.
+- Import resolution.
+- Dead-code detection.
+- Circular dependency analysis.
+- Environment variable validation.
+- Configuration validation.
+- Framework-specific production checks.
+
+### 5.5 Code quality requirements
+
+Verify that:
+
+- TypeScript types are used consistently.
+- Critical data is not unnecessarily typed as `any`.
+- Shared logic is not duplicated unnecessarily.
+- Business logic is not accidentally embedded in presentation components.
+- Error handling is consistent.
+- API validation is not bypassed.
+- Secrets are not hardcoded.
+- Debug statements do not leak sensitive information.
+- No development-only behavior is accidentally enabled in production.
+- Existing project conventions are respected.
+
+### 5.6 Build acceptance criteria
+
+- Production build completes successfully.
+- Type checking passes.
+- Required linting checks pass.
+- No unresolved module imports remain.
+- No exposed secrets are found.
+- No critical runtime configuration errors remain.
+- All intentionally deferred warnings are documented.
+
+A successful build does not establish functional correctness.
+
+## PHASE 2 — UNIT AND COMPONENT TESTING
+
+**Objective:** Verify isolated business logic, utilities and UI components.
+
+### 5.7 Unit testing scope
+
+Test:
+
+- Input validation.
+- Authentication-related utility functions.
+- Authorization helpers.
+- Role and permission checks.
+- Poll validation.
+- Vote validation.
+- Game scoring calculations.
+- Game answer validation.
+- Notification formatting.
+- Feed sorting and filtering logic.
+- Location precision and privacy utilities.
+- Pagination.
+- Date and expiration calculations.
+- Error normalization.
+- API response transformations.
+
+The exact business rules must come from the approved specifications.
+
+Do not create alternative scoring, expiration or sorting rules merely to make tests pass.
+
+### 5.8 UI component testing
+
+Test:
+
+- Buttons.
+- Inputs.
+- Forms.
+- Dialogs.
+- Dropdowns.
+- Navigation elements.
+- Cards.
+- Poll components.
+- Game components.
+- Post components.
+- Notification components.
+- Loading indicators.
+- Empty states.
+- Error states.
+- Confirmation dialogs.
+
+Verify:
+
+- Correct rendering.
+- User interaction.
+- Validation messages.
+- Disabled states.
+- Loading behavior.
+- Error behavior.
+- Keyboard accessibility.
+- Responsive layout behavior where applicable.
+
+### 5.9 Exit criteria
+
+- All critical business logic has corresponding unit tests.
+- All critical interactive components have meaningful tests.
+- No known P0 or P1 unit/component defects remain.
+- Test assertions validate actual behavior rather than implementation details alone.
+
+## PHASE 3 — DATABASE, AUTHENTICATION AND SECURITY TESTING
+
+**Objective:** Verify that database integrity, identity, permissions and user data isolation are correct.
+
+This is one of the most important phases.
+
+### 5.10 Database integrity testing
+
+Test all relevant tables and relationships defined in Document 02 and the actual existing database.
+
+Verify:
+
+- Primary-key integrity.
+- Foreign-key integrity.
+- Unique constraints.
+- Check constraints.
+- Nullability.
+- Referential integrity.
+- Expected cascade and restriction behavior.
+- Timestamp consistency.
+- Required indexes.
+- Transaction behavior.
+- Concurrent writes.
+- Data consistency after failures.
+
+Test invalid inputs and conflicting requests.
+
+Examples:
+
+- Creating duplicate usernames where uniqueness is required.
+- Creating a comment linked to a nonexistent post.
+- Submitting a vote against an invalid poll option.
+- Creating an invalid game session.
+- Creating a reaction with an invalid target.
+- Attempting to create a record referencing a deleted parent.
+- Submitting duplicate records under concurrent requests.
+
+The database must enforce critical integrity rules. Do not rely solely on frontend validation.
+
+### 5.11 Authentication testing
+
+Verify:
+
+- User registration.
+- Login.
+- Logout.
+- Session creation.
+- Session expiration.
+- Session refresh.
+- Password recovery.
+- Email verification where required.
+- Authentication persistence.
+- Protected route access.
+- Unauthorized request handling.
+- Account suspension behavior.
+- Account deletion behavior as approved.
+- Existing user compatibility.
+
+Test:
+
+1. Unauthenticated users.
+2. Authenticated users.
+3. Expired sessions.
+4. Invalid sessions.
+5. Suspended accounts.
+6. Users attempting to access another user's resources.
+
+Authentication must be validated on the server for protected operations.
+
+### 5.12 Authorization testing
+
+Verify that users can only perform operations permitted by their approved roles and ownership rules.
+
+Test:
+
+- Regular user permissions.
+- Moderator permissions.
+- Administrator permissions.
+- Super-administrator permissions, if present in the existing approved role model.
+- Resource ownership.
+- Privileged operations.
+- Role escalation attempts.
+- Direct API requests that bypass the UI.
+
+A hidden frontend button is not an authorization control.
+
+The backend must enforce every privileged operation.
+
+### 5.13 Row Level Security testing
+
+Test RLS independently from the frontend.
+
+Use separate test identities and verify:
+
+- User A cannot read User B's private information.
+- User A cannot update User B's profile fields without permission.
+- User A cannot delete User B's content without authorization.
+- Users cannot access blocked or restricted resources where the approved rules prohibit access.
+- Anonymous content remains internally attributable to the authenticated account.
+- Users cannot access privileged moderation records.
+- Users cannot grant themselves moderator or administrator privileges.
+- Users cannot read private reports or moderation notes without authorization.
+- Users cannot bypass ownership restrictions through direct database requests.
+- Storage access follows the approved storage policies.
+
+Test both permitted and denied operations.
+
+For each exposed table, document:
+
+- RLS enabled status.
+- Applicable policies.
+- Intended roles.
+- Allowed operations.
+- Ownership conditions.
+- Cross-user isolation results.
+
+Do not disable RLS to resolve failed application requests.
+
+### 5.14 Service-role and privileged access testing
+
+Verify:
+
+- Service-role credentials are never exposed to client-side bundles.
+- Privileged operations execute only in trusted server environments.
+- Privileged database functions enforce authorization.
+- `SECURITY DEFINER` functions have safe ownership and search-path configuration.
+- Privileged functions do not expose unrestricted access.
+- Administrative operations are logged where required.
+- Server-side authorization is checked before privileged database actions.
+
+### 5.15 Exit criteria
+
+- All critical RLS policies are tested.
+- Cross-user isolation passes.
+- No unauthorized role escalation is possible through tested application paths.
+- No P0 or P1 security defect remains.
+- Database integrity tests pass.
+- Existing production user relationships remain intact.
+
+## PHASE 4 — API AND REALTIME INTEGRATION TESTING
+
+**Objective:** Validate the API and realtime implementation against Document 04.
+
+### 5.16 API testing
+
+For every implemented API endpoint, test:
+
+- Correct HTTP method.
+- Correct route.
+- Request validation.
+- Authentication requirements.
+- Authorization requirements.
+- Successful responses.
+- Invalid requests.
+- Missing fields.
+- Invalid field types.
+- Unauthorized requests.
+- Forbidden requests.
+- Missing resources.
+- Duplicate submissions.
+- Database failures.
+- Rate-limit behavior where implemented.
+- Pagination.
+- Filtering and sorting.
+- Error response consistency.
+
+The API must follow the approved contract.
+
+Do not change request or response formats without documenting compatibility implications and obtaining approval where required.
+
+### 5.17 API security tests
+
+Test:
+
+- Broken object-level authorization.
+- Broken function-level authorization.
+- Insecure direct object references.
+- Mass assignment.
+- Parameter tampering.
+- SQL injection.
+- Cross-site scripting through user-generated content.
+- Excessive data exposure.
+- Unvalidated input.
+- Replay of sensitive operations.
+- Rate-limit bypass.
+- Unauthorized administrative requests.
+
+The test suite must include direct API calls, not just browser interactions.
+
+### 5.18 Idempotency and duplicate-operation testing
+
+For operations that require protection against duplicate submissions, verify the behavior defined by Document 04.
+
+Examples may include:
+
+- Poll voting.
+- Game answer submission.
+- Game session completion.
+- Reactions.
+- Content creation.
+- Notification-related operations.
+
+Where an operation supports an idempotency key, verify that repeated requests with the same key do not produce duplicate side effects.
+
+Where an operation does not have an approved idempotency mechanism, document the risk rather than inventing a new API contract.
+
+### 5.19 Realtime testing
+
+Verify all approved realtime features.
+
+Test:
+
+- New content updates.
+- Reactions.
+- Comments.
+- Poll vote updates.
+- Notifications.
+- Other events explicitly defined in Document 04.
+
+For each event, verify:
+
+1. Correct event source.
+2. Correct recipient or subscription audience.
+3. Correct payload.
+4. Correct authorization.
+5. Correct event ordering where ordering is required.
+6. No unauthorized data exposure.
+7. No duplicate processing where deduplication is required.
+8. Correct UI update.
+9. Correct reconnect behavior.
+10. Correct handling of stale subscriptions.
+
+### 5.20 Realtime reliability
+
+Test:
+
+- Initial connection.
+- Connection interruption.
+- Network recovery.
+- Browser tab backgrounding.
+- Browser tab restoration.
+- Session expiration.
+- Reauthentication.
+- Duplicate subscriptions.
+- Subscription cleanup.
+- Component unmounting.
+- Rapid navigation between screens.
+- Multiple concurrent clients.
+- Slow network conditions.
+
+Verify that:
+
+- Disconnected users can recover without restarting the application.
+- Reconnection does not create duplicate listeners.
+- Components clean up subscriptions correctly.
+- Stale events do not overwrite newer state.
+- The UI does not silently assume that a failed realtime event was successfully persisted.
+- Realtime is not treated as the authoritative database.
+
+### 5.21 Realtime recovery and consistency
+
+Realtime notifications can be missed.
+
+Where the approved API design supports it, verify that users can recover the correct state through an authoritative API/database read after reconnection.
+
+Do not rely on transient realtime messages as the only record of an important user action.
+
+### 5.22 Exit criteria
+
+- All approved API contracts have tests.
+- All critical authorization checks pass.
+- Realtime events are correctly scoped.
+- Reconnection and subscription cleanup work.
+- No P0 or P1 API/realtime defect remains.
+- Database state remains authoritative.
+
+## PHASE 5 — END-TO-END PRODUCT WORKFLOW TESTING
+
+**Objective:** Verify that real users can complete the approved KEA PARROT journeys from beginning to end.
+
+The test suite must reflect the Master PRD and UI/UX Specification.
+
+### 5.23 Authentication and onboarding
+
+Test:
+
+- Landing page access.
+- Guest browsing.
+- Registration.
+- Login.
+- Logout.
+- Profile creation.
+- Profile updates.
+- Required consent flows.
+- Protected pages.
+- Session expiration.
+- Unauthorized access handling.
+
+Verify the approved MVP eligibility requirement of 18+.
+
+Do not invent additional identity-verification requirements unless separately approved.
+
+### 5.24 Discovery experience
+
+Test:
+
+- Nearby discovery.
+- Global discovery.
+- Trending discovery.
+- Feed loading.
+- Feed pagination or continuation behavior.
+- Filtering.
+- Empty feeds.
+- Network errors.
+- Permission-denied states.
+- Authenticated and guest behavior.
+
+Verify that location permission denial does not prevent access to global discovery.
+
+Verify that the public interface does not expose exact GPS coordinates.
+
+### 5.25 Social interactions
+
+Test:
+
+- Creating an approved post type.
+- Anonymous posting.
+- Attributed posting.
+- Editing and deleting content where supported.
+- Reacting to content.
+- Removing a reaction.
+- Comment creation.
+- Comment retrieval.
+- Reporting content.
+- Blocking users.
+- Visibility changes caused by moderation actions.
+
+Anonymous posting must not mean that the platform loses internal accountability.
+
+### 5.26 Poll workflows
+
+Test:
+
+- Poll creation.
+- Option validation.
+- Poll retrieval.
+- Voting.
+- Duplicate voting behavior.
+- Vote replacement behavior, if approved.
+- Poll expiration.
+- Results calculation.
+- Concurrent voting.
+- Realtime result updates.
+- Unauthorized vote attempts.
+
+Verify that server-side rules determine valid votes and results.
+
+Do not trust client-calculated totals.
+
+### 5.27 Game workflows
+
+The MVP includes exactly the three approved games:
+
+- QuickMind.
+- This or That.
+- Mystery Word.
+
+Test each game independently.
+
+For every game, verify:
+
+- Game discovery.
+- Game launch.
+- Session creation.
+- Question or challenge retrieval.
+- Valid answer submission.
+- Invalid answer handling.
+- Server-side score calculation.
+- Session completion.
+- Result retrieval.
+- Result sharing where approved.
+- Expired or interrupted sessions.
+- Duplicate submissions.
+- Unauthorized score manipulation.
+
+The server must calculate and validate scores.
+
+Never trust a score submitted directly by the client.
+
+Do not introduce additional games into the MVP test scope.
+
+### 5.28 Notifications
+
+Test:
+
+- Notification generation.
+- Correct recipient.
+- Correct notification content.
+- Read/unread behavior.
+- Notification preferences.
+- Realtime delivery.
+- Reconnection behavior.
+- Duplicate prevention where required.
+- Unauthorized notification access.
+
+Test optional web push only if it is implemented and approved for the release.
+
+### 5.29 Moderation and administration
+
+Test:
+
+- Report submission.
+- Report retrieval by authorized staff.
+- Moderation review.
+- Content removal.
+- User restrictions.
+- User suspension.
+- Administrative action logging.
+- Audit history.
+- Unauthorized moderation access.
+- Attempts to modify audit records.
+- Administrative role restrictions.
+
+Verify that moderation actions produce the required audit records.
+
+### 5.30 Guest and authenticated-user differences
+
+Test both guest and authenticated experiences.
+
+Confirm that:
+
+- Guest browsing follows the approved access rules.
+- Protected actions require authentication.
+- Guest users cannot bypass API authorization.
+- Restricted content is not exposed through alternate routes.
+- Authentication does not unexpectedly destroy or duplicate the current browsing state unless specified.
+
+### 5.31 Exit criteria
+
+- All critical user journeys pass.
+- All MVP feature groups have end-to-end coverage.
+- Critical errors are surfaced to the user appropriately.
+- No critical workflow silently fails.
+- No P0 or P1 functional defect remains.
+
+## PHASE 6 — UI, RESPONSIVE AND ACCESSIBILITY VALIDATION
+
+**Objective:** Verify the application against Document 03 across supported devices and screen sizes.
+
+### 5.32 Responsive testing
+
+Test at minimum:
+
+- Small mobile screens.
+- Standard mobile screens.
+- Large mobile screens.
+- Tablets.
+- Laptop screens.
+- Desktop screens.
+- Wide desktop screens.
+
+Use representative viewport sizes, including:
+
+| Category | Example viewport |
+|---|---|
+| Small mobile | 320 × 568 |
+| Mobile | 375 × 812 |
+| Large mobile | 430 × 932 |
+| Tablet | 768 × 1024 |
+| Laptop | 1366 × 768 |
+| Desktop | 1440 × 900 |
+| Wide desktop | 1920 × 1080 |
+
+These are test viewport examples, not a replacement for the approved responsive breakpoints in Document 03.
+
+### 5.33 Responsive acceptance criteria
+
+Verify:
+
+- No unintended horizontal overflow.
+- No overlapping content.
+- No clipped buttons or forms.
+- No inaccessible navigation.
+- No broken modal positioning.
+- No fixed elements covering important content.
+- No unusable input areas.
+- No keyboard obstruction that prevents form completion.
+- No broken scrolling behavior.
+- No excessive unused space.
+- No inconsistent mobile navigation.
+- No unreadable text.
+- No content disappearing at supported viewport sizes.
+
+Test both portrait and landscape orientations where relevant.
+
+### 5.34 Browser testing
+
+Test the supported browser matrix established by the project's product and deployment requirements.
+
+At minimum, evaluate current supported versions of:
+
+- Google Chrome.
+- Microsoft Edge.
+- Mozilla Firefox.
+- Safari.
+
+Also test mobile browser behavior on supported iOS and Android environments where available.
+
+Do not claim cross-browser compatibility based solely on testing in Chrome.
+
+### 5.35 Accessibility testing
+
+Apply WCAG 2.2 Level AA as the accessibility validation target unless a different approved standard is documented.
+
+Test:
+
+- Keyboard navigation.
+- Visible focus indicators.
+- Semantic HTML.
+- Form labels.
+- Accessible names.
+- Screen-reader announcements.
+- Color contrast.
+- Error identification.
+- Dialog focus management.
+- Focus restoration.
+- Heading structure.
+- Button semantics.
+- Link semantics.
+- Reduced-motion preferences.
+- Touch target usability.
+
+Automated accessibility scanners are useful but do not replace manual testing.
+
+### 5.36 UI state coverage
+
+For each major screen, test the applicable states:
+
+- Initial loading.
+- Loading more content.
+- Empty state.
+- Success state.
+- Validation failure.
+- Server failure.
+- Network failure.
+- Offline state.
+- Unauthorized state.
+- Permission denied.
+- Expired session.
+- Suspended account.
+- Restricted content.
+- Reconnecting realtime connection.
+
+### 5.37 Exit criteria
+
+- Critical screens match the approved UI/UX specification.
+- All required viewport categories have been checked.
+- No P0 or P1 usability or layout defects remain.
+- Critical accessibility failures are resolved.
+- Remaining accessibility issues are documented and assigned.
+
+## PHASE 7 — SECURITY AND VULNERABILITY ASSESSMENT
+
+**Objective:** Identify and resolve application security weaknesses before release.
+
+### 5.38 Security assessment scope
+
+Evaluate:
+
+- Authentication.
+- Authorization.
+- Session management.
+- Database access.
+- RLS.
+- API security.
+- Input validation.
+- Output encoding.
+- File and storage access.
+- Privileged operations.
+- Secret management.
+- Rate limiting.
+- Abuse prevention.
+- Logging.
+- Dependency vulnerabilities.
+- Security headers.
+- Cross-origin behavior.
+- Realtime authorization.
+
+### 5.39 OWASP coverage
+
+Use the current applicable OWASP guidance, including the OWASP Top 10 for web application risks and relevant API Security Top 10 categories.
+
+The security assessment must cover:
+
+- Broken access control.
+- Cryptographic failures.
+- Injection.
+- Insecure design.
+- Security misconfiguration.
+- Vulnerable and outdated components.
+- Authentication failures.
+- Software and data integrity failures.
+- Security logging and monitoring failures.
+- Server-side request forgery where relevant.
+- API object-level authorization.
+- API function-level authorization.
+- API resource consumption.
+- Unsafe API consumption.
+
+### 5.40 User-generated content security
+
+KEA PARROT allows user-generated content.
+
+Test protection against:
+
+- Stored XSS.
+- Reflected XSS.
+- DOM-based XSS.
+- Malicious HTML.
+- Script injection.
+- Unsafe links.
+- Malicious filenames.
+- Unexpected markup.
+- Content spoofing.
+- Abuse of anonymous posting.
+
+All user-generated content must be handled according to the application's approved rendering and sanitization strategy.
+
+Do not use unsafe HTML rendering as a shortcut.
+
+### 5.41 Location privacy testing
+
+Verify:
+
+- Exact user coordinates are not exposed publicly.
+- Location permission is requested only when needed.
+- Denying location does not disable global discovery.
+- No unauthorized background location collection occurs.
+- Stored location information follows the approved privacy design.
+- Location access is restricted according to authorization rules.
+- Public responses do not reveal sensitive location metadata.
+
+### 5.42 Abuse and automated attack testing
+
+Test appropriate protections against:
+
+- Spam submissions.
+- Repeated voting attempts.
+- Excessive game submissions.
+- Repeated account creation.
+- Brute-force login attempts.
+- Automated content posting.
+- Notification abuse.
+- Report abuse.
+- Excessive API requests.
+
+Rate limits and abuse thresholds must follow approved product and API requirements.
+
+If thresholds have not been approved, record the missing decision rather than inventing production policy.
+
+### 5.43 Security scanning
+
+Use appropriate tools for:
+
+- Dependency vulnerability scanning.
+- Static application security testing.
+- Secret scanning.
+- Dynamic application security testing.
+- Database policy testing.
+- API security testing.
+
+Security testing must use controlled environments and test accounts.
+
+Do not run destructive or aggressive security scans against production without explicit authorization and an approved scope.
+
+### 5.44 Security acceptance criteria
+
+Before production release:
+
+- No known exploitable P0 or P1 vulnerabilities remain.
+- No exposed privileged credentials remain.
+- Critical authorization tests pass.
+- Cross-user data isolation passes.
+- RLS is enabled and verified on applicable exposed tables.
+- Security-sensitive actions are appropriately logged.
+- Critical dependency vulnerabilities are resolved or formally accepted with documented risk and approval.
+
+A scanner reporting zero vulnerabilities does not prove that the application is secure.
+
+## PHASE 8 — PERFORMANCE AND SCALABILITY VALIDATION
+
+**Objective:** Verify that KEA PARROT performs reliably under realistic usage conditions.
+
+### 5.45 Performance testing scope
+
+Test:
+
+- Initial page load.
+- Route transitions.
+- Feed retrieval.
+- Database queries.
+- API response times.
+- Realtime event processing.
+- Image and media delivery.
+- Poll voting.
+- Game session operations.
+- Notification retrieval.
+- Authentication.
+- Concurrent user activity.
+
+### 5.46 Performance measurement
+
+Collect:
+
+- p50 response time.
+- p95 response time.
+- p99 response time.
+- Error rate.
+- Throughput.
+- CPU utilization where available.
+- Memory usage.
+- Database connection utilization.
+- Database query duration.
+- Realtime connection stability.
+- Client-side performance metrics.
+
+### 5.47 Web performance
+
+Evaluate Core Web Vitals:
+
+- Largest Contentful Paint (LCP).
+- Interaction to Next Paint (INP).
+- Cumulative Layout Shift (CLS).
+
+Use the following recommended user-experience targets for field data where sufficient data is available:
+
+| Metric | Good target |
+|---|---|
+| LCP | ≤ 2.5 seconds |
+| INP | ≤ 200 milliseconds |
+| CLS | ≤ 0.1 |
+
+These are web performance guidance targets, not a guarantee that every user or network will meet them.
+
+Measure both mobile and desktop behavior.
+
+### 5.48 Database performance
+
+Inspect:
+
+- Slow queries.
+- Missing indexes.
+- Unnecessary full-table scans.
+- N+1 query patterns.
+- Excessive joins.
+- Unbounded queries.
+- Inefficient pagination.
+- Repeated database calls.
+- Connection exhaustion.
+- Lock contention.
+- Realtime query overhead.
+
+Use query plans where appropriate.
+
+Do not add indexes blindly. Validate the performance impact and write overhead.
+
+### 5.49 Load testing
+
+Establish a realistic test profile before running load tests.
+
+The test plan must identify:
+
+- Expected concurrent users.
+- Expected requests per second.
+- Feed retrieval frequency.
+- Poll interaction frequency.
+- Game session activity.
+- Realtime connection volume.
+- Data volume.
+- Test duration.
+- Ramp-up behavior.
+- Error thresholds.
+
+Traffic targets must be approved or explicitly labelled provisional.
+
+Test:
+
+1. Baseline load.
+2. Expected load.
+3. Elevated load.
+4. Short burst load.
+5. Recovery after elevated load.
+
+Run load tests in a controlled environment with representative data.
+
+Do not conduct uncontrolled stress testing against production.
+
+### 5.50 Performance acceptance criteria
+
+Performance results must be compared with approved service targets.
+
+If targets have not been approved, the agent must:
+
+- Establish a measured baseline.
+- Identify bottlenecks.
+- Document current performance.
+- Propose measurable targets.
+- Obtain approval.
+
+Do not claim scalability simply because a load test completed.
+
+## PHASE 9 — DATA LIFECYCLE, BACKUP AND RECOVERY VALIDATION
+
+**Objective:** Verify that KEA PARROT can protect and recover its data.
+
+### 5.51 Backup validation
+
+Document:
+
+- Database backup mechanism.
+- Backup frequency.
+- Backup retention.
+- Backup encryption.
+- Backup access controls.
+- Storage location.
+- Backup monitoring.
+- Recovery procedure.
+
+Confirm that backups cover the required data and configuration.
+
+Database backups alone may not cover all required application assets, storage objects or external service configurations.
+
+### 5.52 Restore testing
+
+A backup is not considered reliable until a restore has been tested.
+
+Perform controlled restoration into an isolated environment.
+
+Verify:
+
+- Database structure.
+- Record integrity.
+- User relationships.
+- Authentication compatibility.
+- Critical indexes.
+- RLS policies.
+- Functions and triggers.
+- Storage references.
+- Application compatibility.
+
+Record:
+
+- Backup identifier.
+- Backup timestamp.
+- Restore start time.
+- Restore completion time.
+- Validation results.
+- Any missing or inconsistent data.
+
+### 5.53 RPO and RTO
+
+Define and obtain approval for:
+
+**Recovery Point Objective (RPO):** Maximum acceptable data loss measured in time.
+
+**Recovery Time Objective (RTO):** Maximum acceptable recovery time after a failure.
+
+These values must be determined according to actual business requirements and infrastructure capabilities.
+
+Do not invent or advertise RPO/RTO guarantees.
+
+### 5.54 Data lifecycle tests
+
+Test the approved lifecycle rules for:
+
+- Account deletion.
+- Content deletion.
+- Data anonymization.
+- Moderation records.
+- Audit logs.
+- Location data.
+- Notifications.
+- User-generated content.
+- Associated storage assets.
+
+Verify that deletion behavior does not unintentionally remove records that must be preserved for legitimate operational, security or legal purposes.
+
+Retention periods and deletion grace periods must follow approved decisions.
+
+### 5.55 Exit criteria
+
+- Backup procedures are documented.
+- A restore test has been completed.
+- Restored data passes integrity checks.
+- RPO and RTO are approved or explicitly recorded as unresolved.
+- Data lifecycle behavior matches approved requirements.
+
+## PHASE 10 — DEPLOYMENT, RELEASE AND ROLLBACK VALIDATION
+
+**Objective:** Establish a controlled and repeatable production deployment process.
+
+### 5.56 Environment separation
+
+Maintain clear separation between:
+
+- Local development.
+- Automated testing.
+- Staging.
+- Production.
+
+Verify:
+
+- Correct environment variables.
+- Correct database connections.
+- Correct authentication configuration.
+- Correct storage configuration.
+- Correct API endpoints.
+- Correct logging configuration.
+- Correct third-party integrations.
+- Correct deployment secrets.
+
+Never point automated destructive test suites at production.
+
+### 5.57 CI/CD validation
+
+The deployment pipeline should include applicable automated gates:
+
+1. Dependency installation.
+2. Type checking.
+3. Linting.
+4. Unit tests.
+5. Component tests.
+6. Integration tests.
+7. API tests.
+8. Database and RLS tests.
+9. Production build.
+10. Security scans.
+11. Deployment checks.
+12. Post-deployment smoke tests.
+
+A failed critical gate must stop the release.
+
+Do not configure pipelines to silently ignore failing critical tests.
+
+### 5.58 Release process
+
+Every release must have:
+
+- Release identifier.
+- Source commit.
+- Deployment environment.
+- Change summary.
+- Related requirements.
+- Database migration summary.
+- Test results.
+- Known issues.
+- Rollback plan.
+- Deployment owner or responsible operator.
+- Post-deployment validation.
+
+### 5.59 Migration and deployment ordering
+
+The deployment sequence must account for application/database compatibility.
+
+Where necessary:
+
+1. Apply backward-compatible database changes.
+2. Verify database health.
+3. Deploy compatible application code.
+4. Run smoke tests.
+5. Verify critical workflows.
+6. Monitor application behavior.
+7. Complete any approved cleanup only after compatibility is confirmed.
+
+The exact ordering must be determined by the actual migration and deployment dependencies.
+
+### 5.60 Rollback requirements
+
+The agent must create a rollback plan for each production release.
+
+The plan must identify:
+
+- How to roll back application code.
+- Whether database changes are reversible.
+- How to handle incompatible schema changes.
+- How to preserve data written after deployment.
+- How to restore the previous stable application version.
+- How to verify the rollback.
+- Who authorizes rollback.
+
+A code rollback does not automatically reverse a database migration.
+
+Do not run destructive reverse migrations merely because a deployment fails.
+
+Prefer forward-compatible database changes and corrective migrations where appropriate.
+
+### 5.61 Post-deployment smoke tests
+
+Immediately after deployment, verify:
+
+- Application availability.
+- Landing page.
+- Authentication.
+- Session persistence.
+- Critical API endpoints.
+- Database connectivity.
+- RLS behavior.
+- Feed retrieval.
+- Post creation.
+- Poll interaction.
+- Game session operation.
+- Notifications.
+- Realtime connection.
+- Moderation access.
+- Error monitoring.
+
+The smoke test suite must use controlled test accounts and avoid destructive operations against real user content.
+
+### 5.62 Exit criteria
+
+- CI/CD gates are operational.
+- Deployment procedure is documented.
+- Rollback procedure is documented and validated.
+- Database migration risks are understood.
+- Smoke tests pass.
+- No critical production regression is detected.
+
+## PHASE 11 — MONITORING, OBSERVABILITY AND INCIDENT READINESS
+
+**Objective:** Ensure that KEA PARROT can be monitored and operated after launch.
+
+### 5.63 Application monitoring
+
+Implement or verify appropriate monitoring for:
+
+- Application errors.
+- API failures.
+- Database failures.
+- Authentication failures.
+- Realtime disconnections.
+- Slow requests.
+- Deployment failures.
+- Resource exhaustion.
+- Unexpected traffic spikes.
+- Critical background or scheduled tasks, if implemented.
+
+Use the existing approved monitoring stack where available.
+
+Sentry is part of the technical baseline, but the agent must first inspect the current integration and avoid creating duplicate monitoring systems unnecessarily.
+
+### 5.64 Structured logging
+
+Logs should provide sufficient context to diagnose issues without exposing sensitive information.
+
+Include where appropriate:
+
+- Timestamp.
+- Environment.
+- Application version.
+- Request or correlation ID.
+- Operation.
+- Result.
+- Error category.
+- Relevant non-sensitive context.
+
+Never log:
+
+- Passwords.
+- Authentication tokens.
+- Service-role keys.
+- Private credentials.
+- Unnecessary personal information.
+- Sensitive location coordinates.
+- Private user content unless explicitly necessary and approved for a narrowly defined operational purpose.
+
+### 5.65 Alerting
+
+Define alerts for significant operational failures.
+
+Potential alert categories:
+
+- Application unavailable.
+- Sustained API error rate.
+- Database connection failures.
+- Authentication service failure.
+- Realtime outage.
+- Abnormal latency.
+- Failed migrations.
+- Backup failure.
+- Security-related events.
+- Unexpected resource consumption.
+
+Alert thresholds and notification channels must be approved based on actual infrastructure and operating requirements.
+
+### 5.66 Incident response
+
+Document an incident response process covering:
+
+1. Detection.
+2. Classification.
+3. Containment.
+4. Investigation.
+5. Recovery.
+6. User impact assessment.
+7. Communication.
+8. Post-incident review.
+
+Maintain an incident record containing:
+
+- Incident identifier.
+- Start and detection times.
+- Affected services.
+- Severity.
+- User impact.
+- Technical cause.
+- Mitigation.
+- Recovery action.
+- Follow-up tasks.
+
+### 5.67 Security incident readiness
+
+Establish procedures for:
+
+- Exposed credentials.
+- Unauthorized database access.
+- Account compromise.
+- User data exposure.
+- Privilege escalation.
+- Malicious content attacks.
+- Suspicious administrative activity.
+
+Credential rotation and incident containment procedures must be documented and tested where practical.
+
+Legal and regulatory notification obligations must be reviewed with qualified professionals. Do not invent notification deadlines or claim compliance without verification.
+
+# 6. REQUIRED AUTOMATED TEST ARCHITECTURE
+
+The agent must establish a maintainable testing structure compatible with the existing repository.
+
+Do not introduce unnecessary testing frameworks or replace working tooling without justification.
+
+## 6.1 Test organization
+
+A suggested logical organization is:
+
+```text
+tests/
+  unit/
+  components/
+  integration/
+    database/
+    auth/
+    api/
+    realtime/
+  e2e/
+  security/
+  performance/
+  migrations/
+  fixtures/
+  helpers/
+  reports/
+```
+
+Adapt this structure to existing project conventions.
+
+## 6.2 Test data management
+
+Use dedicated test identities and controlled fixtures.
+
+Test data must:
+
+- Be isolated from production.
+- Be repeatable.
+- Have deterministic setup where practical.
+- Avoid real user personal information.
+- Avoid shared mutable fixtures that create unreliable tests.
+- Be cleaned up safely.
+- Preserve referential integrity.
+
+Where production-like datasets are needed, use appropriately anonymized or synthetic data.
+
+## 6.3 Test identity matrix
+
+Create controlled identities representing the approved roles.
+
+Examples:
+
+- Guest visitor.
+- Standard authenticated user.
+- Second standard user.
+- Blocked user relationship.
+- Suspended user.
+- Moderator.
+- Administrator.
+- Super-administrator, if present in the approved role model.
+
+Do not create unauthorized roles merely for testing convenience.
+
+## 6.4 Test result reporting
+
+Each test execution should report:
+
+- Test name.
+- Test category.
+- Requirement reference.
+- Environment.
+- Result.
+- Duration.
+- Failure details.
+- Related defect.
+- Execution timestamp.
+
+Critical tests must be traceable to approved requirements.
+
+# 7. REQUIREMENT TRACEABILITY MATRIX
+
+The agent must maintain a living traceability matrix.
+
+The following table establishes the minimum coverage.
+
+| Product/technical area | Required validation |
+|---|---|
+| Authentication | Registration, login, sessions, logout, protected access |
+| Profiles | Creation, updates, ownership and privacy |
+| Discovery | Nearby, global, trending and empty/error states |
+| Posts | Creation, retrieval, deletion and visibility |
+| Anonymous posting | Public anonymity and internal accountability |
+| Reactions | Authorization, uniqueness and consistency |
+| Comments | Validation, ownership and retrieval |
+| Polls | Creation, voting, duplicate handling and results |
+| Games | Session integrity, server-side scoring and completion |
+| Notifications | Delivery, recipient authorization and preferences |
+| Location | Permission handling and privacy |
+| Blocking | Correct visibility and interaction restrictions |
+| Moderation | Reporting, review, restrictions and audit trail |
+| Administration | Role enforcement and privileged operations |
+| Database | Integrity, migrations and RLS |
+| APIs | Contract, validation and authorization |
+| Realtime | Delivery, access control, reconnect and cleanup |
+| UI/UX | Responsive behavior, states and accessibility |
+| Security | Vulnerability assessment and abuse resistance |
+| Performance | Browser, API, database and load behavior |
+| Recovery | Backup, restoration and data integrity |
+| Deployment | CI/CD, smoke tests and rollback |
+| Monitoring | Errors, alerts and incident handling |
+
+For each requirement, record:
+
+- Requirement identifier.
+- Source document.
+- Implementation status.
+- Test case identifier.
+- Test result.
+- Defect reference.
+- Approval status.
+
+No critical requirement may be marked complete without supporting evidence.
+
+# 8. PRODUCTION READINESS SCORECARD
+
+A production-readiness scorecard must be maintained.
+
+Scoring must not hide critical failures.
+
+| Category | Required evidence |
+|---|---|
+| Requirements | Approved MVP requirements mapped to implementation and tests |
+| Code quality | Build, type checking, linting and static analysis |
+| Functionality | Unit, integration and end-to-end test results |
+| Database | Integrity, migration and RLS validation |
+| Authentication | Session and identity tests |
+| Authorization | Role and ownership tests |
+| API | Contract and security test results |
+| Realtime | Delivery, isolation and reconnection tests |
+| UI/UX | Responsive and accessibility validation |
+| Security | Security assessment and vulnerability disposition |
+| Performance | Measured baseline and approved targets |
+| Reliability | Failure handling and recovery tests |
+| Backup | Successful backup and restore evidence |
+| Deployment | Validated release and rollback procedures |
+| Monitoring | Operational dashboards, logging and alerts |
+| Documentation | Current technical and operational documentation |
+
+## 8.1 Release gate rules
+
+The following conditions are mandatory:
+
+- No unresolved P0 defect.
+- No unresolved P1 defect.
+- No known exploitable critical security vulnerability.
+- No unapproved destructive database migration.
+- No unexplained data-integrity failure.
+- No critical cross-user data exposure.
+- No critical authentication or authorization failure.
+- No failed critical end-to-end workflow.
+- No failed production build.
+- No missing rollback plan.
+- No untested production database migration.
+- No unresolved critical backup or recovery failure.
+
+A high numerical readiness score cannot override a failed mandatory release gate.
+
+## 8.2 Defect exceptions
+
+Any accepted release exception must include:
+
+- Defect identifier.
+- Severity.
+- Business impact.
+- Technical impact.
+- Security implications.
+- Temporary mitigation.
+- Responsible owner.
+- Planned resolution.
+- Formal approval.
+
+Security, data-loss and authorization defects must not be waived casually.
+
+# 9. DEFINITION OF DONE
+
+A feature is not complete merely because its interface exists.
+
+A feature is complete only when:
+
+1. It matches the approved requirement.
+2. Its business logic is implemented.
+3. Its API behavior matches the approved contract.
+4. Its database behavior is correct.
+5. Authorization is enforced.
+6. Relevant RLS policies are verified.
+7. Input validation is implemented.
+8. Error states are handled.
+9. Loading and empty states are handled.
+10. Realtime behavior works where required.
+11. Responsive behavior is validated.
+12. Accessibility has been considered and tested.
+13. Unit tests exist where applicable.
+14. Integration tests exist where applicable.
+15. End-to-end tests cover critical user journeys.
+16. No unresolved P0 or P1 defect remains.
+17. Documentation is updated.
+18. The change has been reviewed.
+19. A Git checkpoint is created after successful completion.
+
+# 10. GIT, CHANGE CONTROL AND ENGINEERING SAFETY
+
+## 10.1 Git checkpoints
+
+Create clear checkpoints:
+
+- Before starting a phase.
+- After completing a phase.
+- Before high-risk refactoring.
+- Before database migration work.
+- Before production release.
+
+Commit messages must describe the actual work performed.
+
+Do not claim a phase is complete merely because a commit exists.
+
+## 10.2 Change records
+
+Every material change must document:
+
+- Change identifier.
+- Reason for change.
+- Requirement reference.
+- Files affected.
+- Database impact.
+- API impact.
+- Realtime impact.
+- Security impact.
+- Test coverage.
+- Migration requirements.
+- Backward compatibility.
+- Deployment implications.
+- Rollback implications.
+
+## 10.3 Regression protection
+
+Before modifying an existing feature:
+
+1. Identify its current behavior.
+2. Record relevant existing tests.
+3. Add missing regression tests where practical.
+4. Make the smallest safe change.
+5. Run relevant tests.
+6. Run broader regression tests.
+7. Compare behavior before and after.
+
+Do not remove existing functionality simply because it is not mentioned in a newly written technical document.
+
+# 11. REQUIRED FINAL DELIVERABLES
+
+At the end of the testing and production-readiness project, the agent must provide the following deliverables.
+
+## 11.1 Audit and engineering reports
+
+- Existing System Baseline Report.
+- Architecture and Specification Gap Report.
+- Code Quality Report.
+- Security Assessment Report.
+- Database and RLS Audit Report.
+- API and Realtime Test Report.
+- UI/UX and Accessibility Report.
+- Performance Report.
+- Reliability and Recovery Report.
+- Production Readiness Report.
+
+## 11.2 Testing artifacts
+
+- Unit test suite.
+- Component test suite.
+- Integration test suite.
+- Database and RLS test suite.
+- API contract test suite.
+- Realtime test suite.
+- End-to-end test suite.
+- Security test results.
+- Performance test results.
+- Migration test results.
+- Smoke test suite.
+- Regression test suite.
+
+## 11.3 Operational artifacts
+
+- Environment configuration documentation.
+- Deployment procedure.
+- Database migration procedure.
+- Rollback procedure.
+- Backup and restore procedure.
+- Monitoring and alerting documentation.
+- Incident response procedure.
+- Release checklist.
+- Production verification checklist.
+
+## 11.4 Final completion report
+
+The final report must contain:
+
+1. Executive summary.
+2. Original system condition.
+3. Work completed.
+4. Features validated.
+5. Files created or modified.
+6. Database changes.
+7. API changes.
+8. Realtime changes.
+9. Security improvements.
+10. Performance findings.
+11. Test execution summary.
+12. Failed tests and resolutions.
+13. Known issues.
+14. Unresolved decisions.
+15. Production risks.
+16. Deployment status.
+17. Rollback readiness.
+18. Git checkpoint identifiers.
+19. Remaining work.
+20. Final production-readiness recommendation.
+
+The agent must distinguish between:
+
+- Implemented.
+- Tested.
+- Passed.
+- Failed.
+- Not tested.
+- Blocked.
+- Deferred.
+- Approved exception.
+
+Never describe an untested feature as verified.
+
+# 12. AI CODING AGENT EXECUTION INSTRUCTIONS
+
+The following instructions are mandatory.
+
+## 12.1 Do not start by rewriting the application
+
+First inspect the current KEA PARROT codebase and production architecture.
+
+The goal is to make the existing application production-ready, not automatically rebuild it.
+
+## 12.2 Follow the approved specifications
+
+Read and reconcile:
+
+- Document 01 — Master PRD.
+- Document 02 — Database Design & Security Specification.
+- Document 03 — UI/UX Implementation Specification.
+- Document 04 — API & Realtime Specification.
+- Document 05 — Testing & Production Readiness Specification.
+
+Build a requirement traceability matrix before implementing substantial changes.
+
+## 12.3 Do not invent missing requirements
+
+When a requirement is unresolved:
+
+- Identify it.
+- Explain its impact.
+- Propose a solution if appropriate.
+- Request approval.
+
+Do not independently establish product rules, database retention periods, game scoring rules, security policies or operational guarantees.
+
+## 12.4 Do not skip testing
+
+Do not mark a phase complete without its required evidence.
+
+Do not:
+
+- Skip failed tests.
+- Weaken assertions to force passing results.
+- Hide warnings.
+- Ignore security findings.
+- Claim untested functionality works.
+- Use mock data as proof of production integration.
+- Use a successful build as proof of production readiness.
+
+Mocks are permitted for isolated tests, but critical integration behavior must also be verified against realistic services in a controlled environment.
+
+## 12.5 Preserve existing production systems
+
+Before every risky change:
+
+- Inspect dependencies.
+- Establish a Git checkpoint.
+- Understand the data impact.
+- Prepare a rollback strategy.
+- Test in a non-production environment.
+- Obtain approval where required.
+
+No destructive production operation is authorized by this document.
+
+## 12.6 Work in phases
+
+Execute the phases in order unless a documented dependency or risk requires a different sequence.
+
+Before each phase, report:
+
+- Objective.
+- Existing conditions.
+- Planned work.
+- Files and systems affected.
+- Risks.
+- Tests required.
+- Exit criteria.
+
+After each phase, report:
+
+- Work completed.
+- Files changed.
+- Tests executed.
+- Tests passed.
+- Tests failed.
+- Security findings.
+- Remaining issues.
+- Git checkpoint.
+
+Do not proceed past a release-blocking failure without an approved remediation or exception.
+
+## 12.7 Keep changes focused
+
+Prefer:
+
+- Small, reviewable changes.
+- Existing project conventions.
+- Existing approved infrastructure.
+- Reusable test helpers.
+- Automated regression protection.
+- Backward-compatible migrations.
+- Clear documentation.
+
+Avoid:
+
+- Unnecessary dependencies.
+- Unnecessary infrastructure.
+- Duplicate services.
+- Unnecessary abstraction.
+- Large unreviewable refactors.
+- Premature microservices.
+- Replacing working systems without evidence.
+
+# 13. FINAL PRODUCTION RELEASE AUTHORIZATION
+
+The application may be recommended for production release only after all mandatory release gates have been satisfied.
+
+The final recommendation must use one of these statuses:
+
+**READY FOR PRODUCTION**
+
+All mandatory release gates have passed, required evidence exists, and no unresolved release-blocking defect remains.
+
+**READY WITH APPROVED EXCEPTIONS**
+
+Mandatory release gates have passed, and documented non-blocking exceptions have received appropriate approval.
+
+**NOT READY FOR PRODUCTION**
+
+One or more mandatory release gates have failed, critical evidence is missing, or unresolved risks make release unsafe.
+
+**BLOCKED — DECISION REQUIRED**
+
+A product, technical, security or operational decision is required before safe implementation or release can continue.
+
+The AI coding agent may provide a recommendation but cannot independently authorize a production release or approve acceptance of material business, security or data-loss risks.
+
+---
+
+# 14. FINAL DIRECTIVE
+
+KEA PARROT must be treated as a real production application containing valuable user data and existing operational dependencies.
+
+The objective is not to make the application merely look complete.
+
+The objective is to establish, through measurable evidence, that it:
+
+- Works correctly.
+- Protects user information.
+- Enforces authorization.
+- Preserves database integrity.
+- Handles failures safely.
+- Delivers reliable realtime experiences.
+- Performs acceptably.
+- Works across supported devices.
+- Can be monitored.
+- Can be recovered.
+- Can be deployed and rolled back safely.
+
+**Preserve what works. Identify what is broken. Fix what is necessary. Test every critical change. Prove production readiness before release.**
+
+No production reset. No silent requirement invention. No unapproved destructive migration. No fake test results. No unsupported production-readiness claims.
+
+**END OF DOCUMENT 05**
