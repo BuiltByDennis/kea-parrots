@@ -48,7 +48,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install dependencies (exact, from lockfile)
         working-directory: apps/web
         run: npm ci
@@ -68,7 +68,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run format
@@ -84,7 +84,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run lint
@@ -100,7 +100,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run typecheck
@@ -116,7 +116,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run test:unit
@@ -132,7 +132,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run test:component
@@ -148,7 +148,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run test:integration
@@ -164,7 +164,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run test:api
@@ -189,7 +189,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run test:db
@@ -205,7 +205,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npm run build
@@ -230,7 +230,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - name: Dependency audit (fail on high/critical)
@@ -294,7 +294,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
         working-directory: apps/web
       - run: npx playwright install --with-deps chromium
