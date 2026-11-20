@@ -1,0 +1,6 @@
+/* Kea Parrot — global styles (Product P0) */
+/* Tailwind v4 (CSS-first). Tokens are declared in ../styles/tokens.css
+ * (@theme) and intentionally carry no values yet (OD-18). */
+
+@import "tailwindcss";
+@import "../styles/tokens.css";

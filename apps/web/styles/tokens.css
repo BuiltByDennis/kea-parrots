@@ -1,0 +1,42 @@
+/* Kea Parrot — design tokens (Product P0)
+ *
+ * Token NAMES ONLY, from KEA-UX-003 §5.1. Every value is TBD (OD-18:
+ * brand colours, typography, light/dark mode, animation language).
+ * Tailwind v4 is CSS-first: tokens live in this @theme block — there is
+ * NO tailwind.config.ts in this repo (the v3-style config draft was
+ * deleted during the P0 build; see docs/ADR/001, W4).
+ * There is intentionally no hex value, no font family, no size, no radius
+ * and no elevation value in this file. Do not fill one in to make a
+ * preview look finished — an unstyled P0 stub is correct, an invented
+ * brand is not. When OD-18 closes, the owner-approved values replace
+ * each `TBD` below.
+ */
+
+@theme {
+  /* Brand — TBD (OD-18) */
+  /* --color-brand-primary: ; */
+  /* --color-brand-secondary: ; */
+  /* --color-accent: ; */
+
+  /* Surfaces — TBD (OD-18) */
+  /* --color-background: ; */
+  /* --color-surface: ; */
+  /* --color-surface-elevated: ; */
+
+  /* Text — TBD (OD-18) */
+  /* --color-text-primary: ; */
+  /* --color-text-secondary: ; */
+  /* --color-text-muted: ; */
+
+  /* Borders — TBD (OD-18) */
+  /* --color-border: ; */
+
+  /* Feedback — TBD (OD-18) */
+  /* --color-success: ; */
+  /* --color-warning: ; */
+  /* --color-error: ; */
+  /* --color-information: ; */
+  /* --color-disabled: ; */
+
+  /* Typography, spacing, radius, elevation: TBD — OD-18 (no values). */
+}

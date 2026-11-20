@@ -133,10 +133,10 @@ needs an owner decision before its phase, not during it.
 
 | # | Decision | Owner | Needed before |
 |---|---|---|---|
-| OD-1 | Poll ↔ post linkage (`polls.post_id` nullable — always attached or independent?) | Dennis | Product P0 |
+| OD-1 | Poll ↔ post linkage — **RESOLVED 2026-11-20 (1A): `polls.post_id` NULLABLE; polls may stand alone or attach to a post** | Dennis | Product P0 |
 | OD-2 | Poll-option mutation after votes received | Dennis | Product P1 (polls) |
-| OD-3 | Enum vs text for status/visibility fields; final SQL naming conventions | Dennis | Product P0 (migration 001) |
-| OD-4 | Per-relationship FK `ON DELETE` behaviour (no blanket CASCADE) | Dennis | Product P0 (migration 001) |
+| OD-3 | Enum vs text — **RESOLVED 2026-11-20 (2A): Postgres ENUMs (13 types, migration 001)** | Dennis | Product P0 (migration 001) |
+| OD-4 | Per-relationship FK `ON DELETE` — **RESOLVED 2026-11-20 (3A): RESTRICT everywhere except the 2 auth-identity CASCADEs (`profiles.id`, `user_roles.user_id` → `auth.users`)** | Dennis | Product P0 (migration 001) |
 | OD-5 | Post / comment character limits | Dennis | Product P1 (social) |
 | OD-6 | Poll option limits, expiry defaults | Dennis | Product P1 (polls) |
 | OD-7 | Trending-score coefficients / thresholds | Dennis | Product P1 (discovery) |
@@ -154,7 +154,7 @@ needs an owner decision before its phase, not during it.
 | OD-19 | Analytics / email / push / moderation-service vendors; OAuth providers | Dennis | Product P1 (as needed) |
 | OD-20 | Payment provider / architecture (Phase 4 commercialization blocker) | Dennis | Product P4 |
 | OD-21 | Parental-consent / 16–17 handling under Act 843 (legal review) | Dennis + counsel | Before public launch |
-| OD-22 | Dependency versions to pin (Next.js, React, Node, TypeScript, Supabase) + test framework + CI platform | Dennis | Product P0 |
+| OD-22 | Dependency versions — **RESOLVED 2026-11-20: pinned at scaffold (docs/ADR-001): Next.js 16.4.6, React 19.3.1, Node 26.13.1, TypeScript 6.0.3, Tailwind 4.3.5, Supabase JS 2.119.2, Zod 4.6.7, Vitest 5.1.1, Playwright 1.65.1, ESLint 10.15.0, Sentry 11.16.0** | Dennis | Product P0 |
 | OD-23 | Guest-session token transport/storage (cookie vs header, signing) | Dennis | Product P0 |
 | OD-24 | Session transport / cookie strategy (verify against pinned Supabase + Next.js versions) | Dennis | Product P0 |
 | OD-25 | Readiness PR-01 wording ("Repository audit") in a greenfield R0 — conscious owner sign-off that it means the foundation audit | Dennis | Readiness R0 |
@@ -178,8 +178,4 @@ needs an owner decision before its phase, not during it.
 - **v1.0 (2026-11-20):** 8 spec files as first written. Contradictions present
   (see the 2026-11-20 implementation readiness report: 18 contradictions,
   56+ open decisions).
-- **v1.1 (2026-11-20):** contradictions resolved under D-01–D-22 above;
-  this README added. No code was written in this pass. Next step is
-  Product P0 Foundation: pin versions (OD-22/23/24), close OD-1/3/4, write
-  migration 001, skeleton repo (D-10), CI (D-07), and provision dev/staging/
-  production environments (D-08).
+- **v1.2 (2026-11-20):** Product P0 Foundation shipped — migration 001 (`infrastructure/migrations/20261120213000_initial_schema.sql`, 27 tables / 13 enums / 64 indexes / 42 FKs, run green on Postgres 18.7 + PostGIS 3.6 via PGlite; first-run proof on real Supabase Postgres still required), Next.js 16.4.6 app skeleton with pinned lockfile, ADRs 001–003, placeholder `/` + `/api/health`. OD-1/3/4/22 closed above. OD-23/24 (guest-token + session transport) still open. CI workflow (D-07) is NOT in the repo — it must be created via GitHub web (API cannot write workflow files); see the draft handed to the owner. No environments provisioned yet (Supabase / Vercel / Sentry projects are owner-created in dashboards).

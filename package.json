@@ -1,0 +1,24 @@
+{
+  "name": "kea-parrot",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": "26.x",
+    "npm": ">=11"
+  },
+  "packageManager": "npm@11.20.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=kea-parrot-web",
+    "build": "npm run build --workspace=kea-parrot-web",
+    "start": "npm run start --workspace=kea-parrot-web",
+    "lint": "npm run lint --workspace=kea-parrot-web",
+    "typecheck": "npm run typecheck --workspace=kea-parrot-web",
+    "format": "npm run format --workspace=kea-parrot-web",
+    "test": "npm run test --workspace=kea-parrot-web",
+    "test:e2e": "npm run test:e2e --workspace=kea-parrot-web"
+  }
+}

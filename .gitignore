@@ -1,0 +1,41 @@
+# Kea Parrot — .gitignore (Product P0)
+# Never ignore .env.example (it is the documented placeholder file).
+# Never commit real secrets — see .env.example header.
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Next.js build output
+.next/
+out/
+dist/
+build/
+
+# TypeScript / test artefacts
+*.tsbuildinfo
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Environment files — EVERY real env file is ignored; only .env.example is tracked.
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.staging
+.env.production
+.env.*.local
+
+# Vercel / Turbo
+.vercel
+.turbo/
+
+# Misc
+.DS_Store
+*.log
+*.pem
+*.key

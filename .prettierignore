@@ -1,0 +1,4 @@
+# Kea Parrot — .prettierignore (Product P0)
+# .env.example has no parser prettier understands; it is documentation,
+# not code, and is checked by review, not by the format gate.
+.env.example
