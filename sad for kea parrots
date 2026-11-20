@@ -1,0 +1,1202 @@
+# MOMENT — SYSTEM ARCHITECTURE DOCUMENT (SAD)
+
+**Document ID:** MOMENT-SAD-001  
+**Version:** 1.0  
+**Status:** Architecture Baseline — Subject to Existing-System Verification  
+**Product:** MOMENT  
+**Platform:** Responsive Web Application / Progressive Web Application  
+**Architecture Style:** Modular Monolith  
+**Primary Stack:** Next.js, TypeScript, Supabase, PostgreSQL, PostGIS  
+**Deployment Target:** Vercel + Supabase  
+**Governing Documents:** MOMENT Master PRD; MOMENT Prototype-to-Production Readiness PRD
+
+---
+
+# 1. DOCUMENT PURPOSE
+
+## 1.1 Objective
+
+This document defines the approved target system architecture for MOMENT.
+
+It establishes the architectural boundaries, application layers, infrastructure, service responsibilities, data flows, integration patterns, security boundaries, realtime architecture and deployment model required to transform MOMENT into a production-ready application.
+
+The document is an implementation contract for the engineering team and AI coding agents.
+
+It must be used alongside the MOMENT Master PRD.
+
+## 1.2 Architectural principle
+
+MOMENT must be developed as a modular monolith with clearly separated business domains.
+
+The application must remain straightforward to develop, test, deploy and maintain without introducing unnecessary distributed-system complexity.
+
+The architecture must support future expansion without requiring an early migration to microservices.
+
+## 1.3 Important implementation rule
+
+This document defines the target architecture, not an assumption that the existing prototype already follows it.
+
+Before implementation, inspect the current repository and infrastructure.
+
+If the existing implementation differs from this target:
+
+1. Document the difference.
+2. Determine whether the existing implementation is functional and secure.
+3. Identify the migration cost and risks.
+4. Propose the required change.
+5. Obtain approval for material architectural changes.
+6. Implement progressively.
+
+Never replace a working implementation simply to match a preferred folder structure or architectural pattern.
+
+---
+
+# 2. ARCHITECTURAL OBJECTIVES
+
+The architecture must satisfy the following objectives.
+
+| ID | Objective | Requirement |
+|---|---|---|
+| ARC-001 | Maintainability | Clear module boundaries |
+| ARC-002 | Security | Server-enforced permissions |
+| ARC-003 | Scalability | Efficient database and application design |
+| ARC-004 | Performance | Responsive user experiences |
+| ARC-005 | Reliability | Graceful failure and recovery |
+| ARC-006 | Data integrity | PostgreSQL as authoritative data store |
+| ARC-007 | Realtime | Reliable event-driven UI updates |
+| ARC-008 | Testability | Independently testable modules |
+| ARC-009 | Extensibility | New modules without major rewrites |
+| ARC-010 | Operational simplicity | Avoid unnecessary infrastructure |
+
+---
+
+# 3. TARGET TECHNOLOGY STACK
+
+The following is the approved target stack established by the MOMENT Master PRD.
+
+| Layer | Technology | Responsibility |
+|---|---|---|
+| Frontend | Next.js App Router | Web application and routing |
+| Language | TypeScript | Application type safety |
+| Styling | Tailwind CSS | Styling and responsive layouts |
+| UI components | shadcn/ui | Reusable interface primitives |
+| Validation | Zod | Runtime input validation |
+| Database | PostgreSQL | Persistent application data |
+| Backend platform | Supabase | Database, authentication and platform services |
+| Authentication | Supabase Auth | Identity and sessions |
+| Realtime | Supabase Realtime | Live application updates |
+| Geospatial | PostGIS | Location-aware discovery |
+| Storage | Supabase Storage | Approved file storage |
+| Hosting | Vercel | Web application deployment |
+| Monitoring | Sentry | Error and performance monitoring |
+| Version control | Git | Source history and checkpoints |
+| Testing | Existing compatible test stack | Automated quality assurance |
+
+Package versions must be pinned and maintained.
+
+Do not upgrade major dependencies without compatibility testing.
+
+## 3.1 Optional infrastructure
+
+Redis, external message brokers, microservices and dedicated orchestration systems are not mandatory for the initial release.
+
+An additional infrastructure service may only be introduced when:
+
+- A measurable requirement cannot be met adequately by the existing stack.
+- Its operational cost is justified.
+- Its security implications are assessed.
+- Its failure and recovery behaviour are documented.
+- The change is approved.
+
+---
+
+# 4. HIGH-LEVEL SYSTEM ARCHITECTURE
+
+## 4.1 Architecture overview
+
+MOMENT uses a modular monolith supported by managed infrastructure.
+
+The Next.js application provides the user interface and trusted server-side application operations.
+
+Supabase provides the authoritative PostgreSQL database, authentication, realtime delivery and approved storage capabilities.
+
+A background processing component handles scheduled and asynchronous operations when required.
+
+The architecture separates user-facing presentation from trusted business logic and data access.
+
+## 4.2 Logical architecture diagram
+
+```mermaid
+flowchart TB
+    U[Web and Mobile Users]
+    B[Browser / PWA]
+    CDN[Hosting CDN and Edge]
+    WEB[Next.js Application]
+
+    subgraph APP["MOMENT Application Layer"]
+        UI[Presentation Layer]
+        API[API and Server Actions]
+        AUTH[Identity and Authorization]
+        DOMAIN[Domain Modules]
+        VALID[Validation Layer]
+        DATA[Data Access Layer]
+    end
+
+    subgraph DOMAINS["Business Domains"]
+        PROFILE[Profiles]
+        DISC[Discovery]
+        SOCIAL[Posts and Comments]
+        POLL[Polls]
+        GAME[Games]
+        COMM[Communities]
+        NOTIF[Notifications]
+        MOD[Moderation]
+        ADMIN[Administration]
+        ANALYTICS[Analytics]
+    end
+
+    subgraph SUPA["Supabase Platform"]
+        SA[Supabase Auth]
+        PG[(PostgreSQL)]
+        RT[Supabase Realtime]
+        ST[Supabase Storage]
+        GEO[PostGIS]
+    end
+
+    BG[Background Processing]
+    MON[Monitoring and Error Tracking]
+
+    U --> B
+    B --> CDN
+    CDN --> WEB
+    WEB --> UI
+    UI --> API
+    API --> AUTH
+    API --> VALID
+    AUTH --> DOMAIN
+    VALID --> DOMAIN
+    DOMAIN --> DOMAINS
+    DOMAINS --> DATA
+    DATA --> PG
+    AUTH --> SA
+    DATA --> GEO
+    PG --> RT
+    UI --> RT
+    UI --> ST
+    BG --> PG
+    API --> MON
+    BG --> MON
+```
+
+The diagram represents logical responsibilities, not a requirement to deploy every module as a separate service.
+
+## 4.3 Architecture layers
+
+### Layer 1: Presentation
+
+Responsible for:
+
+- Rendering pages.
+- Displaying feeds.
+- Handling forms.
+- Showing loading and error states.
+- Managing local UI state.
+- Responsive navigation.
+- User interactions.
+
+The presentation layer must not contain authoritative business rules.
+
+### Layer 2: Application interface
+
+Responsible for:
+
+- API endpoints.
+- Server actions where appropriate.
+- Request parsing.
+- Authentication context.
+- Request validation.
+- Calling domain operations.
+- Returning consistent responses.
+
+### Layer 3: Identity and authorisation
+
+Responsible for:
+
+- Verifying authenticated identity.
+- Resolving user roles.
+- Checking resource ownership.
+- Enforcing permissions.
+- Handling administrative access.
+
+All privileged operations must be checked server-side.
+
+### Layer 4: Domain modules
+
+Responsible for MOMENT's business rules.
+
+Each module owns its operations and exposes controlled interfaces to other modules.
+
+### Layer 5: Data access
+
+Responsible for:
+
+- Database queries.
+- Transactions.
+- Data mapping.
+- Persistence.
+- Query optimisation.
+- Data consistency.
+
+Database access must be isolated from presentation components.
+
+### Layer 6: Infrastructure
+
+Responsible for:
+
+- Authentication services.
+- PostgreSQL.
+- Realtime.
+- Storage.
+- Geospatial queries.
+- Background processing.
+- Monitoring.
+- Deployment.
+
+---
+
+# 5. MODULAR DOMAIN ARCHITECTURE
+
+Each business domain must have a defined responsibility.
+
+## 5.1 Identity module
+
+Responsibilities:
+
+- Authentication integration.
+- Session validation.
+- User identity resolution.
+- Account lifecycle.
+- Role and permission resolution.
+
+It must not independently duplicate Supabase Auth's credential management.
+
+## 5.2 Profiles module
+
+Responsibilities:
+
+- User profiles.
+- User preferences.
+- Profile visibility.
+- Profile updates.
+- User blocking relationships.
+
+Private identity information must remain separate from public profile information.
+
+## 5.3 Discovery module
+
+Responsibilities:
+
+- Nearby feed.
+- Global feed.
+- Trending feed.
+- Content filtering.
+- Feed pagination.
+- Location-aware discovery.
+
+Feed ranking must use approved and documented rules.
+
+No undisclosed AI recommendation system is permitted in the MVP.
+
+## 5.4 Social module
+
+Responsibilities:
+
+- Posts.
+- Anonymous posting.
+- Reactions.
+- Comments.
+- Content visibility.
+- Ownership checks.
+
+Anonymous content must remain associated with an authenticated internal account.
+
+## 5.5 Polls module
+
+Responsibilities:
+
+- Poll creation.
+- Poll options.
+- Vote validation.
+- Vote submission.
+- Poll expiration.
+- Results calculation.
+
+The database remains authoritative for votes and results.
+
+## 5.6 Games module
+
+Responsibilities:
+
+- Game definitions.
+- Question retrieval.
+- Game sessions.
+- Answer validation.
+- Scoring.
+- Completion status.
+
+Scoring must be calculated and validated on the trusted server side.
+
+## 5.7 Communities module
+
+Responsibilities:
+
+- Community records.
+- Community memberships.
+- Membership validation.
+- Community-linked discovery.
+
+Only approved MVP community functionality may be implemented.
+
+## 5.8 Locations module
+
+Responsibilities:
+
+- Approved location records.
+- User-selected areas.
+- Approximate location handling.
+- Geospatial queries.
+
+Exact user coordinates must not be publicly exposed.
+
+No background location tracking is permitted.
+
+## 5.9 Notifications module
+
+Responsibilities:
+
+- Notification generation.
+- Notification persistence.
+- Read and unread states.
+- Notification preferences.
+- Delivery coordination.
+
+## 5.10 Moderation module
+
+Responsibilities:
+
+- User reports.
+- Content review.
+- Moderation decisions.
+- Enforcement actions.
+- Blocking-related workflows.
+- Moderation audit records.
+
+## 5.11 Administration module
+
+Responsibilities:
+
+- Administrative dashboards.
+- User management.
+- Content management.
+- Moderator management.
+- Platform configuration.
+- Audit-log access.
+
+Administrative permissions must be enforced independently of frontend visibility.
+
+## 5.12 Analytics module
+
+Responsibilities:
+
+- Approved application events.
+- Product usage measurement.
+- Aggregated engagement reporting.
+- Operational analytics.
+
+Analytics must not become a mechanism for collecting unnecessary sensitive user information.
+
+---
+
+# 6. MODULE BOUNDARIES AND DEPENDENCIES
+
+The following dependency rules are mandatory.
+
+1. Presentation components may call approved application interfaces.
+2. Presentation components must not directly execute privileged database operations.
+3. Domain modules must not depend on UI components.
+4. Database queries must be isolated in data-access functions.
+5. Shared validation schemas may be reused across trusted application boundaries.
+6. Modules must not directly modify another module's internal records without an approved interface or documented transaction.
+7. Cross-module operations must use explicit application services.
+8. Circular dependencies must be avoided.
+
+Example:
+
+A user reacting to a post follows this path:
+
+```text
+Post Interaction Component
+        |
+        v
+POST /api/v1/posts/{postId}/reactions
+        |
+        v
+Authentication Verification
+        |
+        v
+Request Validation
+        |
+        v
+Social Domain Service
+        |
+        v
+Reaction Persistence
+        |
+        v
+PostgreSQL
+        |
+        v
+Response / Realtime Update
+        |
+        v
+Updated User Interface
+```
+
+---
+
+# 7. APPLICATION REPOSITORY STRUCTURE
+
+The target logical structure is:
+
+```text
+moment/
+│
+├── apps/
+│   ├── web/
+│   │   ├── app/
+│   │   │   ├── (public)/
+│   │   │   ├── (auth)/
+│   │   │   ├── (dashboard)/
+│   │   │   ├── admin/
+│   │   │   └── api/
+│   │   │
+│   │   ├── components/
+│   │   ├── modules/
+│   │   │   ├── identity/
+│   │   │   ├── profiles/
+│   │   │   ├── discovery/
+│   │   │   ├── social/
+│   │   │   ├── polls/
+│   │   │   ├── games/
+│   │   │   ├── communities/
+│   │   │   ├── locations/
+│   │   │   ├── notifications/
+│   │   │   ├── moderation/
+│   │   │   ├── administration/
+│   │   │   └── analytics/
+│   │   │
+│   │   ├── lib/
+│   │   ├── hooks/
+│   │   ├── styles/
+│   │   └── tests/
+│   │
+│   └── worker/
+│       ├── jobs/
+│       ├── processors/
+│       └── tests/
+│
+├── packages/
+│   ├── database/
+│   ├── shared-types/
+│   ├── validation/
+│   ├── ui/
+│   └── analytics/
+│
+├── infrastructure/
+│   ├── migrations/
+│   ├── policies/
+│   ├── functions/
+│   ├── jobs/
+│   └── monitoring/
+│
+├── docs/
+│   ├── architecture/
+│   ├── database/
+│   ├── api/
+│   ├── security/
+│   ├── deployment/
+│   └── testing/
+│
+├── scripts/
+├── .github/
+├── package.json
+└── README.md
+```
+
+This is a target organisation, not permission to restructure the existing repository automatically.
+
+Preserve the existing project structure if it already provides equivalent separation and maintainability.
+
+The worker application is only required if approved background workloads cannot be handled safely by the existing application and platform facilities.
+
+---
+
+# 8. DATA ARCHITECTURE
+
+## 8.1 Authoritative data store
+
+PostgreSQL is MOMENT's authoritative persistent data store.
+
+It owns:
+
+- User profile records.
+- Posts.
+- Comments.
+- Reactions.
+- Polls.
+- Votes.
+- Games.
+- Game sessions.
+- Communities.
+- Memberships.
+- Notifications.
+- Reports.
+- Moderation records.
+- Administrative audit records.
+- Approved analytics records.
+
+## 8.2 Data ownership
+
+Each domain owns its business operations.
+
+For example:
+
+- Social owns posts and reactions.
+- Polls owns votes and poll results.
+- Games owns sessions and scores.
+- Moderation owns enforcement records.
+- Notifications owns notification state.
+
+Cross-domain references must use explicit foreign keys or approved application interfaces.
+
+## 8.3 Data consistency
+
+The following must be enforced:
+
+- Unique constraints.
+- Foreign-key constraints.
+- Transactional writes.
+- Server-side validation.
+- Ownership checks.
+- Appropriate deletion policies.
+- Consistent timestamps.
+- Idempotent operations where appropriate.
+
+## 8.4 Geospatial data
+
+PostGIS supports approved location-based discovery.
+
+Use approximate user-selected or permission-based locations.
+
+Public responses must not expose precise coordinates.
+
+The implementation must follow the data minimisation and retention requirements defined in the Database Design & Security Specification.
+
+---
+
+# 9. AUTHENTICATION AND SECURITY ARCHITECTURE
+
+## 9.1 Authentication flow
+
+Supabase Auth is the approved identity provider.
+
+Authentication flow:
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant B as Browser
+    participant A as MOMENT Server
+    participant S as Supabase Auth
+    participant D as PostgreSQL
+
+    U->>B: Submit login credentials
+    B->>S: Authentication request
+    S-->>B: Auth result and session
+    B->>A: Request protected resource
+    A->>S: Verify session
+    S-->>A: Verified identity
+    A->>D: Execute authorised operation
+    D-->>A: Result
+    A-->>B: Application response
+    B-->>U: Updated interface
+```
+
+The actual session transport and cookie strategy must be verified against the installed Supabase and Next.js integration versions.
+
+## 9.2 Security boundaries
+
+The browser is untrusted.
+
+Never trust:
+
+- Client-provided role names.
+- Client-provided ownership identifiers.
+- Client-provided scores.
+- Client-provided vote counts.
+- Client-provided moderation privileges.
+- Client-side validation alone.
+
+All sensitive decisions must be enforced by trusted server operations and database policies.
+
+## 9.3 Privileged credentials
+
+Supabase service-role credentials must remain server-side.
+
+They must never be:
+
+- Embedded in browser bundles.
+- Returned through API responses.
+- Logged.
+- Committed to Git.
+- Included in public environment variables.
+
+Use least-privilege database access wherever possible.
+
+## 9.4 Authorisation
+
+The system must support:
+
+- Guest.
+- Registered user.
+- Moderator.
+- Administrator.
+- Super administrator.
+
+Every privileged operation must verify the user's actual permissions.
+
+No user may assign privileges to themselves through a profile update or direct API request.
+
+## 9.5 Row Level Security
+
+RLS is a mandatory database security layer.
+
+The detailed table-by-table policies, SQL and test scenarios will be defined in Document 02.
+
+Application-layer authorisation and database-layer authorisation must complement one another.
+
+---
+
+# 10. REALTIME ARCHITECTURE
+
+## 10.1 Realtime purpose
+
+Supabase Realtime supports approved live interactions.
+
+MVP use cases include:
+
+- Poll result updates.
+- Relevant content updates.
+- Notifications.
+- Approved social interaction updates.
+
+## 10.2 Realtime design principles
+
+1. PostgreSQL remains authoritative.
+2. Realtime communicates changes; it does not replace persistence.
+3. Events must be scoped to authorised subscribers.
+4. Subscriptions must be removed when components or sessions no longer require them.
+5. Reconnection must be supported.
+6. Duplicate events must not create duplicate application state.
+7. Clients must be able to recover from missed events.
+8. Sensitive data must not be broadcast.
+
+## 10.3 Realtime flow
+
+```mermaid
+sequenceDiagram
+    participant U1 as User A
+    participant API as MOMENT API
+    participant DB as PostgreSQL
+    participant RT as Supabase Realtime
+    participant U2 as User B
+
+    U1->>API: Submit poll vote
+    API->>DB: Validate and persist vote
+    DB-->>API: Commit transaction
+    DB-->>RT: Approved database event
+    RT-->>U2: Authorised event
+    U2->>API: Refresh authoritative poll result
+    API->>DB: Retrieve poll result
+    DB-->>API: Current result
+    API-->>U2: Updated poll data
+```
+
+The exact event delivery mechanism, subscriptions and payloads are specified in Document 04.
+
+## 10.4 Realtime failure behaviour
+
+If realtime disconnects:
+
+- The application must show an appropriate connection state where useful.
+- It must not display fabricated live updates.
+- It must reconnect where possible.
+- It must refresh authoritative state after reconnection.
+- Critical operations must remain correct even when realtime is unavailable.
+
+---
+
+# 11. BACKGROUND PROCESSING ARCHITECTURE
+
+Background processing is used only for approved asynchronous operations.
+
+Potential responsibilities:
+
+- Poll expiration.
+- Notification processing.
+- Scheduled maintenance.
+- Analytics aggregation.
+- Data cleanup.
+
+The implementation may use Supabase scheduled functions, database functions or a dedicated worker depending on the existing deployment and operational requirements.
+
+## 11.1 Job requirements
+
+Every background job must define:
+
+- Job identifier.
+- Purpose.
+- Trigger.
+- Input.
+- Output.
+- Permissions.
+- Retry policy.
+- Failure behaviour.
+- Logging.
+- Idempotency requirements.
+
+## 11.2 Reliability
+
+Background jobs must:
+
+- Avoid duplicate processing.
+- Handle transient errors.
+- Record failed execution.
+- Support safe retry.
+- Avoid exposing privileged credentials.
+- Use bounded execution.
+- Be observable.
+
+Do not introduce a dedicated queue system until justified by actual workload requirements.
+
+---
+
+# 12. API ARCHITECTURE
+
+## 12.1 API conventions
+
+Application APIs use the versioned prefix:
+
+`/api/v1`
+
+Endpoints must be grouped by business domain.
+
+Examples:
+
+```text
+/api/v1/profiles
+/api/v1/discovery
+/api/v1/posts
+/api/v1/posts/{postId}/comments
+/api/v1/posts/{postId}/reactions
+/api/v1/polls
+/api/v1/polls/{pollId}/votes
+/api/v1/games
+/api/v1/games/{gameId}/sessions
+/api/v1/communities
+/api/v1/notifications
+/api/v1/reports
+/api/v1/admin
+```
+
+Exact request and response contracts belong in Document 04.
+
+## 12.2 API responsibilities
+
+The API layer must:
+
+- Validate requests.
+- Authenticate requests.
+- Enforce permissions.
+- Call domain services.
+- Handle transactions.
+- Return predictable responses.
+- Avoid leaking internal exceptions.
+- Apply rate limits.
+- Support request tracing.
+
+## 12.3 Error handling
+
+All APIs must use a consistent error format.
+
+The standard contract will be established in Document 04.
+
+Errors must not reveal:
+
+- Database credentials.
+- Internal SQL statements.
+- Authentication tokens.
+- Stack traces to public clients.
+- Private user information.
+
+---
+
+# 13. STORAGE ARCHITECTURE
+
+Supabase Storage is the approved storage platform for supported file uploads.
+
+MVP storage must only support approved file types and use cases.
+
+The implementation must define:
+
+- Bucket ownership.
+- Access permissions.
+- Upload validation.
+- File-size restrictions.
+- File-type restrictions.
+- File naming.
+- Deletion lifecycle.
+- Public versus private access.
+- Signed URL behaviour where applicable.
+
+Do not introduce image or audio posting into the MVP merely because storage is available.
+
+All upload restrictions must be defined in the UI/UX and security specifications before enabling a new upload workflow.
+
+---
+
+# 14. DISCOVERY AND FEED ARCHITECTURE
+
+## 14.1 Feed types
+
+MOMENT supports:
+
+- Nearby.
+- Global.
+- Trending.
+
+## 14.2 Feed retrieval
+
+The discovery module retrieves approved content through the application data-access layer.
+
+Requirements:
+
+- Cursor-based pagination.
+- Visibility filtering.
+- Moderation filtering.
+- Efficient database queries.
+- Stable pagination.
+- Appropriate indexes.
+- No duplicate records during ordinary pagination.
+
+## 14.3 Trending
+
+Trending must use documented and approved ranking logic.
+
+Potential inputs established in the product requirements include:
+
+- Recency.
+- Engagement.
+- Unique participants.
+- Moderation signals.
+- Spam indicators.
+
+Exact coefficients and thresholds must not be invented.
+
+## 14.4 Location-aware discovery
+
+Location-aware discovery must:
+
+- Support manual area selection.
+- Support permission-based approximate location where approved.
+- Work when location permission is denied.
+- Avoid background tracking.
+- Avoid public exposure of exact coordinates.
+- Apply approved geographic search limits.
+
+---
+
+# 15. MONITORING AND OBSERVABILITY
+
+The application must provide visibility into technical health.
+
+## 15.1 Error monitoring
+
+Sentry is the approved initial monitoring option.
+
+Capture:
+
+- Frontend exceptions.
+- Backend exceptions.
+- Failed API operations.
+- Important background job failures.
+- Performance problems.
+- Deployment-related failures.
+
+## 15.2 Structured logging
+
+Logs should include:
+
+- Timestamp.
+- Environment.
+- Severity.
+- Application module.
+- Operation.
+- Request identifier.
+- Relevant diagnostic context.
+
+Do not log secrets, passwords, session tokens or unnecessary sensitive data.
+
+## 15.3 Operational metrics
+
+Monitor:
+
+- Application availability.
+- API latency.
+- Error rates.
+- Database health.
+- Realtime health.
+- Background job failures.
+- Authentication failures.
+- Storage usage.
+- Core user journeys.
+
+Detailed monitoring thresholds will be finalised in Document 05.
+
+---
+
+# 16. DEPLOYMENT ARCHITECTURE
+
+## 16.1 Environments
+
+Maintain three distinct environments:
+
+1. Local development.
+2. Staging.
+3. Production.
+
+Each environment must have independently managed configuration and credentials.
+
+Never use production credentials for ordinary development or testing.
+
+## 16.2 Deployment topology
+
+```mermaid
+flowchart TB
+    DEV[Developers and CI]
+    GIT[Git Repository]
+    CI[Automated CI Pipeline]
+
+    DEV --> GIT
+    GIT --> CI
+
+    CI -->|Validated Build| STAGE[Staging Environment]
+    STAGE --> QA[Automated and Manual Verification]
+    QA -->|Approved Release| PROD[Production Environment]
+
+    subgraph PROD["Production"]
+        V[Vercel Application]
+        S[Supabase Project]
+        M[Sentry Monitoring]
+        V <--> S
+        V --> M
+    end
+```
+
+## 16.3 CI/CD requirements
+
+The pipeline must verify:
+
+- Dependency installation.
+- Formatting.
+- Linting.
+- Type checking.
+- Unit tests.
+- Integration tests.
+- Build.
+- Security checks.
+- Migration validation.
+
+Critical failures must block release.
+
+## 16.4 Database migrations
+
+All schema modifications must be version-controlled.
+
+Production migrations require review and approval.
+
+The application must not automatically perform destructive schema changes during normal startup.
+
+## 16.5 Recovery
+
+Document:
+
+- Application rollback.
+- Database backup.
+- Database restoration.
+- Migration recovery.
+- Credential rotation.
+- Incident response.
+
+Never assume a database rollback is safe when it may discard user-generated data.
+
+---
+
+# 17. PERFORMANCE AND SCALABILITY
+
+The initial performance objectives are:
+
+| Metric | Target |
+|---|---|
+| LCP | ≤ 2.5 seconds at p75 |
+| INP | ≤ 200 ms at p75 |
+| CLS | ≤ 0.1 at p75 |
+| Standard read API latency | p95 below 500 ms under agreed workload |
+| Poll update latency | Normally within 2 seconds |
+
+These are targets, not claims of existing performance.
+
+## 17.1 Scaling strategy
+
+Initial scaling should focus on:
+
+- Efficient queries.
+- Correct indexes.
+- Cursor pagination.
+- Small API payloads.
+- Optimised rendering.
+- Appropriate caching.
+- Connection management.
+- Realtime subscription efficiency.
+
+Do not split the application into microservices without measurable evidence and an approved architecture change.
+
+## 17.2 Capacity planning
+
+Expected concurrent users, request rates, database capacity and realtime connection targets must be established before production load testing.
+
+---
+
+# 18. ARCHITECTURAL DECISION RECORDS
+
+Material architectural decisions must be documented.
+
+Each record must contain:
+
+- Decision ID.
+- Title.
+- Context.
+- Options considered.
+- Selected decision.
+- Rationale.
+- Consequences.
+- Security implications.
+- Operational implications.
+- Approval status.
+
+Initial decisions:
+
+| ID | Decision | Status |
+|---|---|---|
+| ADR-001 | Modular monolith | Approved target |
+| ADR-002 | PostgreSQL as authoritative data store | Approved |
+| ADR-003 | Supabase Auth for identity | Approved |
+| ADR-004 | Supabase Realtime for approved live updates | Approved |
+| ADR-005 | PostGIS for geospatial functionality | Approved |
+| ADR-006 | Vercel as web hosting target | Approved target |
+| ADR-007 | Sentry as initial monitoring option | Approved target |
+| ADR-008 | No mandatory Redis in MVP | Approved |
+| ADR-009 | No microservices in MVP | Approved |
+| ADR-010 | Background worker only when justified | Conditional |
+
+A target decision does not authorise an immediate migration of the existing system.
+
+---
+
+# 19. OPEN ARCHITECTURAL DECISIONS
+
+The following must be confirmed during Phase 0 of the Prototype-to-Production Readiness PRD.
+
+| ID | Question | Required evidence |
+|---|---|---|
+| OAD-001 | Does the current repository already follow a modular architecture? | Repository audit |
+| OAD-002 | Is the existing Supabase integration server-side and correctly configured? | Authentication and code audit |
+| OAD-003 | Which database environments currently exist? | Infrastructure audit |
+| OAD-004 | Are existing migrations authoritative and complete? | Migration audit |
+| OAD-005 | Does the application already have a background processing mechanism? | Code and infrastructure audit |
+| OAD-006 | Which realtime patterns are currently implemented? | Realtime audit |
+| OAD-007 | What are the actual launch capacity requirements? | Product and load assumptions |
+| OAD-008 | Which file-upload use cases are approved? | Product scope confirmation |
+| OAD-009 | Which monitoring and analytics services are already configured? | Infrastructure audit |
+| OAD-010 | Does the current deployment support the target architecture? | Deployment audit |
+
+These questions must not be answered through guesswork.
+
+---
+
+# 20. ARCHITECTURAL ACCEPTANCE CRITERIA
+
+The architecture is accepted when:
+
+- [ ] All major business domains are identified.
+- [ ] Module responsibilities are documented.
+- [ ] Dependencies between modules are understood.
+- [ ] Trusted and untrusted execution boundaries are defined.
+- [ ] Authentication and authorisation boundaries are documented.
+- [ ] PostgreSQL is established as the authoritative persistent data store.
+- [ ] Realtime architecture is documented.
+- [ ] Background processing responsibilities are documented.
+- [ ] API boundaries are defined.
+- [ ] Storage access boundaries are defined.
+- [ ] Monitoring responsibilities are defined.
+- [ ] Deployment environments are documented.
+- [ ] Migration and recovery principles are established.
+- [ ] Existing architecture has been compared against the target.
+- [ ] Material architecture changes have approval.
+- [ ] No unresolved critical architectural risks remain.
+
+---
+
+# 21. FINAL INSTRUCTIONS TO THE AI CODING AGENT
+
+Treat this document as the approved target architecture for MOMENT.
+
+Your responsibility is to implement and maintain this architecture without introducing unnecessary complexity or damaging the existing application.
+
+Before changing the architecture:
+
+1. Inspect the actual repository.
+2. Inspect the actual database.
+3. Inspect authentication and security.
+4. Map existing module boundaries.
+5. Identify architectural deviations.
+6. Assess migration risks.
+7. Propose changes.
+8. Obtain approval for material changes.
+
+Do not:
+
+- Rebuild the application without justification.
+- Introduce microservices.
+- Introduce unnecessary infrastructure.
+- Duplicate business logic.
+- Place privileged logic in the browser.
+- Bypass RLS.
+- Expose service-role credentials.
+- Use mock data in place of required production functionality.
+- Change database schemas without migrations.
+- Make unapproved production changes.
+
+Maintain consistency with the MOMENT Master PRD and the Prototype-to-Production Readiness PRD.
+
+**Architecture completion means that the actual implementation follows verified architectural boundaries, not merely that the repository contains folders with the correct names.**
