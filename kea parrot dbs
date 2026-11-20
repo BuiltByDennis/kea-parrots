@@ -1,0 +1,1709 @@
+# kea parrots — DATABASE DESIGN & SECURITY SPECIFICATION
+
+**Document ID:** kea parrots-DBS-002  
+**Version:** 1.0  
+**Status:** Target Database Specification — Subject to Existing-System Audit  
+**Product:** kea parrots  
+**Database:** PostgreSQL via Supabase  
+**Geospatial Extension:** PostGIS  
+**Security Model:** PostgreSQL Row Level Security (RLS) + Server-Side Authorisation  
+**Governing Documents:**
+- MOMENT Master Product Requirements Document
+- MOMENT Prototype-to-Production Readiness PRD
+- MOMENT System Architecture Document
+
+---
+
+# 1. PURPOSE AND SCOPE
+
+## 1.1 Purpose
+
+This document defines the target database architecture and security requirements for MOMENT.
+
+It specifies:
+
+- Database entities.
+- Entity relationships.
+- Table responsibilities.
+- Column requirements.
+- Primary and foreign keys.
+- Unique constraints.
+- Check constraints.
+- Indexing strategy.
+- Data integrity requirements.
+- Row Level Security policies.
+- Database permissions.
+- Role and privilege boundaries.
+- SQL migration standards.
+- Data retention and deletion.
+- Backup and recovery requirements.
+- Database testing and acceptance criteria.
+
+The objective is to establish a database that is secure, reliable, maintainable and capable of supporting MOMENT's approved MVP functionality.
+
+## 1.2 Scope
+
+The MVP database covers:
+
+1. User profiles and preferences.
+2. User consent records.
+3. User blocking.
+4. Posts.
+5. Reactions.
+6. Comments.
+7. Polls.
+8. Poll options.
+9. Poll votes.
+10. Games.
+11. Game questions.
+12. Game options.
+13. Game sessions.
+14. Game answers.
+15. Communities.
+16. Community memberships.
+17. Notifications.
+18. Notification preferences.
+19. Reports.
+20. Moderation actions.
+21. Moderation audit records.
+22. Locations.
+23. User location preferences.
+24. Administrative audit logs.
+25. Analytics events.
+
+Future-phase entities are documented separately and must not be implemented as MVP features without approval.
+
+## 1.3 Database principles
+
+The following are mandatory:
+
+- PostgreSQL is the authoritative persistent data store.
+- Every table must have a clearly defined purpose.
+- Every relationship must be explicit.
+- Every exposed table must have an intentional access-control strategy.
+- RLS must be enabled on user-accessible tables.
+- Sensitive operations must be enforced server-side.
+- Database constraints must protect data integrity independently of frontend validation.
+- Schema changes must use version-controlled migrations.
+- Existing production data must be preserved.
+- Database security must be tested using real permission scenarios.
+
+---
+
+# 2. DATABASE ARCHITECTURE
+
+## 2.1 Logical organisation
+
+The target database is organised around MOMENT's business domains.
+
+| Domain | Database responsibility |
+|---|---|
+| Identity | Authentication identity references and account lifecycle integration |
+| Profiles | Public and private profile data |
+| Safety | Blocks, reports and moderation |
+| Social | Posts, reactions and comments |
+| Polls | Poll definitions, options and votes |
+| Games | Game definitions, questions, sessions and answers |
+| Communities | Community records and membership |
+| Locations | Approved geographic information |
+| Notifications | Notification records and preferences |
+| Administration | Privileged audit records |
+| Analytics | Approved product activity events |
+
+## 2.2 Schema ownership
+
+The existing Supabase `auth` schema is managed by Supabase Auth.
+
+MOMENT application tables belong in the `public` schema unless a documented security or operational reason requires otherwise.
+
+Do not create duplicate authentication credential tables.
+
+The application must reference the authenticated Supabase user identifier.
+
+## 2.3 Primary key strategy
+
+Target default:
+
+- UUID primary keys.
+- `gen_random_uuid()` for newly created application records.
+- Foreign keys referencing the appropriate parent identifiers.
+- Timestamps stored as `timestamptz`.
+- UTC storage and client-side local display.
+
+Existing primary key types must be preserved when migrating existing tables unless an approved migration plan explicitly justifies changing them.
+
+Never convert existing identifiers simply for consistency without assessing every dependent relationship.
+
+---
+
+# 3. ENTITY RELATIONSHIP DIAGRAM
+
+The following is the target logical relationship model.
+
+It is not a declaration that every table already exists or that the current prototype uses these exact relationships.
+
+```mermaid
+erDiagram
+    auth_users ||--|| profiles : has
+    profiles ||--o{ user_preferences : owns
+    profiles ||--o{ user_consents : records
+    profiles ||--o{ user_blocks : blocks
+    profiles ||--o{ posts : creates
+    profiles ||--o{ post_reactions : reacts
+    profiles ||--o{ comments : writes
+    profiles ||--o{ poll_votes : casts
+    profiles ||--o{ game_sessions : plays
+    profiles ||--o{ community_members : joins
+    profiles ||--o{ notifications : receives
+    profiles ||--o{ reports : submits
+
+    posts ||--o{ post_reactions : receives
+    posts ||--o{ comments : contains
+    posts ||--o{ reports : reported
+
+    polls ||--o{ poll_options : contains
+    polls ||--o{ poll_votes : receives
+    poll_options ||--o{ poll_votes : selected
+
+    games ||--o{ game_questions : contains
+    game_questions ||--o{ game_options : contains
+    games ||--o{ game_sessions : has
+    game_sessions ||--o{ game_answers : contains
+    game_questions ||--o{ game_answers : answered
+
+    communities ||--o{ community_members : has
+
+    locations ||--o{ user_location_preferences : selected_by
+
+    reports ||--o{ moderation_actions : results_in
+    profiles ||--o{ moderation_actions : subject
+    profiles ||--o{ moderation_audit_logs : actor
+
+    profiles ||--o{ admin_audit_logs : actor
+```
+
+The diagram is intentionally logical. The exact foreign-key implementation, including nullable relationships and polymorphic targets, must follow the detailed table requirements below.
+
+## 3.1 Relationship rules
+
+1. A profile belongs to one authenticated Supabase user.
+2. A user may create many posts.
+3. A post may receive many reactions and comments.
+4. A poll contains multiple options.
+5. A poll may receive multiple votes.
+6. A user may have one active vote submission per poll, subject to the approved poll rules.
+7. A game contains questions.
+8. A game session belongs to one user and one game.
+9. A game session contains answers.
+10. A community has many members.
+11. A user may belong to multiple communities.
+12. A report is submitted by a user and may identify a target user or content record.
+13. A report may have one or more moderation actions.
+14. Notifications belong to their intended recipient.
+15. Administrative and moderation actions must have auditable actors.
+
+All relationships must be implemented with appropriate foreign keys or explicitly documented alternatives.
+
+---
+
+# 4. CORE DATABASE TABLE SPECIFICATIONS
+
+## 4.1 PROFILES DOMAIN
+
+### 4.1.1 `profiles`
+
+Purpose: Stores application-facing user profile information.
+
+| Column | Type | Requirement |
+|---|---|---|
+| id | uuid | Primary key; references auth.users.id |
+| username | text | Required, unique |
+| display_name | text | Required |
+| avatar_url | text | Optional |
+| bio | text | Optional |
+| profile_visibility | text or approved enum | Required |
+| account_status | text or approved enum | Required |
+| created_at | timestamptz | Required |
+| updated_at | timestamptz | Required |
+
+Rules:
+
+- `id` must reference `auth.users.id`.
+- Username uniqueness must be enforced by the database.
+- Username normalisation and case-insensitive uniqueness must be consistent.
+- Public profile responses must not expose authentication credentials or private moderation metadata.
+- Email addresses must not be duplicated into public profile fields.
+- Account status must be enforced server-side.
+- Suspended or deleted accounts must follow approved access rules.
+
+Suggested statuses:
+
+- active
+- suspended
+- restricted
+- pending_deletion
+- deleted
+
+Suggested visibility:
+
+- public
+- private
+
+Final allowed values must be reconciled with the existing implementation before migration.
+
+### 4.1.2 `user_preferences`
+
+Purpose: Stores user-selected application preferences.
+
+Proposed fields:
+
+- id
+- user_id
+- preference_key or approved structured preference columns
+- preference_value
+- created_at
+- updated_at
+
+A structured preference model is preferred for important security or privacy settings.
+
+Do not store authoritative permissions in this table.
+
+### 4.1.3 `user_consents`
+
+Purpose: Records user consent and acknowledgement events.
+
+Proposed fields:
+
+- id
+- user_id
+- consent_type
+- document_version
+- accepted
+- recorded_at
+- withdrawn_at
+- metadata, where justified
+
+Rules:
+
+- Consent records must be attributable to the user.
+- Changes must preserve historical evidence where legally appropriate.
+- A current consent state must be derivable without deleting history.
+- Do not record unnecessary device or location information.
+
+### 4.1.4 `user_blocks`
+
+Purpose: Stores user blocking relationships.
+
+Proposed fields:
+
+- id
+- blocker_id
+- blocked_id
+- created_at
+
+Constraints:
+
+- Blocker and blocked user must differ.
+- One active block relationship per pair.
+- Both user identifiers must reference valid profiles.
+
+Blocking must affect the appropriate visibility and interaction workflows.
+
+---
+
+## 4.2 SOCIAL DOMAIN
+
+### 4.2.1 `posts`
+
+Purpose: Stores user-created text content.
+
+Proposed fields:
+
+- id
+- author_id
+- content
+- visibility
+- is_anonymous
+- community_id, nullable
+- status
+- created_at
+- updated_at
+- deleted_at, nullable
+
+Rules:
+
+- Author identity must remain internally available for safety and enforcement.
+- Anonymous posting only changes public attribution.
+- Anonymous status must never allow an unauthenticated post to bypass user ownership.
+- Post content must be validated server-side.
+- Removed or deleted posts must follow the approved retention model.
+- Moderation must be able to suppress content without erasing audit history.
+
+Suggested statuses:
+
+- published
+- hidden
+- removed
+- deleted
+
+### 4.2.2 `post_reactions`
+
+Purpose: Stores user reactions to posts.
+
+Proposed fields:
+
+- id
+- post_id
+- user_id
+- reaction_type
+- created_at
+- updated_at
+
+Approved reaction types:
+
+- like
+- funny
+- interesting
+- surprising
+
+Constraints:
+
+- One active reaction per user per post.
+- Reaction type must be one of the approved values.
+- Post and user must exist.
+
+A database unique constraint must prevent duplicate reactions.
+
+### 4.2.3 `comments`
+
+Purpose: Stores text comments associated with posts.
+
+Proposed fields:
+
+- id
+- post_id
+- author_id
+- content
+- status
+- created_at
+- updated_at
+- deleted_at, nullable
+
+Rules:
+
+- Comments must belong to valid posts.
+- Author ownership must be enforced.
+- Comment content must be validated.
+- Deleted or moderated comments must follow the approved retention policy.
+
+Nested replies are not assumed in the MVP. Do not introduce recursive comment relationships without approval.
+
+---
+
+## 4.3 POLLS DOMAIN
+
+### 4.3.1 `polls`
+
+Purpose: Stores poll definitions.
+
+Proposed fields:
+
+- id
+- post_id, nullable where independently supported
+- creator_id
+- question
+- selection_type
+- status
+- expires_at
+- created_at
+- updated_at
+
+Selection types:
+
+- single
+- multiple
+
+Suggested statuses:
+
+- draft
+- active
+- closed
+- removed
+
+The implementation must confirm whether polls are always linked to posts or may exist independently. The final schema must use one consistent model.
+
+### 4.3.2 `poll_options`
+
+Purpose: Stores selectable options for a poll.
+
+Proposed fields:
+
+- id
+- poll_id
+- option_text
+- display_order
+- created_at
+
+Rules:
+
+- Every option belongs to one poll.
+- Option ordering must be deterministic.
+- Each poll must have at least two valid options before publication.
+- Option mutation after votes have been recorded must follow approved rules.
+
+### 4.3.3 `poll_votes`
+
+Purpose: Stores individual voting submissions.
+
+Proposed fields:
+
+- id
+- poll_id
+- option_id
+- user_id
+- submission_id
+- created_at
+
+The model must support multiple-choice polls without losing the relationship between selected options from the same submission.
+
+Recommended logical structure:
+
+- One submission represents one user's vote operation on one poll.
+- Each selected option is represented by a row.
+- All rows in one submission share a `submission_id`.
+
+Constraints:
+
+- A submission must belong to one user and one poll.
+- A selected option must belong to the same poll as the submission.
+- Duplicate option selection within a submission must be prevented.
+- The approved voting policy must be enforced transactionally.
+- The application must not trust client-submitted vote counts.
+
+Important unresolved rule:
+
+The governing PRD states one active vote submission per user per poll, while also permitting vote updates where allowed. The implementation must preserve one authoritative current submission or use a versioned replacement strategy. It must not count both old and replacement votes.
+
+---
+
+## 4.4 GAMES DOMAIN
+
+### 4.4.1 `games`
+
+Purpose: Defines approved MVP games.
+
+Fields:
+
+- id
+- slug
+- name
+- description
+- game_type
+- status
+- configuration
+- created_at
+- updated_at
+
+Only the approved MVP games may be seeded:
+
+- QuickMind.
+- This or That.
+- Mystery Word.
+
+Game rules and scoring configurations must be explicitly approved.
+
+### 4.4.2 `game_questions`
+
+Purpose: Stores game questions or prompts.
+
+Fields:
+
+- id
+- game_id
+- question_text
+- question_type
+- difficulty
+- configuration
+- display_order
+- status
+- created_at
+- updated_at
+
+Do not expose correct answers in public question retrieval responses.
+
+### 4.4.3 `game_options`
+
+Purpose: Stores selectable answers or options where required.
+
+Fields:
+
+- id
+- question_id
+- option_text
+- display_order
+- is_correct, server-only
+- created_at
+
+Correct-answer fields must never be included in untrusted public responses.
+
+### 4.4.4 `game_sessions`
+
+Purpose: Records individual user game sessions.
+
+Fields:
+
+- id
+- game_id
+- user_id
+- started_at
+- completed_at
+- score
+- status
+- configuration_snapshot
+- created_at
+
+Rules:
+
+- Scores must be calculated server-side.
+- Sessions must have valid state transitions.
+- Completed sessions must not be resubmitted.
+- A session must belong to its authenticated user.
+- Configuration snapshots must not expose private game answer data.
+
+### 4.4.5 `game_answers`
+
+Purpose: Records answers submitted during a game session.
+
+Fields:
+
+- id
+- session_id
+- question_id
+- selected_option_id, nullable
+- answer_payload, where required
+- is_correct, server-calculated
+- submitted_at
+
+Rules:
+
+- The question must belong to the game associated with the session.
+- The answer must belong to the relevant question.
+- Duplicate answer submissions must be prevented according to game rules.
+- Correctness must be determined by trusted server logic.
+
+---
+
+## 4.5 COMMUNITIES DOMAIN
+
+### 4.5.1 `communities`
+
+Purpose: Stores approved community records.
+
+Fields:
+
+- id
+- name
+- slug
+- description
+- category
+- location_id, nullable
+- status
+- created_at
+- updated_at
+
+### 4.5.2 `community_members`
+
+Purpose: Associates users with communities.
+
+Fields:
+
+- id
+- community_id
+- user_id
+- membership_status
+- joined_at
+- updated_at
+
+Constraints:
+
+- One membership record per user/community combination.
+- Membership status must use approved values.
+- Membership permissions must be checked server-side.
+
+Advanced community administration remains outside MVP scope unless explicitly approved.
+
+---
+
+## 4.6 NOTIFICATIONS DOMAIN
+
+### 4.6.1 `notifications`
+
+Purpose: Stores user notifications.
+
+Fields:
+
+- id
+- recipient_id
+- actor_id, nullable
+- notification_type
+- entity_type, nullable
+- entity_id, nullable
+- title
+- body
+- read_at, nullable
+- created_at
+
+Rules:
+
+- Notifications must be visible only to their intended recipient and authorised administrators.
+- Private content must not be exposed through notification payloads.
+- Notification creation must avoid duplicate events.
+- Deleted users and removed content must be handled according to lifecycle policy.
+
+Where a polymorphic entity reference is used, document that PostgreSQL cannot provide an ordinary foreign key across multiple target tables. Validate references in trusted application logic or use dedicated nullable foreign keys where stronger relational integrity is needed.
+
+### 4.6.2 `notification_preferences`
+
+Purpose: Stores notification delivery preferences.
+
+Fields:
+
+- id
+- user_id
+- notification_type
+- in_app_enabled
+- push_enabled
+- updated_at
+
+Constraints:
+
+- One preference record per user and notification type.
+- Push must not be sent without valid subscription and permission.
+
+---
+
+## 4.7 SAFETY AND MODERATION DOMAIN
+
+### 4.7.1 `reports`
+
+Purpose: Stores user-submitted abuse reports.
+
+Fields:
+
+- id
+- reporter_id
+- target_type
+- target_id
+- reason
+- details
+- status
+- created_at
+- updated_at
+
+Approved report reasons:
+
+- harassment
+- bullying
+- threats
+- hate_or_abuse
+- sexual_exploitation
+- spam
+- impersonation
+- dangerous_activity
+- privacy_violation
+- other
+
+Suggested statuses:
+
+- open
+- under_review
+- action_taken
+- dismissed
+- escalated
+
+Target types must be controlled and validated.
+
+### 4.7.2 `moderation_actions`
+
+Purpose: Records enforcement decisions.
+
+Fields:
+
+- id
+- report_id, nullable
+- moderator_id
+- subject_user_id, nullable
+- target_type, nullable
+- target_id, nullable
+- action_type
+- reason
+- created_at
+- expires_at, nullable
+
+Action types must be approved and mapped to the actual enforcement capabilities.
+
+### 4.7.3 `moderation_audit_logs`
+
+Purpose: Records security-relevant moderation events.
+
+Fields:
+
+- id
+- actor_id
+- action_type
+- target_type
+- target_id
+- reason
+- metadata
+- created_at
+
+Audit records must be append-only for ordinary application roles.
+
+Do not allow moderators to silently rewrite their enforcement history.
+
+---
+
+## 4.8 LOCATIONS DOMAIN
+
+### 4.8.1 `locations`
+
+Purpose: Stores approved geographic areas and discovery locations.
+
+Fields:
+
+- id
+- name
+- location_type
+- parent_location_id, nullable
+- approximate_geography
+- status
+- created_at
+- updated_at
+
+Use PostGIS types and indexes appropriate to actual location queries.
+
+### 4.8.2 `user_location_preferences`
+
+Purpose: Stores the user's selected discovery location.
+
+Fields:
+
+- id
+- user_id
+- location_id, nullable
+- approximate_geography, nullable
+- location_source
+- updated_at
+
+Rules:
+
+- Manual location selection must be supported.
+- Permission denial must not prevent global discovery.
+- Exact coordinates must not be exposed publicly.
+- Avoid retaining precise coordinates where approximate geography is sufficient.
+- No background tracking.
+- Location retention and deletion must follow approved policy.
+
+---
+
+## 4.9 ADMINISTRATION DOMAIN
+
+### 4.9.1 `admin_audit_logs`
+
+Purpose: Records privileged administrative operations.
+
+Fields:
+
+- id
+- actor_id
+- action_type
+- target_type
+- target_id
+- before_state, nullable
+- after_state, nullable
+- request_id, nullable
+- created_at
+
+Rules:
+
+- Every privileged administrative operation must produce an audit record.
+- Audit records must not be editable by ordinary administrators.
+- Sensitive values must be redacted.
+- Retention must follow an approved policy.
+- Access to audit records must be restricted.
+
+---
+
+## 4.10 ANALYTICS DOMAIN
+
+### 4.10.1 `analytics_events`
+
+Purpose: Stores approved product usage events.
+
+Fields:
+
+- id
+- user_id, nullable
+- event_name
+- event_version
+- occurred_at
+- session_reference, nullable
+- properties
+- created_at
+
+Approved event examples:
+
+- post_created
+- comment_created
+- reaction_created
+- poll_voted
+- game_started
+- game_completed
+- report_submitted
+
+Rules:
+
+- Do not collect unnecessary sensitive data.
+- Do not place authentication tokens or private content in event properties.
+- Apply retention and access restrictions.
+- Guest events must not be used to bypass privacy requirements.
+- Analytics data must not be treated as authoritative transactional data.
+
+---
+
+# 5. ENUMS AND CONTROLLED VALUES
+
+Use PostgreSQL enums or validated reference tables where they provide a clear benefit.
+
+Do not create excessive enums for values likely to change frequently.
+
+Candidate controlled values:
+
+| Domain | Values |
+|---|---|
+| Profile visibility | public, private |
+| Account status | active, restricted, suspended, pending_deletion, deleted |
+| Post status | published, hidden, removed, deleted |
+| Reaction type | like, funny, interesting, surprising |
+| Poll selection | single, multiple |
+| Poll status | draft, active, closed, removed |
+| Game session status | active, completed, abandoned, expired |
+| Community membership | active, pending, left, removed |
+| Report status | open, under_review, action_taken, dismissed, escalated |
+| Location source | manual, approximate_browser, system_assigned |
+
+Before implementing enums, inspect the existing database for naming conflicts and existing enum values.
+
+Avoid adding enum values in a way that creates deployment-order or transaction compatibility problems.
+
+---
+
+# 6. DATABASE CONSTRAINTS
+
+Constraints are a mandatory part of the security and integrity model.
+
+## 6.1 Primary keys
+
+Every core entity must have a stable primary key.
+
+## 6.2 Foreign keys
+
+Use foreign keys for relationships that can be represented safely in the relational model.
+
+Define deletion behaviour deliberately.
+
+Examples:
+
+- User profile deletion must not automatically erase required moderation evidence.
+- Deleting a poll must not create orphaned vote records.
+- Deleting a post must follow the approved comment and reaction retention strategy.
+- Deleting a community must not silently corrupt membership records.
+
+Do not default to CASCADE on every foreign key.
+
+## 6.3 Unique constraints
+
+Required logical uniqueness includes:
+
+- Profile username.
+- One reaction per user/post.
+- One community membership per user/community.
+- One notification preference per user/type.
+- One answer per session/question where the game rules permit only one answer.
+- One poll submission per user/poll under the approved voting model.
+- One selected option per poll submission.
+
+## 6.4 Check constraints
+
+Examples:
+
+- A user cannot block themselves.
+- Poll expiration must be a valid timestamp.
+- Display order cannot be negative.
+- Scores cannot be negative unless an approved game rule requires otherwise.
+- Multiple-choice selections must be validated against poll rules.
+- A completed session must have a valid completion timestamp.
+- Profile and content status values must be valid.
+
+## 6.5 Database enforcement versus application enforcement
+
+Use database constraints for invariant rules that can be expressed reliably in PostgreSQL.
+
+Use trusted application logic for complex workflows and cross-entity business rules.
+
+Use both where appropriate.
+
+Frontend validation is never sufficient for data integrity.
+
+---
+
+# 7. INDEXING STRATEGY
+
+Indexes must be based on actual query patterns.
+
+The following are required target access patterns.
+
+| Table | Index purpose |
+|---|---|
+| profiles | Username lookup |
+| profiles | Account status filtering where frequently used |
+| posts | Author and creation-time retrieval |
+| posts | Published feed pagination |
+| posts | Community feed retrieval |
+| post_reactions | Unique post/user relationship |
+| comments | Post and creation-time retrieval |
+| polls | Active poll retrieval and expiration processing |
+| poll_options | Poll option ordering |
+| poll_votes | Poll/user submission lookup |
+| poll_votes | Poll/option result aggregation |
+| game_questions | Game and question ordering |
+| game_options | Question option retrieval |
+| game_sessions | User session history |
+| game_answers | Session answer retrieval |
+| community_members | Community membership lookup |
+| notifications | Recipient and creation-time retrieval |
+| notifications | Unread notification lookup |
+| reports | Status and creation-time review queues |
+| moderation_actions | Subject and moderator history |
+| locations | Geospatial search |
+| user_location_preferences | User lookup |
+| admin_audit_logs | Actor and time lookup |
+| analytics_events | Event name and time analysis |
+
+Use:
+
+- B-tree indexes for common equality and ordered retrieval.
+- Partial indexes for frequently queried filtered subsets.
+- GIST indexes for appropriate PostGIS geometry/geography columns.
+- Composite indexes that match actual query ordering.
+
+Do not add redundant indexes.
+
+Index additions must be evaluated against write overhead and storage costs.
+
+---
+
+# 8. ROW LEVEL SECURITY (RLS) ARCHITECTURE
+
+## 8.1 General requirements
+
+RLS must be enabled on every exposed application table.
+
+Policies must follow least privilege.
+
+The database must not assume that a request is authorised merely because the user is authenticated.
+
+## 8.2 Role model
+
+The application supports:
+
+- Guest.
+- Registered user.
+- Moderator.
+- Administrator.
+- Super administrator.
+
+These are application permissions, not permission to trust client-provided role values.
+
+Role resolution must come from a trusted server-controlled source.
+
+## 8.3 Policy matrix
+
+| Table | Guest | Registered user | Moderator | Administrator |
+|---|---|---|---|---|
+| profiles | Public fields only | Own profile and public profiles | Approved moderation access | Approved administrative access |
+| user_preferences | No | Own | No default access | Restricted support access |
+| user_consents | No | Own | No | Restricted compliance access |
+| user_blocks | No | Own | No default access | Restricted |
+| posts | Public published content | Public content and permitted writes | Moderation access | Administrative access |
+| post_reactions | No private records | Approved reads and own writes | Approved moderation access | Administrative access |
+| comments | Public permitted comments | Approved reads and own writes | Moderation access | Administrative access |
+| polls | Public active polls | Approved reads and voting | Moderation access | Administrative access |
+| poll_options | Public poll options | Approved reads | Moderation access | Administrative access |
+| poll_votes | No | Own vote details and approved aggregate results | Restricted | Restricted |
+| games | Public active definitions | Approved gameplay | No default access | Administrative access |
+| game_questions | Public safe question content | Approved game access | No default access | Administrative access |
+| game_options | Safe public options only | Approved gameplay | No default access | Administrative access |
+| game_sessions | No | Own sessions | Restricted | Restricted |
+| game_answers | No | Own sessions only | Restricted | Restricted |
+| communities | Public communities | Approved membership operations | Approved access | Administrative access |
+| community_members | No | Approved community membership data | Approved access | Administrative access |
+| notifications | No | Own notifications | No | Restricted |
+| notification_preferences | No | Own preferences | No | Restricted |
+| reports | No | Own submitted reports where appropriate | Assigned or permitted reports | Approved access |
+| moderation_actions | No | Only permitted user-facing status | Permitted moderation actions | Approved administrative access |
+| moderation_audit_logs | No | No | Restricted audit access | Restricted audit access |
+| locations | Approved public locations | Approved location access | No default access | Administrative access |
+| user_location_preferences | No | Own preferences | No default access | Restricted |
+| admin_audit_logs | No | No | No | Restricted privileged access |
+| analytics_events | No | No direct access | No | Restricted reporting access |
+
+This matrix describes intended access, not a ready-to-copy RLS implementation.
+
+Every row requires a specific SQL policy and test.
+
+## 8.4 RLS policy design
+
+Policies must define:
+
+- SELECT.
+- INSERT.
+- UPDATE.
+- DELETE.
+
+Where a user may update their own row, `USING` and `WITH CHECK` must both prevent changes to protected ownership or permission fields.
+
+Never use a policy that permits all authenticated users to modify all records.
+
+## 8.5 Profile security
+
+A public profile view should expose only approved public fields.
+
+Do not rely on hiding private columns in frontend components.
+
+Use an appropriately designed database view or restricted API response.
+
+If a view is used, verify its security behaviour, ownership context and RLS interaction. Do not assume a view automatically inherits the intended access restrictions.
+
+## 8.6 Anonymous content security
+
+Anonymous posts must still enforce:
+
+- Authenticated ownership.
+- Reporting.
+- Blocking.
+- Moderation access.
+- Abuse prevention.
+
+The database must retain the internal author relationship while public retrieval omits identifying information.
+
+## 8.7 Vote security
+
+Users must not be able to:
+
+- Vote as another user.
+- Change vote ownership.
+- Insert duplicate submissions.
+- Select an option belonging to another poll.
+- Modify authoritative result counts.
+- Update closed polls.
+- Access other users' private vote records.
+
+Vote operations must use trusted transaction-safe operations.
+
+## 8.8 Game security
+
+Users must not be able to:
+
+- Assign their own score.
+- Mark answers correct.
+- Change session ownership.
+- Submit answers to unrelated sessions.
+- Reuse completed sessions.
+- Retrieve protected answer keys through public queries.
+
+## 8.9 Administrative security
+
+Moderation and administrative tables require strict access policies.
+
+The application must not permit users to modify their own role or insert administrative audit records.
+
+Privileged operations must execute through trusted server-side paths.
+
+---
+
+# 9. SQL MIGRATION STANDARDS
+
+## 9.1 Migration principles
+
+Every database modification must be:
+
+- Version-controlled.
+- Reproducible.
+- Reviewed.
+- Testable.
+- Environment-aware.
+- Documented.
+- Safe for existing data.
+
+The coding agent must inspect current migration history before generating new migrations.
+
+## 9.2 Migration process
+
+For each change:
+
+1. Inspect current schema.
+2. Identify affected tables and dependencies.
+3. Compare current schema with target requirements.
+4. Check existing records.
+5. Prepare a migration plan.
+6. Identify locking and downtime risks.
+7. Prepare backup and recovery steps.
+8. Create the migration.
+9. Test against a representative staging database.
+10. Verify existing records.
+11. Obtain production approval.
+12. Apply through the approved deployment process.
+13. Verify post-migration integrity.
+
+## 9.3 Migration naming
+
+Use an ordered naming convention such as:
+
+`YYYYMMDDHHMMSS_description.sql`
+
+Migration names must describe the actual change.
+
+## 9.4 Safe schema evolution
+
+Prefer additive changes:
+
+- Add nullable columns first.
+- Backfill existing data.
+- Validate data.
+- Add constraints.
+- Update application logic.
+- Remove obsolete fields only after compatibility is proven and approved.
+
+For large production tables, assess locking and use appropriate online migration techniques.
+
+## 9.5 Destructive migrations
+
+The following require explicit approval:
+
+- DROP TABLE.
+- DROP COLUMN.
+- TRUNCATE.
+- Changing primary key types.
+- Changing foreign key ownership.
+- Removing RLS.
+- Broad permission changes.
+- Data deletion.
+- Enum or type transformations that may invalidate existing records.
+
+No production reset or automatic database recreation is permitted.
+
+---
+
+# 10. REFERENCE SQL IMPLEMENTATION PATTERNS
+
+The following snippets illustrate required patterns. They are not a complete production migration and must be reconciled against the existing schema before execution.
+
+## 10.1 UUID and timestamp defaults
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE public.example_records (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+```
+
+## 10.2 Case-insensitive username uniqueness
+
+One possible approach is a unique index:
+
+```sql
+CREATE UNIQUE INDEX profiles_username_lower_uidx
+ON public.profiles (lower(username));
+```
+
+Before creating it, inspect existing username collisions.
+
+Do not silently rename existing usernames to make the migration pass.
+
+## 10.3 Unique reaction constraint
+
+```sql
+CREATE UNIQUE INDEX post_reactions_user_post_uidx
+ON public.post_reactions (user_id, post_id);
+```
+
+## 10.4 Unique community membership
+
+```sql
+CREATE UNIQUE INDEX community_members_user_community_uidx
+ON public.community_members (user_id, community_id);
+```
+
+## 10.5 Notification preference uniqueness
+
+```sql
+CREATE UNIQUE INDEX notification_preferences_user_type_uidx
+ON public.notification_preferences (user_id, notification_type);
+```
+
+## 10.6 RLS enablement pattern
+
+```sql
+ALTER TABLE public.example_records
+ENABLE ROW LEVEL SECURITY;
+```
+
+Every enabled table must then receive explicitly reviewed policies.
+
+Enabling RLS without verifying legitimate application access can break the application. Conversely, leaving a table exposed without policies can expose data.
+
+## 10.7 Ownership policy pattern
+
+An illustrative ownership policy:
+
+```sql
+CREATE POLICY "Users can read their own records"
+ON public.example_records
+FOR SELECT
+TO authenticated
+USING (
+    user_id = (SELECT auth.uid())
+);
+```
+
+An illustrative insert policy:
+
+```sql
+CREATE POLICY "Users can insert their own records"
+ON public.example_records
+FOR INSERT
+TO authenticated
+WITH CHECK (
+    user_id = (SELECT auth.uid())
+);
+```
+
+An illustrative update policy:
+
+```sql
+CREATE POLICY "Users can update their own records"
+ON public.example_records
+FOR UPDATE
+TO authenticated
+USING (
+    user_id = (SELECT auth.uid())
+)
+WITH CHECK (
+    user_id = (SELECT auth.uid())
+);
+```
+
+These examples are not suitable for every table. A complete policy must also protect immutable ownership, role fields, moderation fields and sensitive columns.
+
+## 10.8 Updated timestamp trigger pattern
+
+Where required, use a consistent trigger function to update `updated_at`.
+
+Do not duplicate inconsistent trigger functions across every table.
+
+Review existing trigger names before creating new ones.
+
+## 10.9 Transaction-safe poll operation
+
+The poll voting implementation must:
+
+1. Authenticate the user.
+2. Lock or otherwise safely coordinate the relevant voting state.
+3. Verify the poll is active and not expired.
+4. Verify every selected option belongs to the poll.
+5. Enforce single-choice or multiple-choice rules.
+6. Enforce the approved submission policy.
+7. Write all selected options atomically.
+8. Return the authoritative result.
+9. Roll back entirely if validation or persistence fails.
+
+A partial vote submission must never be committed.
+
+The final implementation may use a PostgreSQL function or trusted server-side transaction, but its permissions and transaction behaviour must be documented and tested.
+
+---
+
+# 11. DATABASE FUNCTIONS AND TRIGGERS
+
+Database functions and triggers must have a clearly defined purpose.
+
+Approved potential uses:
+
+- Updating timestamps.
+- Maintaining required integrity rules.
+- Supporting atomic voting.
+- Recording specific audit events.
+- Supporting approved database-side operations.
+
+Requirements:
+
+- Use explicit schemas.
+- Set safe `search_path` values for privileged functions.
+- Restrict function execution permissions.
+- Avoid dynamic SQL where unnecessary.
+- Validate all inputs.
+- Avoid privilege escalation.
+- Document trigger execution order and side effects.
+- Test rollback behaviour.
+
+Any `SECURITY DEFINER` function must receive additional security review.
+
+Do not use privileged functions as a shortcut around RLS.
+
+---
+
+# 12. DATA LIFECYCLE AND RETENTION
+
+## 12.1 User account lifecycle
+
+The target account lifecycle is:
+
+1. Active.
+2. Restricted or suspended, if enforced.
+3. Pending deletion, where the approved process requires a grace period.
+4. Deleted or anonymised according to the approved retention policy.
+
+The exact grace period and retention durations require an explicit product, privacy and legal decision.
+
+## 12.2 User deletion
+
+Account deletion must address:
+
+- Profile information.
+- Posts.
+- Comments.
+- Reactions.
+- Poll participation.
+- Game history.
+- Community membership.
+- Notifications.
+- Location preferences.
+- Consent records.
+- Reports.
+- Moderation records.
+- Analytics records.
+
+Not every related record must necessarily be physically deleted.
+
+Where a record must be retained for a legitimate legal, security or abuse-prevention purpose, minimise and restrict the retained data and document the justification.
+
+Never silently retain identifiable user data indefinitely.
+
+## 12.3 Posts and comments
+
+Support appropriate deletion or anonymisation.
+
+A soft-delete model may be used where it supports moderation, safety or recovery requirements.
+
+Soft deletion must not become an excuse for indefinite unnecessary retention.
+
+## 12.4 Polls and votes
+
+Preserve result integrity.
+
+If a poll or account is deleted, the database must follow the approved policy for retaining, anonymising or removing associated votes.
+
+## 12.5 Audit logs
+
+Audit records should be protected from ordinary modification.
+
+Define a retention schedule based on security, operational and legal requirements.
+
+Audit logs must not become an unrestricted repository of sensitive personal information.
+
+## 12.6 Analytics
+
+Define:
+
+- Event retention.
+- Aggregation policy.
+- User deletion behaviour.
+- Access permissions.
+- Data minimisation.
+- Export and reporting permissions.
+
+## 12.7 Location data
+
+Location data requires additional protection.
+
+- Store only what is needed.
+- Prefer approximate geography.
+- Restrict access.
+- Avoid public coordinate exposure.
+- Do not enable background tracking.
+- Define retention and deletion.
+- Do not use precise location as an advertising product.
+
+---
+
+# 13. BACKUP AND RECOVERY
+
+## 13.1 Backup requirements
+
+Production database backups must be configured and monitored.
+
+Document:
+
+- Backup method.
+- Backup frequency.
+- Retention.
+- Encryption.
+- Access controls.
+- Recovery point objective (RPO).
+- Recovery time objective (RTO).
+
+The actual RPO and RTO must be approved according to business and infrastructure requirements.
+
+## 13.2 Restore testing
+
+A backup is not considered verified until restoration has been tested.
+
+Test:
+
+- Full database restoration.
+- Schema integrity.
+- Foreign-key integrity.
+- RLS and permissions.
+- Application connectivity.
+- Representative user workflows.
+
+## 13.3 Migration recovery
+
+For each production migration, define whether recovery requires:
+
+- Reversal.
+- Forward fix.
+- Point-in-time recovery.
+- Data repair.
+
+Do not automatically reverse a migration if doing so would discard valid new user data.
+
+---
+
+# 14. DATABASE PERFORMANCE
+
+## 14.1 Query efficiency
+
+Review:
+
+- Feed retrieval.
+- Comment retrieval.
+- Reaction counts.
+- Poll results.
+- Game history.
+- Notification retrieval.
+- Moderation queues.
+- Geospatial queries.
+
+Use query plans to identify expensive operations.
+
+## 14.2 Pagination
+
+Use cursor-based pagination for large feeds and histories.
+
+Avoid unbounded queries.
+
+## 14.3 Index maintenance
+
+Indexes must be reviewed against actual query patterns.
+
+Do not create duplicate or unused indexes.
+
+## 14.4 Geospatial performance
+
+Use appropriate PostGIS indexes and spatial query patterns.
+
+The implementation must confirm that location filtering remains privacy-preserving and performant.
+
+---
+
+# 15. DATABASE TESTING REQUIREMENTS
+
+## 15.1 Schema tests
+
+Verify:
+
+- Required tables exist.
+- Required columns exist.
+- Primary keys exist.
+- Foreign keys are correct.
+- Unique constraints are enforced.
+- Check constraints are enforced.
+- Required indexes exist.
+- Triggers execute correctly.
+- Functions execute correctly.
+
+## 15.2 RLS tests
+
+Test at minimum:
+
+- Anonymous guest.
+- User A.
+- User B.
+- Moderator.
+- Administrator.
+- Super administrator.
+
+For each role, verify both permitted and prohibited operations.
+
+## 15.3 Cross-user isolation
+
+User A must not be able to:
+
+- Read User B's private preferences.
+- Read User B's private notifications.
+- Modify User B's profile.
+- Delete User B's posts.
+- Change User B's reactions.
+- Modify User B's game sessions.
+- View protected user location preferences.
+- Access privileged audit records.
+
+Test direct database/API operations, not only the UI.
+
+## 15.4 Poll integrity tests
+
+Verify:
+
+- Invalid option rejection.
+- Cross-poll option rejection.
+- Duplicate submission prevention.
+- Multiple-choice validation.
+- Concurrent vote handling.
+- Poll expiration.
+- Vote replacement rules.
+- Accurate aggregate results.
+
+## 15.5 Moderation tests
+
+Verify:
+
+- A user can submit a report.
+- Users cannot view other users' private reports.
+- Unauthorised users cannot apply moderation actions.
+- Moderators cannot grant themselves higher privileges.
+- Administrative actions are recorded.
+- Ordinary roles cannot rewrite audit history.
+
+## 15.6 Migration tests
+
+Every migration must be tested against:
+
+- A clean database.
+- A representative existing database.
+- Existing records.
+- Existing policies.
+- Existing functions and triggers.
+- Application compatibility.
+
+Where the migration changes existing data, compare pre-migration and post-migration record counts and integrity checks.
+
+---
+
+# 16. OPEN DATABASE DECISIONS
+
+The following require confirmation during the initial repository and database audit.
+
+| ID | Decision | Required evidence |
+|---|---|---|
+| DB-OD-001 | Existing profile table structure | Current schema |
+| DB-OD-002 | Existing auth/profile relationship | Foreign keys and application code |
+| DB-OD-003 | Existing username uniqueness model | Indexes and duplicate analysis |
+| DB-OD-004 | Whether polls are linked to posts or independent | Current product implementation |
+| DB-OD-005 | Exact poll vote replacement behaviour | Product approval |
+| DB-OD-006 | Exact game scoring configuration | Approved game rules |
+| DB-OD-007 | Location precision and retention | Privacy decision |
+| DB-OD-008 | Account deletion grace period | Product and legal approval |
+| DB-OD-009 | Moderation record retention | Safety and legal review |
+| DB-OD-010 | Analytics retention | Privacy and product approval |
+| DB-OD-011 | Existing database role model | Database and authentication audit |
+| DB-OD-012 | Existing migration history | Supabase migration audit |
+| DB-OD-013 | Existing production backup capability | Infrastructure audit |
+| DB-OD-014 | Final SQL naming and enum conventions | Existing schema review |
+
+No unresolved decision may be silently converted into a production schema assumption.
+
+---
+
+# 17. DATABASE ACCEPTANCE CRITERIA
+
+The database is accepted when:
+
+- [ ] The actual existing schema has been audited.
+- [ ] The target ERD has been reconciled with the existing implementation.
+- [ ] All core MVP entities are accounted for.
+- [ ] All required relationships are defined.
+- [ ] Primary and foreign keys are correct.
+- [ ] Unique constraints are enforced.
+- [ ] Check constraints are enforced.
+- [ ] Required indexes are implemented.
+- [ ] RLS is enabled on exposed application tables.
+- [ ] RLS policies are tested by role.
+- [ ] Cross-user isolation is verified.
+- [ ] Privileged functions are reviewed.
+- [ ] Poll operations are transaction-safe.
+- [ ] Game scoring is server-authoritative.
+- [ ] Moderation records are protected.
+- [ ] Account deletion follows an approved lifecycle.
+- [ ] Location data is appropriately protected.
+- [ ] Migrations are version-controlled.
+- [ ] Existing production records are preserved.
+- [ ] Backup and restore procedures are tested.
+- [ ] No critical database security or integrity defects remain.
+
+---
+
+# 18. FINAL INSTRUCTIONS TO THE AI CODING AGENT
+
+This document defines the target database design and security contract for MOMENT.
+
+Your first responsibility is to inspect the actual database.
+
+Do not assume that the target tables are missing.
+
+Do not recreate existing tables without checking their contents.
+
+Do not change existing primary keys or identifiers without an approved migration plan.
+
+Do not delete existing records to make constraints pass.
+
+Do not disable RLS to resolve application errors.
+
+Do not grant broad privileges to authenticated users.
+
+Do not expose private user data through views, APIs or realtime events.
+
+Do not trust frontend validation for security or data integrity.
+
+Do not execute destructive production migrations without explicit approval.
+
+Before implementing the target database:
+
+1. Inspect the existing schema.
+2. Inspect Supabase Auth relationships.
+3. Inspect all existing migrations.
+4. Inspect every RLS policy.
+5. Inspect functions and triggers.
+6. Identify existing production records.
+7. Produce a schema-difference report.
+8. Produce a non-destructive migration plan.
+9. Test migrations against staging.
+10. Obtain approval for risky changes.
+
+Maintain a requirement-to-table-to-policy-to-test traceability record.
+
+**The objective is not simply to create a clean database schema. The objective is to create a secure, consistent and recoverable data foundation without sacrificing existing MOMENT data or functionality.**
