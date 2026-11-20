@@ -1,22 +1,54 @@
 # KEA PARROT — API & REALTIME SPECIFICATION
 
-**Document ID:** MOMENT-API-004  
-**Document Title:** API & Realtime Specification  
-**Version:** 1.0  
-**Status:** Target Implementation Specification — Subject to Existing-System Audit  
-**Application Name:** Kea Parrot  
-**Previous Project Name:** MOMENT  
-**Platform:** Responsive Web Application / PWA  
-**Backend:** Next.js API / Supabase  
-**Database:** PostgreSQL  
-**Realtime:** Supabase Realtime  
-**API Version Baseline:** `/api/v1`  
+**Document ID:** KEA-API-004
+**Document Title:** API & Realtime Specification
+**Version:** 1.1
+**Date:** 2026-11-20
+**Status:** Restructured baseline — contradictions resolved 2026-11-20
+**Decisions applied:** D-01, D-02, D-03, D-04, D-05, D-11, D-12, D-21, D-22 (as applicable)
+**Supersedes:** v1.0
+**Application Name:** Kea Parrot
+**Former working name:** MOMENT (superseded 2026-11-20 by owner decision).
+**Platform:** Responsive Web Application / PWA
+**Backend:** Next.js API / Supabase
+**Database:** PostgreSQL
+**Realtime:** Supabase Realtime
+**API Version Baseline:** `/api/v1`
 **Related Documents:**
-- MOMENT Master Product Requirements Document (MOMENT-PRD-001)
-- MOMENT Database Design & Security Specification (MOMENT-DBS-002)
-- MOMENT UI/UX Implementation Specification (MOMENT-UX-003)
+- Kea Parrot Master Product Requirements Document (KEA-PRD-001)
+- Kea Parrot Database Design & Security Specification (KEA-DBS-002)
+- Kea Parrot UI/UX Implementation Specification (KEA-UX-003)
 
 ---
+
+## Restructure note — 2026-11-20
+
+This file was restructured 2026-11-20 under the canonical decisions in README.md
+(D-01–D-22). Contradictions resolved in this file:
+
+- **D-01 Name:** Kea Parrot everywhere; doc ID is now KEA-API-004; cross-references
+  use the new KEA-* IDs. The former working name appears only in the header note above.
+- **D-02 Age:** MVP audience is 16+ (see §7.6). No older age restriction remains.
+- **D-03 Guests:** the Guest Session Rule now governs guest access (§7.5, §8.5,
+  §12.3, §12.7, §12.8, §25.3) — guests may browse, vote, and play within a
+  60-minute guest session; they may not post, comment, react, report, or join.
+- **D-04 Prototype:** no prototype exists. Routes and channels in this document are
+  PROPOSED for a greenfield build; audit steps are reframed as greenfield
+  verification (§3, §28 Step 0). Nothing is preserved because nothing exists yet.
+- **D-05 Numbering:** the steps in §28 are API sub-plan steps 0–9, not standalone
+  phase numbers; each step maps to a Readiness R-phase in the §28 mapping table.
+  Product track is P0–P5 and Readiness track is R0–R10 (KEA-PRD-001, KEA-RDY-006).
+- **D-11 Vote replacement:** decided — registered users may change a vote while a
+  poll is open; guest votes are final (§12.7).
+- **D-12 Endpoints:** decided — `PATCH /api/v1/me` is account fields only,
+  `PATCH /api/v1/profiles/me` is public profile fields only, notification
+  preferences are canonical at `/me/notification-preferences` (§12.1, §12.9).
+- **D-22 Not invented:** numeric limits and thresholds remain TBD with owner and
+  phase (see §27 and the README Open Decisions register); nothing was invented
+  in this pass.
+
+---
+
 
 # 1. DOCUMENT PURPOSE
 
@@ -64,17 +96,18 @@ The document defines:
 
 The current application name is **Kea Parrot**.
 
-MOMENT is the previous project name referenced in the original requirements documents.
+The product name is **Kea Parrot** everywhere in this document. The former working
+name appears only in the header historical note above and nowhere else.
 
 The coding agent must:
 
-- Use Kea Parrot for new user-facing application references.
-- Preserve existing database objects, API routes, migration identifiers, package names, and internal identifiers unless an approved migration requires changing them.
-- Avoid unnecessary renaming of production database objects.
-- Avoid breaking existing clients or integrations merely to replace historical identifiers.
-- Record any required naming migration separately.
-
-A product rebrand does not automatically require a database or API redesign.
+- Use Kea Parrot for all user-facing application references.
+- No prototype exists (D-04), so there are no existing database objects, API routes,
+  migration identifiers, package names, or internal identifiers to preserve. Identifiers
+  are created in Product P0 Foundation according to KEA-DBS-002 and the canonical repo
+  tree (KEA-PRD-001 §21.3).
+- Once consumers exist, do not break them merely to rename an identifier; record any
+  required naming migration separately.
 
 ## 1.3 Specification authority
 
@@ -82,10 +115,10 @@ The following documents control implementation decisions:
 
 | Document | Authority |
 |---|---|
-| Master PRD | Product functionality and approved scope |
-| Database Specification | Database structure, data relationships, RLS and data security |
-| UI/UX Specification | Frontend screens, interaction behavior and UI states |
-| This document | API communication, contracts and realtime behavior |
+| Master PRD (KEA-PRD-001) | Product functionality and approved scope |
+| Database Specification (KEA-DBS-002) | Database structure, data relationships, RLS and data security |
+| UI/UX Specification (KEA-UX-003) | Frontend screens, interaction behavior and UI states |
+| This document (KEA-API-004) | API communication, contracts and realtime behavior |
 
 If any conflict occurs, the coding agent must document it and request clarification where necessary.
 
@@ -98,7 +131,7 @@ Do not silently resolve product-level contradictions by inventing functionality.
 The API implementation MUST follow these principles.
 
 1. PostgreSQL remains the authoritative source of persistent application data.
-2. Supabase Auth remains the authoritative authentication provider unless an existing approved implementation requires otherwise.
+2. Supabase Auth is the authoritative authentication provider for the greenfield build (KEA-PRD-001 §21.1).
 3. The backend remains responsible for authorization and business-critical validation.
 4. The frontend must never be trusted to calculate authoritative game scores.
 5. The frontend must never be trusted to enforce poll voting rules.
@@ -110,7 +143,7 @@ The API implementation MUST follow these principles.
 11. All user-generated content must be validated server-side.
 12. Production database records must be preserved during migrations.
 13. All consequential operations must have predictable failure behavior.
-14. API changes must account for existing frontend consumers and integrations.
+14. API changes must account for frontend consumers and integrations once they exist; in the greenfield build, contracts are defined here first (§12) and consumers are built to them.
 15. The application must not depend on manual page refreshes to receive supported live updates.
 16. The implementation must remain a modular monolith unless an approved architectural change is made.
 17. The system must not introduce unnecessary infrastructure or dependencies.
@@ -118,98 +151,80 @@ The API implementation MUST follow these principles.
 
 ---
 
-# 3. EXISTING-SYSTEM AUDIT — MANDATORY BEFORE IMPLEMENTATION
+# 3. GREENFIELD VERIFICATION — MANDATORY BEFORE IMPLEMENTATION
 
-The agent MUST NOT assume that the existing Kea Parrot application has no API infrastructure.
+No prototype exists (D-04, owner decision 2026-11-20). There is no existing Kea Parrot
+application, API infrastructure, production database, or production configuration to
+audit in this repository. Product P0 Foundation is a greenfield foundation step, not
+a prototype-to-production audit.
 
-Before making changes, inspect the actual repository and production configuration.
+Before making changes, verify the greenfield baseline:
 
-## 3.1 Repository audit
+## 3.1 Specification verification
 
-Inspect:
+Verify:
 
-- Next.js version.
-- App Router or existing routing architecture.
-- API route handlers.
-- Server actions.
-- Supabase client initialization.
-- Supabase server client configuration.
-- Authentication middleware.
-- Session handling.
-- Existing authorization utilities.
-- Existing Zod schemas.
-- API response helpers.
-- Existing error-handling utilities.
-- Realtime subscriptions.
-- Existing notification implementation.
-- Existing game services.
-- Poll and voting implementation.
-- Existing admin endpoints.
-- Rate-limiting mechanisms.
-- Logging and observability.
-- Existing tests.
+- Next.js / TypeScript versions chosen in P0 and pinned in the lockfile.
+- App Router routing architecture as defined in KEA-PRD-001 §21.3.
+- Supabase project setup (development, automated testing, staging, production —
+  four environments, D-08) and client initialization (browser vs server).
+- Authentication model (Supabase Auth) and session handling as specified in §7.
+- Authorization model (roles resolved server-side from `user_roles`, KEA-DBS-002 §4.9).
+- Zod schemas, API response helpers, and error-handling utilities as specified in §5/§9.
+- Realtime subscriptions and channel authorization as specified in §13–§15.
+- Notification, game, poll, and admin endpoint designs as specified in §12.
+- Rate-limiting approach (thresholds TBD — see §27 and the README Open Decisions register).
+- Logging and observability (Sentry baseline, §22).
+- Test plan as specified in §25.
 
-## 3.2 Database audit
+## 3.2 Database verification
 
-Inspect:
+Verify the specification, not an existing database:
 
-- Actual production schema.
-- Existing table names.
-- Column names and types.
-- Primary keys.
-- Foreign keys.
-- Unique constraints.
-- Check constraints.
-- Indexes.
-- RLS policies.
-- Database functions.
-- Triggers.
-- Migration history.
-- Existing enum values.
-- Existing database relationships.
-- Existing realtime publication configuration.
+- Table, column, key, constraint, index, and RLS designs in KEA-DBS-002.
+- The relationship between `auth.users` and `profiles` (KEA-DBS-002 §4.1).
+- Migration plan for P0 (no migration history exists yet).
+- Realtime publication configuration to be created in P0.
 
-The agent must reconcile the Database Specification with the actual database.
+Do not create duplicate tables or change identifiers merely to match an illustrative schema.
 
-Do not create duplicate tables or change existing identifiers merely to match an illustrative schema.
+## 3.3 Proposed API inventory
 
-## 3.3 Existing API inventory
-
-Create a report containing:
+Create a report containing the PROPOSED canonical routes (§12):
 
 | Field | Description |
 |---|---|
-| Endpoint | Existing route |
+| Endpoint | Proposed route |
 | Method | HTTP method |
 | Purpose | What it does |
-| Authentication | Required or optional |
+| Authentication | Required, guest-session, or optional |
 | Authorization | Required permission |
-| Request | Current request structure |
-| Response | Current response structure |
+| Request | Proposed request structure |
+| Response | Proposed response structure |
 | Database impact | Tables and functions affected |
 | Realtime impact | Events published or consumed |
 | Consumers | Frontend pages or other services |
-| Status | Working, incomplete, broken or unused |
+| Status | Proposed (greenfield — nothing exists yet) |
 | Risk | Potential impact of changing it |
 
-## 3.4 Required audit deliverables
+## 3.4 Required verification deliverables
 
 Before implementation begins, produce:
 
-1. Existing API inventory.
-2. Existing realtime subscription inventory.
-3. Authentication and authorization audit.
-4. Database/API compatibility report.
-5. Security gap report.
-6. Duplicate endpoint report.
+1. Proposed API inventory (§3.3).
+2. Proposed realtime subscription inventory.
+3. Authentication and authorization design verification.
+4. Database/API compatibility report (this spec vs KEA-DBS-002).
+5. Security gap report (spec-level; no live system exists to scan).
+6. Duplicate endpoint report (must confirm §12 has no duplicates — see D-12).
 7. Missing endpoint report.
-8. Existing client-consumer mapping.
-9. Proposed non-destructive migration plan.
-10. Phased API implementation plan.
+8. Client-consumer mapping (proposed consumers).
+9. Non-destructive migration plan (P0 migrations; nothing exists to preserve yet).
+10. Sub-plan implementation plan (§28).
 
-**Do not start by replacing the entire API layer.**
-
----
+**Preservation rules still apply to all work from Product P1 onward: no destructive
+operations, no disabling RLS, no inventing requirements. Nothing is preserved in P0
+because nothing exists yet.**
 
 # 4. TARGET API ARCHITECTURE
 
@@ -294,7 +309,7 @@ Suggested service boundaries:
 - `ModerationService`
 - `AnalyticsService`
 
-These are logical boundaries. The agent should follow existing repository conventions rather than blindly creating files with these names.
+These are logical boundaries. The agent should follow the canonical repo tree (KEA-PRD-001 §21.3, D-10) rather than blindly creating files with these names.
 
 ### Data access layer
 
@@ -318,11 +333,10 @@ Example:
 
 `/api/v1/posts`
 
-However, existing production routes must be inventoried first.
+No prototype exists (D-04), so there are no existing production routes to inventory.
+The routes in §12 are the PROPOSED canonical routes for the greenfield build.
 
-Where an existing route already serves the same purpose, preserve it unless a migration is approved.
-
-Do not create duplicate routes simply to match this document.
+Do not create duplicate routes.
 
 ## 4.4 HTTP methods
 
@@ -378,7 +392,7 @@ Example:
 }
 ```
 
-This is an illustrative API representation. Existing public contracts may use different naming conventions and must not be changed without compatibility analysis.
+This is an illustrative API representation. Public contracts are defined in §12 for the greenfield build; do not change them without compatibility analysis once consumers exist.
 
 ## 5.3 Response envelope
 
@@ -432,7 +446,7 @@ New API endpoints should follow a consistent response structure.
 
 The response examples define the target convention for new or migrated endpoints.
 
-If the current application already has a stable response envelope, assess compatibility before replacing it.
+This envelope is the canonical response convention for the greenfield build.
 
 ## 5.4 Response rules
 
@@ -480,9 +494,9 @@ For example, a private resource may return a not-found response rather than conf
 
 ## 7.1 Authentication provider
 
-Supabase Auth remains the authentication authority under the existing architecture.
+Supabase Auth is the authentication authority.
 
-The agent must inspect the current authentication implementation before changing it.
+No authentication implementation exists yet (D-04); implement it as specified in §7.2–§7.6.
 
 ## 7.2 Authentication requirements
 
@@ -506,9 +520,9 @@ For user-owned operations:
 - Determine the current user from the authenticated session.
 - Never allow the client to impersonate another user by changing a request body.
 - Use the database's actual primary key type.
-- Preserve the existing relationship between `auth.users` and application profile records.
+- The relationship between `auth.users` and application profile records is defined in KEA-DBS-002 §4.1 (`profiles.id` → `auth.users.id`).
 
-Do not assume UUID or text identifiers without inspecting the actual production schema.
+Identifiers are UUIDs (KEA-DBS-002 §2.3); do not assume otherwise.
 
 ## 7.4 Session expiration
 
@@ -519,15 +533,38 @@ When a session expires:
 - The user should be redirected through the approved login flow.
 - Safe navigation context should be preserved where possible.
 
-## 7.5 Guest access
+## 7.5 Guest access — Guest Session Rule (D-03, decided 2026-11-20)
 
-Guest access must follow the Master PRD.
+A guest is an unauthenticated visitor, identified by a server-issued guest-session
+token stored in the browser. A guest is NOT an account.
+
+A guest MAY: browse public discovery; view polls/results and game descriptions;
+vote in polls; play the 3 games.
+
+A guest may NOT: post, comment, react, join communities, report content, or create
+any game record associated with an account. (Guest game sessions are tied to the
+guest session only, never to an account.)
+
+LIMITED TIME: a guest participation window lasts **60 minutes from the guest
+session's first vote or game start**, and ends on browser close, whichever is first.
+After expiry the guest must register / log in to vote or play again.
+
+One vote per poll per guest session. Guest votes are counted. Guest game scores are
+not saved to a profile and do not appear on leaderboards.
+
+After registration, guest-session votes/scores do NOT transfer to the new account
+(no merge in MVP).
+
+Rate limits apply per guest session + IP (thresholds TBD in P1 config — do not invent).
+
+Guests may NOT change/remove a vote (see D-11, §12.7).
 
 Do not assume that every GET endpoint is public.
 
 For each endpoint, explicitly define:
 
 - Public access.
+- Guest-session access (per this rule).
 - Authenticated access.
 - Restricted authenticated access.
 - Administrative access.
@@ -544,7 +581,9 @@ The API must enforce restrictions associated with:
 - Deleted or deactivated accounts.
 - Unverified accounts where verification is required.
 
-The exact account-status values must match the existing database and approved authorization model.
+The exact account-status values must match KEA-DBS-002 (active, restricted, suspended, pending_deletion, deleted) and the approved authorization model.
+
+Age eligibility: the MVP audience is **16+** (D-02). Users aged 16–17 are included in the 16+ audience; there is no adult-only content in the MVP; Ghana Data Protection Act 2012 (Act 843) / DPC review is still required before public launch. Do not invent any parental-consent mechanism — it is a legal-review item (TBD, owner Dennis, before public launch).
 
 ---
 
@@ -578,7 +617,7 @@ RLS is an additional protection layer, not a substitute for application-level bu
 
 ## 8.3 Role security
 
-The existing role model must be inspected.
+Roles are resolved server-side from the `user_roles` table only (KEA-DBS-002 §4.9, D-18); never trust a role supplied by the client. `profiles` has no role column.
 
 Never:
 
@@ -603,12 +642,12 @@ For user-owned resources:
 
 | Operation | Guest | Authenticated user | Authorized administrator |
 |---|---|---|---|
-| Browse public discovery | According to PRD | Yes | Yes |
+| Browse public discovery | Yes | Yes | Yes |
 | Create post | No | Yes | Yes |
 | React to content | No | Yes | Yes |
 | Comment | No | Yes | Yes |
-| Vote in poll | No | Yes | Yes |
-| Start game | No | Yes | Yes |
+| Vote in poll | Yes — guest session only (D-03) | Yes | Yes |
+| Start game | Yes — guest session only (D-03) | Yes | Yes |
 | View own notifications | No | Yes | According to policy |
 | Submit report | No | Yes | Yes |
 | Block user | No | Yes | Yes |
@@ -617,7 +656,7 @@ For user-owned resources:
 | Suspend user | No | No | Authorized only |
 | View audit records | No | No | Authorized only |
 
-The table is a target access model. Exact public visibility and administrator permissions must be reconciled with the approved PRD and existing production authorization rules.
+The table is a target access model. Exact public visibility and administrator permissions must be reconciled with the approved PRD (KEA-PRD-001); no production authorization rules exist yet (D-04). Guest rows follow the Guest Session Rule (§7.5, D-03).
 
 ---
 
@@ -679,7 +718,7 @@ For user-generated content:
 
 The exact maximum lengths, allowed formatting, and content restrictions must come from the Master PRD or approved product decisions.
 
-Do not invent limits.
+Do not invent limits. (TBD — owner Dennis, P1 config; see README Open Decisions register, D-22.)
 
 ---
 
@@ -736,7 +775,7 @@ It must not be trusted as an authorization token.
 - Enforce maximum page sizes.
 - Do not allow clients to request unlimited records.
 
-The exact default and maximum page sizes are implementation decisions requiring measurement or approval.
+The exact default and maximum page sizes are TBD (owner Dennis, P1 config — see README Open Decisions register, D-22). Do not invent values.
 
 ## 10.4 Filtering
 
@@ -791,7 +830,7 @@ Where appropriate:
 5. Repeated requests with the same key return the original outcome where supported.
 6. Conflicting payloads using an existing key are rejected.
 
-The storage mechanism must be chosen after reviewing the existing database and transaction architecture.
+The storage mechanism is TBD (owner Dennis, P0 foundation design — see README Open Decisions register, D-22); choose it during P0, do not invent it here.
 
 Do not introduce an idempotency table without a documented need and migration review.
 
@@ -807,11 +846,15 @@ Application checks alone are insufficient for concurrency-sensitive operations.
 
 The following endpoint structure defines the target API surface.
 
-These routes are proposed contracts, not proof that equivalent routes do not already exist.
+These routes are the PROPOSED canonical contracts for the greenfield build (D-04).
+No prototype exists, so there are no existing routes to reconcile against.
 
-Before creating or changing any endpoint, reconcile it with the existing API inventory.
+The coding agent must not create duplicate endpoints.
 
-The coding agent must not create duplicate endpoints for existing functionality.
+Endpoint split decided 2026-11-20 (D-12): `PATCH /api/v1/me` is account fields only;
+`PATCH /api/v1/profiles/me` is public profile fields only; notification preferences
+are canonical at `/me/notification-preferences` (§12.9); the generic
+`/me/preferences` covers non-notification preferences only.
 
 # 12.1 Authentication and account
 
@@ -820,9 +863,9 @@ Authentication is handled through the approved Supabase Auth flow.
 | Method | Endpoint | Purpose | Access |
 |---|---|---|---|
 | GET | `/api/v1/me` | Retrieve current user context | Authenticated |
-| PATCH | `/api/v1/me` | Update approved account/profile fields | Authenticated |
-| GET | `/api/v1/me/preferences` | Retrieve preferences | Authenticated |
-| PATCH | `/api/v1/me/preferences` | Update approved preferences | Authenticated |
+| PATCH | `/api/v1/me` | Update approved account fields only (D-12) | Authenticated |
+| GET | `/api/v1/me/preferences` | Retrieve non-notification preferences (D-12) | Authenticated |
+| PATCH | `/api/v1/me/preferences` | Update approved non-notification preferences (D-12) | Authenticated |
 | GET | `/api/v1/me/consents` | Retrieve consent status where permitted | Authenticated |
 | POST | `/api/v1/me/consents` | Record consent through approved flow | Authenticated |
 | DELETE | `/api/v1/me/account` | Initiate approved account deletion process | Authenticated |
@@ -863,15 +906,19 @@ The example is illustrative; actual fields must match the approved profile model
 
 Purpose:
 
-Update permitted profile information.
+Update permitted **account fields only** (D-12, decided 2026-11-20). This endpoint
+does NOT update public profile fields — use `PATCH /api/v1/profiles/me` (§12.2) for
+those. Notification preferences are updated only at
+`PATCH /api/v1/me/notification-preferences` (§12.9); the generic
+`PATCH /api/v1/me/preferences` covers non-notification preferences only.
 
 Rules:
 
 - Do not allow updates to privileged roles.
 - Do not allow updates to account ownership identifiers.
+- Do not allow updates to public profile fields through this endpoint.
 - Validate every field.
-- Apply approved profile visibility rules.
-- Preserve existing data not included in the request.
+- Preserve data not included in the request.
 
 ### Account deletion
 
@@ -898,7 +945,7 @@ These decisions must be approved and must align with the Database Specification.
 | Method | Endpoint | Purpose | Access |
 |---|---|---|---|
 | GET | `/api/v1/profiles/:username` | Retrieve visible profile | Public or authenticated per policy |
-| PATCH | `/api/v1/profiles/me` | Update own profile | Authenticated |
+| PATCH | `/api/v1/profiles/me` | Update own public profile fields only (D-12) | Authenticated |
 | GET | `/api/v1/profiles/:username/posts` | Retrieve visible posts | According to visibility |
 | GET | `/api/v1/profiles/:username/activity` | Retrieve approved public activity | According to PRD |
 
@@ -969,6 +1016,9 @@ Illustrative structure:
 
 This example is illustrative and must not be used to invent additional author fields or content visibility rules.
 
+Guests may browse public discovery feeds under the Guest Session Rule (§7.5, D-03);
+voting and playing from a feed are guest-session only.
+
 ### Feed rules
 
 - Enforce visibility server-side.
@@ -1003,7 +1053,7 @@ Illustrative request:
 }
 ```
 
-The actual request must use the identity and content fields supported by the existing database and approved product model.
+The actual request must use the identity and content fields supported by KEA-DBS-002 and the approved product model.
 
 ### Create post requirements
 
@@ -1104,13 +1154,13 @@ Do not assume a particular reaction vocabulary beyond what is approved by the pr
 |---|---|---|---|
 | POST | `/api/v1/polls` | Create poll | Authenticated |
 | GET | `/api/v1/polls/:id` | Retrieve poll | According to visibility |
-| POST | `/api/v1/polls/:id/votes` | Submit vote | Authenticated |
+| POST | `/api/v1/polls/:id/votes` | Submit vote | Guest (session) or Authenticated (D-03) |
 | GET | `/api/v1/polls/:id/results` | Retrieve results | According to poll rules |
-| GET | `/api/v1/polls/:id/my-vote` | Retrieve current user's voting state | Authenticated |
+| GET | `/api/v1/polls/:id/my-vote` | Retrieve current user's / guest session's voting state | Guest (session) or Authenticated (D-03) |
 
-The exact relationship between posts and polls must follow the approved database model.
+The exact relationship between posts and polls must follow the approved database model (KEA-DBS-002 §4.3).
 
-Do not create independent poll ownership or relationships that conflict with the existing schema.
+Do not create independent poll ownership or relationships that conflict with that model.
 
 ## Poll creation
 
@@ -1130,7 +1180,7 @@ Illustrative request:
 
 All fields are illustrative.
 
-The actual selection modes, option limits, expiration rules, and poll ownership must be taken from approved product decisions.
+The actual selection modes, option limits, expiration rules, and poll ownership must be taken from approved product decisions. Option limits and expiration behaviour are TBD (owner Dennis, P1 — see README Open Decisions register, D-22); do not invent them.
 
 ## Vote submission
 
@@ -1148,14 +1198,14 @@ Illustrative request:
 
 The server must verify:
 
-1. The user is authenticated.
+1. The voter is an authenticated user or a valid guest session (D-03).
 2. The poll exists and is visible.
 3. The poll is open.
 4. The poll has not expired.
 5. The selected options belong to the poll.
 6. The selection matches the configured mode.
-7. The user is eligible to vote.
-8. The user has not already voted, unless vote replacement is explicitly supported.
+7. The voter is eligible to vote (for guests: within the 60-minute guest session, D-03).
+8. The voter has not already voted in this poll — one active submission per user per poll; one final submission per guest session per poll (D-11).
 
 ### Atomicity
 
@@ -1171,18 +1221,13 @@ The operation must prevent:
 - Concurrent submissions bypassing the voting rule.
 - Votes being counted after expiration.
 
-### Vote replacement
+### Vote replacement (D-11, decided 2026-11-20)
 
-Vote replacement behavior is unresolved until explicitly approved.
-
-The agent must not invent whether users can:
-
-- Change their vote.
-- Remove their vote.
-- Submit a replacement selection.
-- Vote only once permanently.
-
-Implement the behavior specified by the approved PRD and database decision.
+- Registered users MAY change their vote while a poll is open: one active submission
+  per user per poll; changing replaces the previous submission atomically; no change
+  after close/expiry.
+- Guests may NOT change or remove a vote: one final submission per guest session per poll.
+- Poll results are always computed from stored votes.
 
 ### Results
 
@@ -1208,19 +1253,19 @@ No additional game modes should be added without approval.
 |---|---|---|---|
 | GET | `/api/v1/games` | Retrieve available games | According to PRD |
 | GET | `/api/v1/games/:id` | Retrieve approved game information | According to PRD |
-| POST | `/api/v1/games/:id/sessions` | Start game session | Authenticated |
-| GET | `/api/v1/game-sessions/:id` | Retrieve authorized session state | Owner |
-| POST | `/api/v1/game-sessions/:id/answers` | Submit answer | Owner |
-| POST | `/api/v1/game-sessions/:id/complete` | Complete session where supported | Owner |
-| GET | `/api/v1/game-sessions/:id/result` | Retrieve confirmed result | Owner |
+| POST | `/api/v1/games/:id/sessions` | Start game session | Guest (session) or Authenticated (D-03) |
+| GET | `/api/v1/game-sessions/:id` | Retrieve authorized session state | Owner (account or guest session) |
+| POST | `/api/v1/game-sessions/:id/answers` | Submit answer | Owner (account or guest session) |
+| POST | `/api/v1/game-sessions/:id/complete` | Complete session where supported | Owner (account or guest session) |
+| GET | `/api/v1/game-sessions/:id/result` | Retrieve confirmed result | Owner (account or guest session) |
 
-These are target resource patterns. Existing route conventions and actual database relationships must be reconciled first.
+These are target resource patterns for the greenfield build (D-04). Guest game sessions are tied to the guest session only, never to an account; guest scores are not saved to a profile and do not appear on leaderboards (D-03).
 
 ## 12.8.1 Game session creation
 
 The server must:
 
-- Verify authentication.
+- Verify authentication or a valid guest session (D-03).
 - Verify game availability.
 - Validate user eligibility.
 - Create a valid session.
@@ -1291,7 +1336,7 @@ Never trust:
 
 If the game uses time-based scoring, the authoritative timing mechanism must be defined by the game specification.
 
-Do not invent timing rules.
+Do not invent timing rules. (TBD — owner Dennis, P1 game specification; see README Open Decisions register, D-22.)
 
 ---
 
@@ -1305,6 +1350,8 @@ Do not invent timing rules.
 | POST | `/api/v1/notifications/read` | Mark notifications read according to approved behavior | Owner |
 | GET | `/api/v1/me/notification-preferences` | Retrieve preferences | Authenticated |
 | PATCH | `/api/v1/me/notification-preferences` | Update preferences | Authenticated |
+
+Notification preferences are canonical at `GET/PATCH /api/v1/me/notification-preferences` (D-12). The generic `GET/PATCH /api/v1/me/preferences` (§12.1) covers non-notification preferences only.
 
 ### Notification requirements
 
@@ -1321,9 +1368,9 @@ Notifications must be created through approved backend processes.
 
 Do not rely exclusively on browser events to generate persistent notifications.
 
-The backend must define which events create notifications according to the Master PRD.
+The backend must define which events create notifications according to the Master PRD (KEA-PRD-001).
 
-Do not introduce notification types that have not been approved.
+Do not introduce notification types that have not been approved. Notification event categories and retention are TBD (owner Dennis, P1 — see README Open Decisions register, D-22).
 
 ---
 
@@ -1349,7 +1396,7 @@ Do not introduce notification types that have not been approved.
 - Use server-side authorization.
 - Do not introduce unsupported community messaging functionality.
 
-If the existing application has a different community model, preserve it until an approved migration is defined.
+No community model exists yet (D-04); implement the model in KEA-DBS-002 §4.5.
 
 ---
 
@@ -1408,7 +1455,7 @@ Illustrative request:
 }
 ```
 
-Actual reason codes must come from the approved moderation policy.
+Actual reason codes must come from the approved moderation policy. (TBD — owner Dennis, P1; see README Open Decisions register, D-22.)
 
 ### Report requirements
 
@@ -1454,7 +1501,7 @@ Audit records must be protected against unauthorized modification.
 
 # 12.13 Blocking
 
-The existing database and Master PRD define the blocking behavior.
+KEA-DBS-002 and the Master PRD (KEA-PRD-001) define the blocking behavior.
 
 The API must expose the approved blocking operations.
 
@@ -1496,7 +1543,7 @@ Requirements:
 - Exclude passwords and sensitive form content.
 - Avoid exact location collection unless specifically approved.
 - Avoid accepting arbitrary client-defined properties.
-- Apply retention requirements.
+- Apply retention requirements (TBD — owner Dennis, P1; see README Open Decisions register, D-22).
 - Prevent analytics failure from unnecessarily breaking core user actions.
 
 Do not introduce a new third-party analytics service without approval.
@@ -1577,9 +1624,9 @@ Subscriptions must not leak across users when authentication changes.
 
 # 14. REALTIME CHANNEL DESIGN
 
-The following channel names are proposed logical patterns.
+The following channel names are PROPOSED logical patterns for the greenfield build (D-04).
 
-They must be checked against existing channels and authorization policies before use.
+No channels exist yet; define actual Supabase channel authorization in P0/P1 before use.
 
 | Channel pattern | Purpose | Intended audience |
 |---|---|---|
@@ -1678,7 +1725,7 @@ Event contracts should be versioned where consumers may depend on their shape.
 
 Breaking changes must be coordinated.
 
-Do not silently remove event fields or change their meaning while existing consumers still depend on them.
+Do not silently remove event fields or change their meaning while consumers still depend on them.
 
 ## 15.4 Event duplication
 
@@ -1808,7 +1855,7 @@ The logical transaction is:
 
 ```mermaid
 flowchart TD
-    A["Receive Vote Request"] --> B["Authenticate User"]
+    A["Receive Vote Request"] --> B["Authenticate User or Guest Session"]
     B --> C["Validate Poll and Options"]
     C --> D["Check Voting Rules"]
     D --> E["Begin Transaction"]
@@ -1890,7 +1937,7 @@ For privileged operations:
 
 ## 18.5 Direct client database access
 
-If the existing architecture permits direct authenticated Supabase access from the browser, each exposed table must have correctly verified RLS policies.
+Direct authenticated Supabase access from the browser is permitted only where KEA-SAD-001 allows it; each exposed table must have correctly verified RLS policies. No architecture exists yet (D-04) — decide in P0.
 
 Do not assume that using a Supabase client automatically makes an operation safe.
 
@@ -1913,6 +1960,8 @@ Log the technical details securely with a request identifier.
 Protect Kea Parrot from abusive requests, automated spam, accidental request storms, and resource exhaustion.
 
 ## 19.2 Endpoints requiring special attention
+
+Rate-limit thresholds are TBD (owner Dennis, P1 config — per guest session + IP for guest actions, D-03; see README Open Decisions register, D-22). Do not invent thresholds.
 
 Evaluate rate limiting for:
 
@@ -1950,7 +1999,7 @@ Do not disclose internal rate-limit configuration or security mechanisms.
 
 ## 19.5 Implementation
 
-Inspect existing infrastructure before introducing Redis or another rate-limiting service.
+No infrastructure exists yet (D-04). Do not introduce Redis or another rate-limiting service before measured need.
 
 Do not add Redis merely because it is common in high-traffic applications.
 
@@ -1960,7 +2009,7 @@ Use the simplest reliable implementation that meets measured needs.
 
 # 20. FILE AND MEDIA UPLOADS
 
-Media functionality must follow the Master PRD and existing application capabilities.
+Media functionality must follow the Master PRD (KEA-PRD-001). No media-upload capability exists yet (D-04); image/audio uploads are NOT in the MVP. Upload size/type limits are TBD (owner Dennis, P1 — see README Open Decisions register, D-22).
 
 Do not invent a new media-upload feature if it is not approved.
 
@@ -1977,7 +2026,7 @@ If uploads are already supported or explicitly approved:
 - Handle failed uploads.
 - Avoid exposing private storage objects.
 
-Do not send large binary files through ordinary JSON API endpoints unless specifically required by the existing architecture.
+Do not send large binary files through ordinary JSON API endpoints unless specifically required by the architecture chosen in P0.
 
 ---
 
@@ -2022,7 +2071,7 @@ Production API traffic must use HTTPS.
 
 ## 21.6 CORS and CSRF
 
-The implementation agent must inspect the existing Next.js deployment and authentication model.
+No deployment exists yet (D-04). Configure CORS narrowly for the greenfield deployment defined in P0; evaluate CSRF protection based on the actual cookie, origin, and deployment configuration once chosen.
 
 Configure CORS narrowly where cross-origin API access is required.
 
@@ -2087,7 +2136,7 @@ Do not log sensitive payloads.
 
 ## 22.3 Error monitoring
 
-Use the existing Sentry integration if present.
+Sentry is the approved monitoring baseline (KEA-SAD-001); set it up in P0 — no integration exists yet (D-04).
 
 Capture:
 
@@ -2112,7 +2161,7 @@ Where available, monitor:
 - Realtime reconnect frequency.
 - Failed background operations.
 
-Performance targets and alert thresholds must be established from actual usage and operational requirements rather than invented.
+Performance targets and alert thresholds must be established from actual usage and operational requirements rather than invented. (TBD — owner Dennis; see README Open Decisions register, D-22.)
 
 ---
 
@@ -2145,7 +2194,7 @@ Examples of potentially breaking changes:
 
 ## 23.3 Migration strategy
 
-For an existing endpoint that needs a breaking change:
+For an endpoint that needs a breaking change once consumers exist:
 
 1. Identify consumers.
 2. Document the current contract.
@@ -2157,7 +2206,7 @@ For an existing endpoint that needs a breaking change:
 8. Deprecate the old path only after approval.
 9. Remove the old path only after confirming it is unused.
 
-Do not break existing production clients without a controlled migration.
+Do not break consumers without a controlled migration; no production clients exist yet (D-04).
 
 ---
 
@@ -2165,7 +2214,7 @@ Do not break existing production clients without a controlled migration.
 
 The project should maintain a centralized API contract.
 
-OpenAPI is an appropriate option if it fits the existing tooling.
+OpenAPI is an appropriate option if it fits the tooling chosen in P0.
 
 The documentation should describe:
 
@@ -2228,7 +2277,7 @@ Test:
 Verify:
 
 - Authenticated users can perform permitted operations.
-- Guests cannot perform protected operations.
+- Guests cannot perform protected operations (post, comment, react, report, join — D-03); guests MAY vote and play within a 60-minute guest session (D-03).
 - Users cannot impersonate other users.
 - Suspended users receive the correct restrictions.
 - Session expiration is handled correctly.
@@ -2260,7 +2309,7 @@ Verify:
 - Expired poll rejection.
 - Duplicate voting behavior.
 - Concurrent voting.
-- Vote replacement behavior if approved.
+- Vote replacement behavior (registered: changeable while open; guest: final — D-11).
 - Accurate results.
 - Transaction rollback.
 
@@ -2330,13 +2379,14 @@ Do not claim production readiness based on small test datasets alone.
 
 ## 26.1 Environments
 
-Maintain clear separation between:
+Maintain clear separation between four environments (D-08):
 
 - Local development.
-- Testing or staging.
+- Automated testing (ephemeral, CI-run).
+- Staging.
 - Production.
 
-Use the actual project environment structure if it already exists.
+Separate DB/auth/storage/credentials per environment; never connect local/staging to production resources.
 
 ## 26.2 Environment variables
 
@@ -2384,7 +2434,7 @@ Recommended sequence:
 9. Production deployment.
 10. Post-deployment monitoring.
 
-The deployment sequence must follow the actual existing CI/CD pipeline.
+The deployment sequence must follow the CI/CD pipeline established in P0 (KEA-RDY-006).
 
 ---
 
@@ -2394,24 +2444,24 @@ The agent must track these decisions and avoid inventing answers.
 
 | ID | Decision | Required resolution |
 |---|---|---|
-| API-OD-001 | Existing API contract and route naming | Existing-system audit |
-| API-OD-002 | Exact guest browsing permissions | Master PRD |
-| API-OD-003 | Exact post and comment limits | Product approval |
-| API-OD-004 | Poll selection and replacement behavior | Product/database approval |
-| API-OD-005 | Poll option limits and expiration behavior | Product approval |
-| API-OD-006 | Game scoring and attempt rules | Approved game specification |
-| API-OD-007 | Game session expiration behavior | Product approval |
-| API-OD-008 | Feed pagination defaults and maximums | Performance and product approval |
-| API-OD-009 | Trending calculation | Approved product/backend logic |
-| API-OD-010 | Location precision and retention | Privacy/database approval |
-| API-OD-011 | Notification event categories | Master PRD |
-| API-OD-012 | Notification retention | Database/product approval |
-| API-OD-013 | Account deletion and anonymization | Privacy/legal/database approval |
-| API-OD-014 | Realtime transport and channel authorization | Architecture audit |
-| API-OD-015 | Rate-limit thresholds | Security/performance review |
-| API-OD-016 | Idempotency storage strategy | Existing architecture review |
-| API-OD-017 | Existing endpoint migration strategy | API inventory |
-| API-OD-018 | OpenAPI tooling and publication | Engineering approval |
+| API-OD-001 | API contract and route naming (greenfield) | P0 foundation — routes are PROPOSED in §12 (D-04) |
+| API-OD-002 | Guest session rule | DECIDED — D-03 (60-minute guest session; vote/play only) |
+| API-OD-003 | Exact post and comment limits | TBD — owner Dennis, P1 (D-22) |
+| API-OD-004 | Poll selection and replacement behavior | DECIDED — D-11 (registered changeable while open; guests final) |
+| API-OD-005 | Poll option limits and expiration behavior | TBD — owner Dennis, P1 (D-22) |
+| API-OD-006 | Game scoring and attempt rules | TBD — owner Dennis, P1 game specification (D-22) |
+| API-OD-007 | Game session expiration behavior | TBD — owner Dennis, P1 (D-22) |
+| API-OD-008 | Feed pagination defaults and maximums | TBD — owner Dennis, P1 (D-22) |
+| API-OD-009 | Trending calculation | TBD — owner Dennis, P1 (D-22); do not invent coefficients |
+| API-OD-010 | Location precision and retention | TBD — owner Dennis, P1 (D-22) |
+| API-OD-011 | Notification event categories | TBD — owner Dennis, P1 (D-22) |
+| API-OD-012 | Notification retention | TBD — owner Dennis, P1 (D-22) |
+| API-OD-013 | Account deletion and anonymization | TBD — owner Dennis, before public launch (D-22) |
+| API-OD-014 | Realtime transport and channel authorization | P0 foundation — define for the greenfield build (D-04) |
+| API-OD-015 | Rate-limit thresholds | TBD — owner Dennis, P1 (D-22); per guest session + IP for guests (D-03) |
+| API-OD-016 | Idempotency storage strategy | TBD — owner Dennis, P0 foundation design (D-22) |
+| API-OD-017 | Endpoint migration strategy once consumers exist | P1+ (no existing endpoints — D-04) |
+| API-OD-018 | OpenAPI tooling and publication | TBD — engineering approval, P0 (D-22) |
 
 When an unresolved decision blocks implementation:
 
@@ -2424,42 +2474,57 @@ When an unresolved decision blocks implementation:
 
 ---
 
-# 28. IMPLEMENTATION PHASES
+# 28. IMPLEMENTATION SUB-PLAN
 
-Implementation must proceed in controlled phases.
+Implementation must proceed in controlled sub-plan steps. These are API sub-plan
+steps 0–9 (D-05), not standalone phase numbers: each step serves a Readiness
+R-phase (KEA-RDY-006), and the Product track is P0–P5 (KEA-PRD-001). Never cite a
+step as a bare phase number outside this section.
 
-## Phase 0 — Existing API and Realtime Audit
+| API sub-plan step | Serves Readiness phase |
+|---|---|
+| Step 0 — Greenfield API Verification | R0 |
+| Step 1 — API Foundation | R0 / R1 |
+| Step 2 — Account and Profile APIs | R1 |
+| Step 3 — Discovery and Social APIs | R1 |
+| Step 4 — Poll APIs | R1 |
+| Step 5 — Game APIs | R1 |
+| Step 6 — Notifications, Communities and Location | R1 |
+| Step 7 — Moderation APIs | R1 / R3 |
+| Step 8 — Realtime Integration | R5 |
+| Step 9 — Security, Performance and Production Readiness | R3 / R6 / R7 / R9 |
+
+## Step 0 — Greenfield API Verification (serves Readiness R0)
+
+No prototype exists (D-04). Verify the greenfield baseline in §3 instead of
+auditing an existing system:
 
 Tasks:
 
-- Inspect existing API routes.
-- Inspect Supabase client configuration.
-- Inspect authentication.
-- Inspect authorization.
-- Inspect database schema.
-- Inspect RLS policies.
-- Inspect existing realtime subscriptions.
-- Inspect endpoint consumers.
-- Inspect existing error handling.
-- Inspect rate limiting.
-- Inspect tests and monitoring.
+- Verify the P0 API design (routes §12, response conventions §5, auth §7).
+- Verify Supabase project and client configuration created in P0.
+- Verify the database design against KEA-DBS-002.
+- Verify RLS design and channel authorization design.
+- Verify the guest-session design (§7.5, D-03) and vote-replacement rule (§12.7, D-11).
+- Verify the endpoint split (§12.1/§12.9, D-12) — no duplicate endpoints.
+- Verify error handling, rate-limit design, and test/monitoring plans.
 
 Deliverables:
 
-- API inventory.
-- Realtime inventory.
-- Security report.
+- Greenfield verification report (§3.4).
+- Canonical proposed route list.
+- Security report (spec-level).
 - Database compatibility report.
 - Missing functionality report.
-- Migration and implementation plan.
+- Migration and implementation plan (P0 migrations).
 
-**No destructive modifications are permitted during this phase.**
+**No destructive modifications are permitted during this step (nothing exists yet to modify).**
 
-## Phase 1 — API Foundation
+## Step 1 — API Foundation (serves Readiness R0 / R1)
 
 Tasks:
 
-- Establish or verify API versioning.
+- Establish API versioning.
 - Establish response conventions.
 - Establish error handling.
 - Establish request validation.
@@ -2470,18 +2535,17 @@ Tasks:
 Acceptance:
 
 - Shared API conventions work.
-- Existing endpoints remain functional.
 - Authentication and authorization are tested.
 - No service secrets are exposed.
 
-## Phase 2 — Account and Profile APIs
+## Step 2 — Account and Profile APIs (serves Readiness R1)
 
 Tasks:
 
 - Current-user context.
 - Profile retrieval.
-- Profile updates.
-- Preferences.
+- Profile updates (account fields via `PATCH /api/v1/me`; public profile fields via `PATCH /api/v1/profiles/me` — D-12).
+- Preferences (non-notification via `/me/preferences`; notification preferences via `/me/notification-preferences` — D-12).
 - Consent handling.
 - Account lifecycle integration where approved.
 
@@ -2491,7 +2555,7 @@ Acceptance:
 - Profile privacy is enforced.
 - Protected account fields cannot be modified by ordinary users.
 
-## Phase 3 — Discovery and Social APIs
+## Step 3 — Discovery and Social APIs (serves Readiness R1)
 
 Tasks:
 
@@ -2512,8 +2576,9 @@ Acceptance:
 - Anonymous identity remains protected.
 - Ownership is enforced.
 - Duplicate operations are handled safely.
+- Guest browsing works; guest voting/playing follows the Guest Session Rule (§7.5, D-03); guests cannot post, comment, react, report, or join.
 
-## Phase 4 — Poll APIs
+## Step 4 — Poll APIs (serves Readiness R1)
 
 Tasks:
 
@@ -2527,11 +2592,11 @@ Tasks:
 Acceptance:
 
 - Votes are authoritative.
-- Voting rules are enforced.
+- Voting rules are enforced (registered: changeable while open; guest: final — D-11).
 - Results are accurate.
 - Concurrent submissions do not bypass constraints.
 
-## Phase 5 — Game APIs
+## Step 5 — Game APIs (serves Readiness R1)
 
 Tasks:
 
@@ -2547,9 +2612,9 @@ Acceptance:
 - Exactly three approved MVP games are supported.
 - Scores are calculated server-side.
 - Game secrets are not prematurely exposed.
-- Session ownership is enforced.
+- Session ownership is enforced (account or guest session, D-03).
 
-## Phase 6 — Notifications, Communities and Location
+## Step 6 — Notifications, Communities and Location (serves Readiness R1)
 
 Tasks:
 
@@ -2567,7 +2632,7 @@ Acceptance:
 - Membership rules are enforced.
 - Notification states remain consistent.
 
-## Phase 7 — Moderation APIs
+## Step 7 — Moderation APIs (serves Readiness R1 / R3)
 
 Tasks:
 
@@ -2583,7 +2648,7 @@ Acceptance:
 - Audit records are generated.
 - Unauthorized users cannot access administrative data.
 
-## Phase 8 — Realtime Integration
+## Step 8 — Realtime Integration (serves Readiness R5)
 
 Tasks:
 
@@ -2602,7 +2667,7 @@ Acceptance:
 - Realtime failures do not corrupt database state.
 - The frontend can recover through normal API requests.
 
-## Phase 9 — Security, Performance and Production Readiness
+## Step 9 — Security, Performance and Production Readiness (serves Readiness R3 / R6 / R7 / R9)
 
 Tasks:
 
@@ -2623,16 +2688,14 @@ Acceptance:
 - All critical tests pass.
 - Production deployment is verified.
 
----
+# 29. REQUIRED SUB-PLAN COMPLETION REPORT
 
-# 29. REQUIRED PHASE COMPLETION REPORT
-
-At the end of each phase, provide a formal report.
+At the end of each sub-plan step, provide a formal report.
 
 ## KEA PARROT API & REALTIME IMPLEMENTATION REPORT
 
-**Specification:** MOMENT-API-004  
-**Phase:**  
+**Specification:** KEA-API-004  
+**Sub-plan step (API 0–9; serves Readiness R—):**  
 **Status:**  
 **Date:**  
 **Git checkpoint:**  
@@ -2641,9 +2704,9 @@ At the end of each phase, provide a formal report.
 
 List all completed requirements.
 
-### 2. Existing functionality preserved
+### 2. Functionality preserved / greenfield baseline
 
-List the existing routes, integrations, database objects, and subscriptions preserved.
+No prototype existed (D-04). List the routes, integrations, database objects, and subscriptions built in this step and any functionality from earlier sub-plan steps preserved.
 
 ### 3. Files changed
 
@@ -2714,11 +2777,11 @@ List decisions requiring product or engineering approval.
 
 ### 12. Regression findings
 
-Identify any existing functionality affected by the changes.
+Identify any functionality from earlier sub-plan steps affected by the changes.
 
 ### 13. Production readiness
 
-State whether the phase is:
+State whether the sub-plan step is:
 
 - Ready for review.
 - Blocked.
@@ -2731,12 +2794,14 @@ Never claim a test passed unless it was executed.
 
 # 30. DEFINITION OF DONE
 
+Canonical DoD: KEA-RDY-006 §17 (merged 2026-11-20) — the single canonical Definition of Done. The checklist below is this document's API-specific view of it and must not be read as a competing DoD.
+
 The API and realtime implementation is complete only when all applicable criteria are satisfied.
 
 ## API foundation
 
-- [ ] Existing API architecture has been audited.
-- [ ] Existing routes have been inventoried.
+- [ ] Greenfield API architecture has been verified against this specification (no prototype existed to audit — D-04).
+- [ ] Proposed routes in §12 have been verified as the canonical route list for the greenfield build.
 - [ ] Response conventions are consistent.
 - [ ] Error handling is consistent.
 - [ ] Request validation is enforced.
@@ -2803,7 +2868,7 @@ The API and realtime implementation is complete only when all applicable criteri
 
 # 31. FINAL INSTRUCTION TO THE IMPLEMENTATION AGENT
 
-You are implementing the API and realtime infrastructure for **Kea Parrot**, the current name of the application previously known as MOMENT.
+You are implementing the API and realtime infrastructure for **Kea Parrot**.
 
 The Master PRD, Database Design & Security Specification, and UI/UX Implementation Specification collectively define the approved product requirements.
 
@@ -2815,19 +2880,18 @@ You must establish a secure, consistent, reliable, and maintainable communicatio
 
 Before changing code:
 
-1. Audit the existing repository.
-2. Inspect the production database structure.
-3. Inspect current authentication and authorization.
-4. Inventory existing API routes.
-5. Inventory existing realtime subscriptions.
-6. Identify existing frontend consumers.
-7. Identify security and reliability weaknesses.
-8. Produce a non-destructive migration and implementation plan.
+1. Verify the greenfield baseline (§3, §28 Step 0) — no prototype exists (D-04).
+2. Verify the database design (KEA-DBS-002).
+3. Verify the authentication and authorization design (§7–§8).
+4. Confirm the canonical proposed route list (§12).
+5. Confirm the proposed realtime channels and events (§14–§15).
+6. Identify proposed frontend consumers.
+7. Identify security and reliability weaknesses in the design.
+8. Produce a non-destructive migration and implementation plan (P0 migrations).
 
 During implementation:
 
-- Preserve existing production data.
-- Preserve working production APIs.
+- Preserve functionality built in earlier sub-plan steps (no production data or APIs existed before P0 — D-04).
 - Avoid unnecessary architectural changes.
 - Do not introduce duplicate functionality.
 - Do not invent unresolved business rules.
@@ -2839,12 +2903,12 @@ During implementation:
 - Do not publish sensitive information through realtime.
 - Do not declare success before the database confirms the operation.
 
-Implement one phase at a time.
+Implement one sub-plan step at a time.
 
-Test every phase before moving forward.
+Test every sub-plan step before moving forward.
 
 Document all API contracts and realtime event behavior.
 
 Create Git checkpoints before risky changes and verify backup and recovery procedures before database migrations.
 
-**The final objective is a secure, production-ready API and realtime architecture for Kea Parrot that supports the approved product experience without compromising existing production functionality, data integrity, privacy, or security.**
+**The final objective is a secure, production-ready API and realtime architecture for Kea Parrot that supports the approved product experience without compromising data integrity, privacy, or security.**

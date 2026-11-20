@@ -1,16 +1,38 @@
-# kea parrots — DATABASE DESIGN & SECURITY SPECIFICATION
+# Kea Parrot — DATABASE DESIGN & SECURITY SPECIFICATION
 
-**Document ID:** kea parrots-DBS-002  
-**Version:** 1.0  
-**Status:** Target Database Specification — Subject to Existing-System Audit  
-**Product:** kea parrots  
+**Title:** Kea Parrot — Database Design & Security Specification  
+**Document ID:** KEA-DBS-002  
+**Version:** 1.1  
+**Date:** 2026-11-20  
+**Status:** Restructured baseline — contradictions resolved 2026-11-20  
+**Decisions applied:** D-01–D-22 (as applicable)  
+**Supersedes:** v1.0  
+**Former working name:** MOMENT (superseded 2026-11-20 by owner decision).  
+**Product:** Kea Parrot  
 **Database:** PostgreSQL via Supabase  
 **Geospatial Extension:** PostGIS  
 **Security Model:** PostgreSQL Row Level Security (RLS) + Server-Side Authorisation  
 **Governing Documents:**
-- MOMENT Master Product Requirements Document
-- MOMENT Prototype-to-Production Readiness PRD
-- MOMENT System Architecture Document
+- Kea Parrot Master Product Requirements Document (KEA-PRD-001)
+- Kea Parrot Prototype-to-Production Readiness PRD (KEA-RDY-006)
+- Kea Parrot System Architecture Document (KEA-SAD-001)
+
+## Restructure note — 2026-11-20
+
+This file was restructured to resolve contradictions found in the 2026-11-20 audit.
+Product name is Kea Parrot (D-01; Kea Parrot is the superseded working name, kept only in
+the header note above). No prototype exists — this is a target specification for a
+greenfield build, and Product P0 creates the first schema; there is no existing schema,
+migration history, or production data to audit or preserve (D-04). phase numbering
+uses Product P- / Readiness R- prefixes, never a bare phase number (D-05). Roles are stored
+in the new `user_roles` table (27 tables total); `profiles` has no role column, and the
+RLS matrix (§8.3) now has 5 role columns including Super Administrator (D-18). The ERD
+(§3) now includes `analytics_events`, `notification_preferences`, `user_roles`, and
+the FKs `polls.post_id`, `posts.community_id`, `communities.location_id` (D-19). Vote
+replacement is decided: registered users may change a vote while a poll is open;
+guests may not (D-11). Guest access follows the Guest Session Rule (D-03). Numbers
+marked TBD (retention, RPO/RTO, enum-vs-text) were NOT invented (D-22). See README.md
+for the full decision log (D-01–D-22) and the consolidated Open Decisions register.
 
 ---
 
@@ -18,7 +40,7 @@
 
 ## 1.1 Purpose
 
-This document defines the target database architecture and security requirements for MOMENT.
+This document defines the target database architecture and security requirements for Kea Parrot. No prototype exists (D-04): this is the target schema for a greenfield build, created in Product P0. There is no existing schema, migration history, or production data to audit.
 
 It specifies:
 
@@ -39,7 +61,7 @@ It specifies:
 - Backup and recovery requirements.
 - Database testing and acceptance criteria.
 
-The objective is to establish a database that is secure, reliable, maintainable and capable of supporting MOMENT's approved MVP functionality.
+The objective is to establish a database that is secure, reliable, maintainable and capable of supporting Kea Parrot's approved MVP functionality.
 
 ## 1.2 Scope
 
@@ -70,6 +92,9 @@ The MVP database covers:
 23. User location preferences.
 24. Administrative audit logs.
 25. Analytics events.
+26. User roles (`user_roles`).
+
+Total: 27 tables (D-18).
 
 Future-phase entities are documented separately and must not be implemented as MVP features without approval.
 
@@ -85,7 +110,7 @@ The following are mandatory:
 - Sensitive operations must be enforced server-side.
 - Database constraints must protect data integrity independently of frontend validation.
 - Schema changes must use version-controlled migrations.
-- Existing production data must be preserved.
+- Preservation rules apply to all work from Product P1 onward. No production data exists yet to preserve (D-04).
 - Database security must be tested using real permission scenarios.
 
 ---
@@ -94,7 +119,7 @@ The following are mandatory:
 
 ## 2.1 Logical organisation
 
-The target database is organised around MOMENT's business domains.
+The target database is organised around Kea Parrot's business domains.
 
 | Domain | Database responsibility |
 |---|---|
@@ -107,14 +132,14 @@ The target database is organised around MOMENT's business domains.
 | Communities | Community records and membership |
 | Locations | Approved geographic information |
 | Notifications | Notification records and preferences |
-| Administration | Privileged audit records |
+| Administration | Privileged audit records and user roles (`user_roles`) |
 | Analytics | Approved product activity events |
 
 ## 2.2 Schema ownership
 
-The existing Supabase `auth` schema is managed by Supabase Auth.
+The Supabase `auth` schema is managed by Supabase Auth.
 
-MOMENT application tables belong in the `public` schema unless a documented security or operational reason requires otherwise.
+Kea Parrot application tables belong in the `public` schema unless a documented security or operational reason requires otherwise.
 
 Do not create duplicate authentication credential tables.
 
@@ -130,9 +155,7 @@ Target default:
 - Timestamps stored as `timestamptz`.
 - UTC storage and client-side local display.
 
-Existing primary key types must be preserved when migrating existing tables unless an approved migration plan explicitly justifies changing them.
-
-Never convert existing identifiers simply for consistency without assessing every dependent relationship.
+This is a greenfield schema (D-04): there are no existing tables or primary key types to preserve. Use the UUID default above for every new table.
 
 ---
 
@@ -140,7 +163,7 @@ Never convert existing identifiers simply for consistency without assessing ever
 
 The following is the target logical relationship model.
 
-It is not a declaration that every table already exists or that the current prototype uses these exact relationships.
+It is the target model for the greenfield build; no prototype exists (D-04), so it declares the tables Product P0 must create, not tables that already exist.
 
 ```mermaid
 erDiagram
@@ -156,10 +179,14 @@ erDiagram
     profiles ||--o{ community_members : joins
     profiles ||--o{ notifications : receives
     profiles ||--o{ reports : submits
+    profiles ||--o{ notification_preferences : sets
+    profiles ||--o{ analytics_events : generates
+    auth_users ||--o{ user_roles : has_role
 
     posts ||--o{ post_reactions : receives
     posts ||--o{ comments : contains
     posts ||--o{ reports : reported
+    posts ||--o{ polls : linked_to
 
     polls ||--o{ poll_options : contains
     polls ||--o{ poll_votes : receives
@@ -172,6 +199,8 @@ erDiagram
     game_questions ||--o{ game_answers : answered
 
     communities ||--o{ community_members : has
+    communities ||--o{ posts : contains
+    locations ||--o{ communities : located_in
 
     locations ||--o{ user_location_preferences : selected_by
 
@@ -182,7 +211,7 @@ erDiagram
     profiles ||--o{ admin_audit_logs : actor
 ```
 
-The diagram is intentionally logical. The exact foreign-key implementation, including nullable relationships and polymorphic targets, must follow the detailed table requirements below.
+The diagram is intentionally logical. The exact foreign-key implementation, including nullable relationships and polymorphic targets, must follow the detailed table requirements below. `polls.post_id`, `posts.community_id`, and `communities.location_id` are nullable foreign keys (D-19). Polymorphic references (`notifications.entity_type`/`entity_id`, `reports.target_type`/`target_id`, `moderation_actions.target_type`/`target_id`) are shown in the table specifications, not as ERD links: PostgreSQL cannot provide an ordinary foreign key across multiple target tables, so these references are validated in trusted application logic (see §4.6.1).
 
 ## 3.1 Relationship rules
 
@@ -201,6 +230,9 @@ The diagram is intentionally logical. The exact foreign-key implementation, incl
 13. A report may have one or more moderation actions.
 14. Notifications belong to their intended recipient.
 15. Administrative and moderation actions must have auditable actors.
+16. A user has at most one active role row in `user_roles` at a time (D-18).
+17. A poll may be linked to a post through nullable `polls.post_id`; whether polls are always linked or may exist independently is TBD (DB-OD-004 — see README Open Decisions register; do not invent).
+18. A post may belong to a community through nullable `posts.community_id`, and a community may reference a location through nullable `communities.location_id`.
 
 All relationships must be implemented with appropriate foreign keys or explicitly documented alternatives.
 
@@ -249,7 +281,9 @@ Suggested visibility:
 - public
 - private
 
-Final allowed values must be reconciled with the existing implementation before migration.
+`profiles` has NO role column. Roles live only in `user_roles` (§4.9.2) and are resolved server-side (D-18).
+
+Final allowed values: text or approved enum — the enum-vs-text decision is TBD (owner Dennis, Product P0 — see README Open Decisions register; do not invent).
 
 ### 4.1.2 `user_preferences`
 
@@ -430,7 +464,7 @@ Suggested statuses:
 - closed
 - removed
 
-The implementation must confirm whether polls are always linked to posts or may exist independently. The final schema must use one consistent model.
+Whether polls are always linked to posts or may exist independently is TBD (DB-OD-004 — owner Dennis, Product P0; see README Open Decisions register). `post_id` is nullable so both models remain possible; do not invent the decision. The final schema must use one consistent model once it is decided.
 
 ### 4.3.2 `poll_options`
 
@@ -480,9 +514,11 @@ Constraints:
 - The approved voting policy must be enforced transactionally.
 - The application must not trust client-submitted vote counts.
 
-Important unresolved rule:
+Vote replacement — decided 2026-11-20 (D-11):
 
-The governing PRD states one active vote submission per user per poll, while also permitting vote updates where allowed. The implementation must preserve one authoritative current submission or use a versioned replacement strategy. It must not count both old and replacement votes.
+- Registered user: one active vote submission per user per poll. The user MAY change their vote while the poll is open; changing replaces the previous submission atomically. No change after close/expiry.
+- Guest: one final submission per guest session per poll. A guest may NOT change or remove a vote.
+- Results are always computed from stored votes. The implementation must preserve one authoritative current submission and must not count both old and replacement votes.
 
 ---
 
@@ -567,7 +603,7 @@ Rules:
 - Scores must be calculated server-side.
 - Sessions must have valid state transitions.
 - Completed sessions must not be resubmitted.
-- A session must belong to its authenticated user.
+- A session must belong to its authenticated user, except a guest session, which is tied to the guest session only and never to an account (Guest Session Rule, §8.2). Guest scores are not saved to a profile and do not appear on leaderboards.
 - Configuration snapshots must not expose private game answer data.
 
 ### 4.4.5 `game_answers`
@@ -834,6 +870,26 @@ Rules:
 
 ---
 
+### 4.9.2 `user_roles`
+
+Purpose: Stores role assignments. This is the ONLY place a user's role lives (D-18).
+
+Fields:
+
+- id
+- user_id (FK → auth.users.id)
+- role (enum: registered, moderator, administrator, super_administrator)
+- granted_by
+- granted_at
+- revoked_at, nullable
+
+Rules:
+
+- `profiles` has NO role column. Role is resolved server-side from `user_roles` only; never from client claims.
+- One active role row per user: enforce by a unique partial index on `user_id` where `revoked_at` is null (state the rule here; the SQL itself is a Product P0 migration task, not written here).
+- No self-assignment: no user may grant, change, or revoke their own role through any user-facing API. Role changes happen only through an approved privileged server flow, and every change is recorded in `admin_audit_logs`.
+- A revoked row is history, not a deletion: keep it with `revoked_at` set.
+
 ## 4.10 ANALYTICS DOMAIN
 
 ### 4.10.1 `analytics_events`
@@ -866,7 +922,7 @@ Rules:
 - Do not collect unnecessary sensitive data.
 - Do not place authentication tokens or private content in event properties.
 - Apply retention and access restrictions.
-- Guest events must not be used to bypass privacy requirements.
+- Guest events must not be used to bypass privacy requirements. Guest events are tied to the guest session only, never to an account.
 - Analytics data must not be treated as authoritative transactional data.
 
 ---
@@ -891,8 +947,9 @@ Candidate controlled values:
 | Community membership | active, pending, left, removed |
 | Report status | open, under_review, action_taken, dismissed, escalated |
 | Location source | manual, approximate_browser, system_assigned |
+| User role | registered, moderator, administrator, super_administrator |
 
-Before implementing enums, inspect the existing database for naming conflicts and existing enum values.
+Enum-vs-text is TBD (owner Dennis, Product P0 — see README Open Decisions register). Do not invent the decision, and do not create enums for values likely to change frequently. There is no existing database to inspect (D-04).
 
 Avoid adding enum values in a way that creates deployment-order or transaction compatibility problems.
 
@@ -919,7 +976,7 @@ Examples:
 - Deleting a post must follow the approved comment and reaction retention strategy.
 - Deleting a community must not silently corrupt membership records.
 
-Do not default to CASCADE on every foreign key.
+Do not default to CASCADE on every foreign key. Per-relationship `ON DELETE` actions are TBD (owner Dennis, Product P0 — see README Open Decisions register); do not invent them.
 
 ## 6.3 Unique constraints
 
@@ -930,7 +987,8 @@ Required logical uniqueness includes:
 - One community membership per user/community.
 - One notification preference per user/type.
 - One answer per session/question where the game rules permit only one answer.
-- One poll submission per user/poll under the approved voting model.
+- One active poll submission per user/poll (registered users may replace it while the poll is open, D-11); one final submission per guest session per poll.
+- One active role row per user in `user_roles` (unique partial index on user_id where revoked_at is null).
 - One selected option per poll submission.
 
 ## 6.4 Check constraints
@@ -989,6 +1047,7 @@ The following are required target access patterns.
 | user_location_preferences | User lookup |
 | admin_audit_logs | Actor and time lookup |
 | analytics_events | Event name and time analysis |
+| user_roles | User active-role lookup (user_id, revoked_at) |
 
 Use:
 
@@ -1025,38 +1084,56 @@ The application supports:
 
 These are application permissions, not permission to trust client-provided role values.
 
-Role resolution must come from a trusted server-controlled source.
+Role resolution must come from a trusted server-controlled source: the `user_roles`
+table only (D-18). `profiles` has no role column. No user may assign a role to
+themselves through any user-facing API.
+
+Guest Session Rule (D-03, decided 2026-11-20): a guest is an unauthenticated visitor,
+identified by a server-issued guest-session token stored in the browser. A guest is
+NOT an account. A guest MAY browse public discovery, view polls/results and game
+descriptions, vote in polls, and play the 3 games. A guest may NOT post, comment,
+react, join communities, report content, or create any game record associated with an
+account (guest game sessions are tied to the guest session only, never to an account).
+LIMITED TIME: a guest participation window lasts 60 minutes from the guest session's
+first vote or game start, and ends on browser close, whichever is first. After expiry
+the guest must register / log in to vote or play again. One vote per poll per guest
+session; guest votes are counted. Guest game scores are not saved to a profile and do
+not appear on leaderboards. After registration, guest-session votes/scores do NOT
+transfer to the new account (no merge in the MVP). Rate limits apply per guest
+session + IP (thresholds TBD in Product P1 config — do not invent). Guests may NOT
+change or remove a vote (D-11).
 
 ## 8.3 Policy matrix
 
-| Table | Guest | Registered user | Moderator | Administrator |
+| Table | Guest | Registered user | Moderator | Administrator | Super Administrator |
 |---|---|---|---|---|
-| profiles | Public fields only | Own profile and public profiles | Approved moderation access | Approved administrative access |
-| user_preferences | No | Own | No default access | Restricted support access |
-| user_consents | No | Own | No | Restricted compliance access |
-| user_blocks | No | Own | No default access | Restricted |
-| posts | Public published content | Public content and permitted writes | Moderation access | Administrative access |
-| post_reactions | No private records | Approved reads and own writes | Approved moderation access | Administrative access |
-| comments | Public permitted comments | Approved reads and own writes | Moderation access | Administrative access |
-| polls | Public active polls | Approved reads and voting | Moderation access | Administrative access |
-| poll_options | Public poll options | Approved reads | Moderation access | Administrative access |
-| poll_votes | No | Own vote details and approved aggregate results | Restricted | Restricted |
-| games | Public active definitions | Approved gameplay | No default access | Administrative access |
-| game_questions | Public safe question content | Approved game access | No default access | Administrative access |
-| game_options | Safe public options only | Approved gameplay | No default access | Administrative access |
-| game_sessions | No | Own sessions | Restricted | Restricted |
-| game_answers | No | Own sessions only | Restricted | Restricted |
-| communities | Public communities | Approved membership operations | Approved access | Administrative access |
-| community_members | No | Approved community membership data | Approved access | Administrative access |
-| notifications | No | Own notifications | No | Restricted |
-| notification_preferences | No | Own preferences | No | Restricted |
-| reports | No | Own submitted reports where appropriate | Assigned or permitted reports | Approved access |
-| moderation_actions | No | Only permitted user-facing status | Permitted moderation actions | Approved administrative access |
-| moderation_audit_logs | No | No | Restricted audit access | Restricted audit access |
-| locations | Approved public locations | Approved location access | No default access | Administrative access |
-| user_location_preferences | No | Own preferences | No default access | Restricted |
-| admin_audit_logs | No | No | No | Restricted privileged access |
-| analytics_events | No | No direct access | No | Restricted reporting access |
+| profiles | Public fields only | Own profile and public profiles | Approved moderation access | Approved administrative access | Full privileged access (audited) |
+| user_preferences | No | Own | No default access | Restricted support access | Restricted support access (audited) |
+| user_consents | No | Own | No | Restricted compliance access | Restricted compliance access (audited) |
+| user_blocks | No | Own | No default access | Restricted | Restricted (audited) |
+| posts | Public published content | Public content and permitted writes | Moderation access | Administrative access | Full privileged access (audited) |
+| post_reactions | No private records | Approved reads and own writes | Approved moderation access | Administrative access | Full privileged access (audited) |
+| comments | Public permitted comments | Approved reads and own writes | Moderation access | Administrative access | Full privileged access (audited) |
+| polls | Public active polls; guest voting per Guest Session Rule (60-min window, one final vote) | Approved reads and voting | Moderation access | Administrative access | Full privileged access (audited) |
+| poll_options | Public poll options | Approved reads | Moderation access | Administrative access | Full privileged access (audited) |
+| poll_votes | Own guest-session vote only; no other private votes | Own vote details and approved aggregate results | Restricted | Restricted | Restricted — aggregates only, audited |
+| games | Public active definitions; guest play per Guest Session Rule | Approved gameplay | No default access | Administrative access | Full privileged access (audited) |
+| game_questions | Public safe question content | Approved game access | No default access | Administrative access | Full privileged access (audited) |
+| game_options | Safe public options only | Approved gameplay | No default access | Administrative access | Full privileged access (audited) |
+| game_sessions | Guest-session sessions only (not saved to a profile) | Own sessions | Restricted | Restricted | Restricted (audited) |
+| game_answers | Guest-session answers only | Own sessions only | Restricted | Restricted | Restricted (audited) |
+| communities | Public communities | Approved membership operations | Approved access | Administrative access | Full privileged access (audited) |
+| community_members | No | Approved community membership data | Approved access | Administrative access | Full privileged access (audited) |
+| notifications | No | Own notifications | No | Restricted | Restricted (audited) |
+| notification_preferences | No | Own preferences | No | Restricted | Restricted (audited) |
+| reports | No — guests may not report | Own submitted reports where appropriate | Assigned or permitted reports | Approved access | Full privileged access (audited) |
+| moderation_actions | No | Only permitted user-facing status | Permitted moderation actions | Approved administrative access | Full privileged access (audited) |
+| moderation_audit_logs | No | No | Restricted audit access | Restricted audit access | Restricted audit access (audited) |
+| locations | Approved public locations | Approved location access | No default access | Administrative access | Full privileged access (audited) |
+| user_location_preferences | No | Own preferences | No default access | Restricted | Restricted (audited) |
+| admin_audit_logs | No | No | No | Restricted privileged access | Restricted privileged access (audited) |
+| analytics_events | No | No direct access | No | Restricted reporting access | Restricted reporting access (audited) |
+| user_roles | No | No — a user cannot read or change any role, including their own | No — moderators cannot grant roles | No default access — role changes only through the approved privileged server flow, audited | Grant/revoke through the approved privileged server flow, audited |
 
 This matrix describes intended access, not a ready-to-copy RLS implementation.
 
@@ -1089,7 +1166,7 @@ If a view is used, verify its security behaviour, ownership context and RLS inte
 
 Anonymous posts must still enforce:
 
-- Authenticated ownership.
+- Authenticated ownership. Guests cannot post, so anonymous posting is authenticated-only (Guest Session Rule, §8.2).
 - Reporting.
 - Blocking.
 - Moderation access.
@@ -1109,6 +1186,11 @@ Users must not be able to:
 - Update closed polls.
 - Access other users' private vote records.
 
+Vote replacement (D-11): a registered user MAY change their vote while a poll is open
+(one active submission, replaced atomically); a guest may NOT change or remove a vote
+(one final submission per guest session per poll). Guest votes are counted, are tied
+to the guest session only, and do not transfer to an account after registration.
+
 Vote operations must use trusted transaction-safe operations.
 
 ## 8.8 Game security
@@ -1126,7 +1208,7 @@ Users must not be able to:
 
 Moderation and administrative tables require strict access policies.
 
-The application must not permit users to modify their own role or insert administrative audit records.
+The application must not permit users to modify their own role (roles live only in `user_roles`, §4.9.2) or insert administrative audit records.
 
 Privileged operations must execute through trusted server-side paths.
 
@@ -1144,27 +1226,28 @@ Every database modification must be:
 - Testable.
 - Environment-aware.
 - Documented.
-- Safe for existing data.
+- Safe for data created by earlier migrations.
 
-The coding agent must inspect current migration history before generating new migrations.
+No migration history exists yet (D-04). The first migration is the initial greenfield schema (Product P0), created from §4. Migration validation is CI gate 12 of the merged 15-gate list (KEA-SAD-001 §16.3).
 
 ## 9.2 Migration process
 
-For each change:
+For each change (greenfield: the first change is the initial schema from §4):
 
-1. Inspect current schema.
-2. Identify affected tables and dependencies.
-3. Compare current schema with target requirements.
-4. Check existing records.
-5. Prepare a migration plan.
-6. Identify locking and downtime risks.
-7. Prepare backup and recovery steps.
-8. Create the migration.
-9. Test against a representative staging database.
-10. Verify existing records.
-11. Obtain production approval.
-12. Apply through the approved deployment process.
-13. Verify post-migration integrity.
+1. Identify affected tables and dependencies.
+2. Compare the change with the target requirements in §4.
+3. Prepare a migration plan.
+4. Identify locking and downtime risks.
+5. Prepare backup and recovery steps.
+6. Create the migration.
+7. Test against a clean database and a representative seeded staging database.
+8. Verify records and integrity.
+9. Obtain production approval.
+10. Apply through the approved deployment process.
+11. Verify post-migration integrity.
+
+Migrations are environment-aware across the four environments (local development,
+automated testing, staging, production — D-08), each with its own database.
 
 ## 9.3 Migration naming
 
@@ -1179,7 +1262,7 @@ Migration names must describe the actual change.
 Prefer additive changes:
 
 - Add nullable columns first.
-- Backfill existing data.
+- Backfill data created by earlier migrations.
 - Validate data.
 - Add constraints.
 - Update application logic.
@@ -1199,7 +1282,7 @@ The following require explicit approval:
 - Removing RLS.
 - Broad permission changes.
 - Data deletion.
-- Enum or type transformations that may invalidate existing records.
+- Enum or type transformations that may invalidate records created by earlier migrations.
 
 No production reset or automatic database recreation is permitted.
 
@@ -1207,7 +1290,7 @@ No production reset or automatic database recreation is permitted.
 
 # 10. REFERENCE SQL IMPLEMENTATION PATTERNS
 
-The following snippets illustrate required patterns. They are not a complete production migration and must be reconciled against the existing schema before execution.
+The following snippets illustrate required patterns. They are not a complete production migration and must be reconciled against the target schema in §4 before execution. No existing schema exists to reconcile against (D-04).
 
 ## 10.1 UUID and timestamp defaults
 
@@ -1230,9 +1313,9 @@ CREATE UNIQUE INDEX profiles_username_lower_uidx
 ON public.profiles (lower(username));
 ```
 
-Before creating it, inspect existing username collisions.
+No existing usernames exist yet (D-04); uniqueness is enforced from the first migration.
 
-Do not silently rename existing usernames to make the migration pass.
+Do not silently rename usernames to make a migration pass.
 
 ## 10.3 Unique reaction constraint
 
@@ -1315,7 +1398,7 @@ Where required, use a consistent trigger function to update `updated_at`.
 
 Do not duplicate inconsistent trigger functions across every table.
 
-Review existing trigger names before creating new ones.
+Use the consistent trigger naming defined in Product P0; do not duplicate inconsistent trigger functions across tables.
 
 ## 10.9 Transaction-safe poll operation
 
@@ -1377,7 +1460,7 @@ The target account lifecycle is:
 3. Pending deletion, where the approved process requires a grace period.
 4. Deleted or anonymised according to the approved retention policy.
 
-The exact grace period and retention durations require an explicit product, privacy and legal decision.
+The exact grace period and retention durations require an explicit product, privacy and legal decision (TBD — owner Dennis, before public launch; see README Open Decisions register).
 
 ## 12.2 User deletion
 
@@ -1466,7 +1549,7 @@ Document:
 - Recovery point objective (RPO).
 - Recovery time objective (RTO).
 
-The actual RPO and RTO must be approved according to business and infrastructure requirements.
+The actual RPO and RTO must be approved according to business and infrastructure requirements (TBD — owner Dennis; see README Open Decisions register). Backup frequency and retention are likewise TBD; do not invent them.
 
 ## 13.2 Restore testing
 
@@ -1585,7 +1668,7 @@ Verify:
 - Multiple-choice validation.
 - Concurrent vote handling.
 - Poll expiration.
-- Vote replacement rules.
+- Vote replacement rules (D-11): registered user may change a vote while the poll is open; guest may not change or remove a vote.
 - Accurate aggregate results.
 
 ## 15.5 Moderation tests
@@ -1604,47 +1687,48 @@ Verify:
 Every migration must be tested against:
 
 - A clean database.
-- A representative existing database.
-- Existing records.
-- Existing policies.
-- Existing functions and triggers.
+- A representative seeded database.
+- Records created by earlier migrations.
+- Policies.
+- Functions and triggers.
 - Application compatibility.
 
-Where the migration changes existing data, compare pre-migration and post-migration record counts and integrity checks.
+Where the migration changes data, compare pre-migration and post-migration record counts and integrity checks.
 
 ---
 
-# 16. OPEN DATABASE DECISIONS
+## 16. OPEN DATABASE DECISIONS
 
-The following require confirmation during the initial repository and database audit.
+No prototype exists (D-04), so there is no existing schema, migration history, or
+production data to audit. The items below are greenfield verification tasks for
+Product P0 (Readiness R0) and decisions still to be taken — not audits of an existing
+system. Resolved items are marked as such; the rest stay TBD with owner + phase in
+the README Open Decisions register. No unresolved decision may be silently converted
+into a production schema assumption, and no TBD number below may be invented (D-22).
 
-| ID | Decision | Required evidence |
+| ID | Decision | Status / required evidence |
 |---|---|---|
-| DB-OD-001 | Existing profile table structure | Current schema |
-| DB-OD-002 | Existing auth/profile relationship | Foreign keys and application code |
-| DB-OD-003 | Existing username uniqueness model | Indexes and duplicate analysis |
-| DB-OD-004 | Whether polls are linked to posts or independent | Current product implementation |
-| DB-OD-005 | Exact poll vote replacement behaviour | Product approval |
-| DB-OD-006 | Exact game scoring configuration | Approved game rules |
-| DB-OD-007 | Location precision and retention | Privacy decision |
-| DB-OD-008 | Account deletion grace period | Product and legal approval |
-| DB-OD-009 | Moderation record retention | Safety and legal review |
-| DB-OD-010 | Analytics retention | Privacy and product approval |
-| DB-OD-011 | Existing database role model | Database and authentication audit |
-| DB-OD-012 | Existing migration history | Supabase migration audit |
-| DB-OD-013 | Existing production backup capability | Infrastructure audit |
-| DB-OD-014 | Final SQL naming and enum conventions | Existing schema review |
-
-No unresolved decision may be silently converted into a production schema assumption.
-
----
+| DB-OD-001 | Profile table structure | Greenfield: create per §4.1.1 in Product P0 |
+| DB-OD-002 | Auth/profile relationship | Greenfield: `profiles.id` → `auth.users.id` per §4.1.1, verified in Product P0 |
+| DB-OD-003 | Username uniqueness model | Greenfield: case-insensitive unique index per §10.2, verified in Product P0 |
+| DB-OD-004 | Whether polls are linked to posts or independent | TBD — owner Dennis, Product P0 (see README Open Decisions register) |
+| DB-OD-005 | Exact poll vote replacement behaviour | RESOLVED by D-11: registered may change while open; guests may not |
+| DB-OD-006 | Exact game scoring configuration | TBD — approved game rules, Product P1 (see README Open Decisions register) |
+| DB-OD-007 | Location precision and retention | TBD — privacy decision, Product P0 (see README Open Decisions register) |
+| DB-OD-008 | Account deletion grace period | TBD — product and legal approval, before public launch |
+| DB-OD-009 | Moderation record retention | TBD — safety and legal review |
+| DB-OD-010 | Analytics retention | TBD — privacy and product approval |
+| DB-OD-011 | Database role model | RESOLVED by D-18: `user_roles` table, server-side resolution only |
+| DB-OD-012 | Migration history | Greenfield: none exists; first migration is the initial schema (Product P0) |
+| DB-OD-013 | Production backup capability | Greenfield: to be configured and restore-tested in Product P0 / Readiness R9 |
+| DB-OD-014 | Final SQL naming and enum conventions | TBD — owner Dennis, Product P0 (enum-vs-text undecided; see README Open Decisions register) |
 
 # 17. DATABASE ACCEPTANCE CRITERIA
 
 The database is accepted when:
 
-- [ ] The actual existing schema has been audited.
-- [ ] The target ERD has been reconciled with the existing implementation.
+- [ ] The initial greenfield schema has been created in Product P0 and verified against §4.
+- [ ] The target ERD (§3) has been implemented as the initial schema.
 - [ ] All core MVP entities are accounted for.
 - [ ] All required relationships are defined.
 - [ ] Primary and foreign keys are correct.
@@ -1661,25 +1745,25 @@ The database is accepted when:
 - [ ] Account deletion follows an approved lifecycle.
 - [ ] Location data is appropriately protected.
 - [ ] Migrations are version-controlled.
-- [ ] Existing production records are preserved.
+- [ ] No production records exist yet; preservation rules apply from Product P1 onward (D-04).
 - [ ] Backup and restore procedures are tested.
 - [ ] No critical database security or integrity defects remain.
 
 ---
 
-# 18. FINAL INSTRUCTIONS TO THE AI CODING AGENT
+## 18. FINAL INSTRUCTIONS TO THE AI CODING AGENT
 
-This document defines the target database design and security contract for MOMENT.
+This document defines the target database design and security contract for Kea Parrot.
 
-Your first responsibility is to inspect the actual database.
+No prototype exists (D-04). Your first responsibility is to CREATE the initial
+greenfield schema from §4 in Product P0 — not to inspect an existing database. The
+target tables do not exist yet, by design.
 
-Do not assume that the target tables are missing.
+Do not assume that the target tables are already present.
 
-Do not recreate existing tables without checking their contents.
+Do not change primary keys or identifiers without an approved migration plan.
 
-Do not change existing primary keys or identifiers without an approved migration plan.
-
-Do not delete existing records to make constraints pass.
+Do not delete records to make constraints pass.
 
 Do not disable RLS to resolve application errors.
 
@@ -1693,17 +1777,16 @@ Do not execute destructive production migrations without explicit approval.
 
 Before implementing the target database:
 
-1. Inspect the existing schema.
-2. Inspect Supabase Auth relationships.
-3. Inspect all existing migrations.
-4. Inspect every RLS policy.
-5. Inspect functions and triggers.
-6. Identify existing production records.
-7. Produce a schema-difference report.
-8. Produce a non-destructive migration plan.
-9. Test migrations against staging.
-10. Obtain approval for risky changes.
+1. Create the initial migration from §4 (27 tables, including `user_roles`).
+2. Verify the schema against the ERD in §3.
+3. Verify Supabase Auth relationships (`profiles.id` and `user_roles.user_id` → `auth.users.id`).
+4. Verify every RLS policy against the §8.3 matrix (5 roles).
+5. Verify functions and triggers.
+6. Test migrations against a clean database and a representative seeded staging database.
+7. Produce a non-destructive migration plan for any later change.
+8. Test migrations against staging.
+9. Obtain approval for risky changes.
 
 Maintain a requirement-to-table-to-policy-to-test traceability record.
 
-**The objective is not simply to create a clean database schema. The objective is to create a secure, consistent and recoverable data foundation without sacrificing existing MOMENT data or functionality.**
+**The objective is to create a secure, consistent and recoverable data foundation for the greenfield Kea Parrot build.**

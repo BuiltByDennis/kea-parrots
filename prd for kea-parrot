@@ -1,10 +1,36 @@
+**Title:** Kea Parrot — Master Product Requirements Document (PRD)
+**Document ID:** KEA-PRD-001
+**Version:** 1.1
+**Date:** 2026-11-20
+**Status:** Restructured baseline — contradictions resolved 2026-11-20
+**Decisions applied:** D-01–D-22 (as applicable)
+**Supersedes:** v1.0
+**Former working name:** MOMENT (superseded 2026-11-20 by owner decision).
+
+## Restructure note — 2026-11-20
+
+This file was restructured 2026-11-20 under owner decisions D-01–D-22. Full decision log: `README.md` (D-01–D-22, 2026-11-20). Contradictions resolved in this file:
+
+- Product name is Kea Parrot throughout; the repo root is `kea-parrot/`. (The former working name appears only in the header above.)
+- MVP age eligibility is 16+ (§6.2, corrected); users aged 16–17 are included; there is no adult-only content in the MVP.
+- Guest Session Rule (D-03) in §5.1 and §6.4: guests may vote in polls and play the 3 games within a 60-minute window; they may not post, comment, react, join communities or report content; guest votes/scores do not transfer on registration; guests may not change a vote.
+- No prototype exists; Product P0 is a greenfield foundation phase, not a prototype-to-production audit (§29, §31.1).
+- Numbering: the old "Phase 0"–"Phase 5" labels are now Product P0–P5; §3.2/§3.3 are relabelled Product P3 to match §29, so digital footprints, Mystery Drops, community challenges, leaderboards, referral, achievements, collectibles, progression and personalization are all Product P3.
+- Exactly 3 games in the MVP: QuickMind, This or That, Mystery Word (§11.2, §29).
+- Challenges are Product P3, not MVP (§3.2).
+- MVP posts are persistent; temporary content is Product P3 (§9.6, §14, §15).
+- Repo tree is the canonical tree (D-10); `modules/` sits under `apps/web/` (§21.3).
+- Cross-cutting decisions applied in a parent fix 2026-11-20 after the per-file pass: merged CI list (§28.2, D-07), four environments (§28.1, D-08), canonical DoD reference (§32, D-09), role-storage pointer (§5, D-18). Vote-change policy (§10.3) follows D-11: registered users may change a vote while a poll is open (atomic replacement); guests may not change or remove a vote.
+
+---
+
 # KEA PARROT
 # MASTER PRODUCT REQUIREMENTS DOCUMENT (PRD)
 
 **Document Type:** Master Product Requirements & Engineering Execution Specification  
 **Product:** KEA PARROT  
-**Version:** 1.0  
-**Status:** Approved baseline for implementation  
+**Version:** 1.1  
+**Status:** Restructured baseline — contradictions resolved 2026-11-20  
 **Initial Platform:** Responsive Web Application + Progressive Web App (PWA)  
 **Initial Launch Market:** Ghana  
 **Long-Term Market:** Global  
@@ -101,7 +127,7 @@ Every requirement uses the following classifications:
 When a requirement is ambiguous, the coding agent MUST:
 
 1. Identify the ambiguity.
-2. Inspect related requirements and existing implementation.
+2. Inspect related requirements.
 3. Document the conflict.
 4. Propose a resolution.
 5. Obtain approval before implementing a decision that changes product behaviour or architecture.
@@ -159,7 +185,7 @@ The first public MVP MUST include:
 - Responsive web application.
 - PWA foundations.
 - Landing page.
-- Guest browsing.
+- Guest browsing and limited-time guest voting/playing (Guest Session Rule, §6.4).
 - Authentication.
 - User profiles.
 - Desktop and mobile navigation.
@@ -219,7 +245,7 @@ The first public MVP MUST include:
 - Community activity.
 - Error monitoring.
 
-## 3.2 Phase 2 Scope
+## 3.2 Product P3 Scope
 
 - Digital footprints.
 - Location-associated notes.
@@ -229,7 +255,7 @@ The first public MVP MUST include:
 - Referral system.
 - Enhanced creator tools.
 
-## 3.3 Phase 3 Scope
+## 3.3 Product P3 Scope
 
 - Achievements.
 - Collectibles.
@@ -238,9 +264,9 @@ The first public MVP MUST include:
 - Expanded game ecosystem.
 - Enhanced community experiences.
 
-## 3.4 Phase 4 Scope
+## 3.4 Product P4 Scope
 
-- MOMENT Business.
+- Kea Parrot Business.
 - Sponsored experiences.
 - Business accounts.
 - Campaign management.
@@ -333,7 +359,7 @@ Primary needs:
 
 ### Persona E: The Business Customer
 
-Phase 4 persona.
+Product P4 persona.
 
 Characteristics:
 - Wants to promote a venue, event or product.
@@ -349,7 +375,7 @@ Primary needs:
 
 # 5. USER ROLES AND PERMISSIONS
 
-MOMENT MUST use centralized, server-enforced authorization.
+Kea Parrot MUST use centralized, server-enforced authorization.
 
 ## 5.1 User Roles
 
@@ -358,9 +384,12 @@ MOMENT MUST use centralized, server-enforced authorization.
 - View public polls and results.
 - View public game descriptions.
 - Open shared public activity links.
+- Vote in polls and play the 3 games within the guest participation window (Guest Session Rule, §6.4).
 - Cannot publish content.
-- Cannot vote.
 - Cannot comment.
+- Cannot react.
+- Cannot join communities.
+- Cannot report content.
 - Cannot create game records associated with an account.
 - Cannot access private profiles.
 
@@ -397,6 +426,8 @@ MOMENT MUST use centralized, server-enforced authorization.
 - Review security events.
 
 Privileged administrative access MUST be protected by stronger authentication and must never be assignable through ordinary user-facing APIs.
+
+Role storage (D-18, decided 2026-11-20): roles are stored in the `user_roles` table (KEA-DBS-002 §4.9) and resolved server-side only; `profiles` has no role column and a role is never taken from client claims.
 
 ## 5.2 Permission Principles
 
@@ -441,7 +472,9 @@ OAuth providers must not be displayed as available unless configured and tested.
 
 Requirement: AUTH-002.
 
-The initial public MVP is restricted to users aged 18+.
+The initial public MVP is restricted to users aged 16+.
+
+Users aged 16–17 are included in the 16+ audience; there is no adult-only content in the MVP; Ghana Data Protection Act 2012 (Act 843) / DPC review is still required before public launch. Parental-consent mechanism: legal-review item (TBD, owner Dennis, before public launch) — do not invent.
 
 Requirements:
 
@@ -489,6 +522,8 @@ Unauthenticated visitors may browse public discovery content.
 When they attempt an authenticated action, display a clear registration or login prompt.
 
 Guest browsing must not expose restricted content or private user information.
+
+**Guest Session Rule (D-03, canonical — owner decision 2026-11-20).** A guest is an unauthenticated visitor, identified by a server-issued guest-session token stored in the browser. A guest is NOT an account. A guest MAY: browse public discovery; view polls/results and game descriptions; vote in polls; play the 3 games. A guest may NOT: post, comment, react, join communities, report content, or create any game record associated with an account. (Guest game sessions are tied to the guest session only, never to an account.) LIMITED TIME: a guest participation window lasts **60 minutes from the guest session's first vote or game start**, and ends on browser close, whichever is first. After expiry the guest must register / log in to vote or play again. One vote per poll per guest session. Guest votes are counted. Guest game scores are not saved to a profile and do not appear on leaderboards. After registration, guest-session votes/scores do NOT transfer to the new account (no merge in MVP). Rate limits apply per guest session + IP (thresholds TBD in Product P1 config — do not invent). Guests may NOT change/remove a vote.
 
 ---
 
@@ -791,7 +826,7 @@ Requirement: SOCIAL-005.
 
 MVP posts are persistent unless removed by their owner or moderation action.
 
-Temporary location-based content is reserved for Phase 2.
+Temporary location-based content is reserved for Product P3.
 
 ---
 
@@ -831,7 +866,7 @@ A poll must contain at least two valid options.
 
 Requirement: POLL-002.
 
-- Only authenticated users may vote.
+- Registered users may vote; guests may vote within their guest participation window (Guest Session Rule, §6.4). Guests may not change or remove a vote.
 - Users must be authorized to access the poll.
 - Single-choice polls permit one active option.
 - Multiple-choice polls permit multiple options within the configured limit.
@@ -947,9 +982,9 @@ Exact game difficulty, clue count, scoring weights and attempt limits must be es
 
 Requirement: GAME-004.
 
-Each authenticated game session must record:
+Each game session must record:
 
-- User ID.
+- User ID (registered users) or guest-session reference (guests; guest game scores are not saved to a profile and do not appear on leaderboards).
 - Game ID.
 - Start timestamp.
 - Completion timestamp.
@@ -1072,7 +1107,7 @@ The precise initial search radius must be a centrally configured product setting
 
 Module ID: EXPLORE
 
-**Release: Phase 2 — Not part of MVP.**
+**Release: Product P3 — Not part of MVP.**
 
 ## 14.1 Digital Footprints
 
@@ -1107,7 +1142,7 @@ Potential content:
 - Expiration must be enforced.
 - Publishing must be rate-limited.
 
-A separate Phase 2 specification must define publishing eligibility, discovery radius, rewards, expiration and abuse controls before development begins.
+A separate Product P3 specification must define publishing eligibility, discovery radius, rewards, expiration and abuse controls before development begins.
 
 ---
 
@@ -1115,7 +1150,7 @@ A separate Phase 2 specification must define publishing eligibility, discovery r
 
 Module ID: EVOLVE
 
-**Release: Phase 3 — Not part of MVP.**
+**Release: Product P3 — Not part of MVP.**
 
 Future progression capabilities:
 
@@ -1165,7 +1200,7 @@ Membership must be validated server-side.
 
 Private or restricted communities require separate authorization.
 
-Community creation and advanced management are Phase 2 capabilities unless explicitly approved for an earlier release.
+Community creation and advanced management are Product P3 capabilities unless explicitly approved for an earlier release.
 
 ---
 
@@ -1508,24 +1543,35 @@ Approved domains:
 ## 21.3 Repository Structure
 
 ```text
-moment/
+kea-parrot/
 ├── apps/
 │   ├── web/
-│   └── worker/
-│
+│   │   ├── app/
+│   │   │   ├── (public)/
+│   │   │   ├── (auth)/
+│   │   │   ├── (dashboard)/
+│   │   │   ├── admin/
+│   │   │   └── api/
+│   │   ├── components/
+│   │   ├── modules/
+│   │   │   └── <12 domains>/
+│   │   ├── lib/
+│   │   ├── hooks/
+│   │   ├── styles/
+│   │   └── tests/
+│   └── worker/ (only if approved workloads need it)
 ├── packages/
 │   ├── database/
 │   ├── shared-types/
 │   ├── validation/
 │   ├── ui/
 │   └── analytics/
-│
 ├── infrastructure/
 │   ├── migrations/
 │   ├── policies/
+│   ├── functions/
 │   ├── jobs/
 │   └── monitoring/
-│
 ├── docs/
 │   ├── PRD.md
 │   ├── ARCHITECTURE.md
@@ -1534,13 +1580,14 @@ moment/
 │   ├── API.md
 │   ├── ADR/
 │   └── TESTING.md
-│
 ├── tests/
 │   ├── unit/
 │   ├── integration/
 │   ├── e2e/
 │   └── security/
-│
+├── scripts/
+├── .github/
+├── package.json
 └── README.md
 ```
 
@@ -1718,7 +1765,7 @@ RLS policies must be tested using actual user roles and unauthorized requests.
 - Migrations must be ordered.
 - Production migrations must be reviewed.
 - Destructive changes require an explicit migration plan.
-- Existing data must be preserved.
+- Data created from Product P1 onward must be preserved; no prototype data exists yet (confirmed 2026-11-20).
 - Rollback or recovery procedures must be documented.
 - Database backups must be configured and tested.
 
@@ -1886,7 +1933,7 @@ Store monetary values using explicit currency codes and appropriate decimal prec
 
 ## 25.1 Design Philosophy
 
-MOMENT must feel:
+Kea Parrot must feel:
 
 - Modern.
 - Fast.
@@ -1951,7 +1998,7 @@ Mobile navigation, forms, feeds, dialogs and interaction controls must be design
 
 # 26. PRIVACY AND LEGAL COMPLIANCE
 
-MOMENT must follow privacy-by-design principles.
+Kea Parrot must follow privacy-by-design principles.
 
 ## 26.1 Data Minimization
 
@@ -2095,27 +2142,36 @@ No release may be approved with:
 
 ## 28.1 Environments
 
-Maintain:
+Maintain four environments (D-08, merged 2026-11-20):
 
 - Local development.
+- Automated testing (ephemeral, CI-run).
 - Staging.
 - Production.
 
-Each environment must use appropriate independent credentials and configuration.
+Each environment must use appropriate independent credentials and configuration. Never connect local/staging to production resources.
 
 ## 28.2 CI/CD
 
-The deployment pipeline must include:
+The deployment pipeline must include the merged canonical CI gates (D-07, merged 2026-11-20):
 
 1. Dependency installation.
-2. Type checking.
+2. Formatting.
 3. Linting.
-4. Unit tests.
-5. Integration tests.
-6. Production build.
-7. Security checks.
-8. Migration validation.
-9. Deployment approval where required.
+4. Type checking.
+5. Unit tests.
+6. Component tests.
+7. Integration tests.
+8. API tests.
+9. Database & RLS tests.
+10. Production build.
+11. Security & dependency scans.
+12. Migration validation.
+13. Deployment checks.
+14. Post-deployment smoke tests.
+15. Required approval gates.
+
+A failed critical gate blocks the release; the pipeline must not silently ignore failures.
 
 ## 28.3 Production Readiness
 
@@ -2145,7 +2201,7 @@ A disabled feature must not expose incomplete UI or unsupported API operations.
 
 # 29. PHASED IMPLEMENTATION PLAN
 
-## Phase 0 — Foundation
+## Product P0 — Foundation
 
 Deliverables:
 
@@ -2158,17 +2214,19 @@ Deliverables:
 - CI pipeline.
 - Security baseline.
 
+No prototype exists yet (confirmed 2026-11-20); Product P0 is a greenfield foundation phase, not a prototype-to-production audit.
+
 Completion gate:
 
 Architecture and foundation approved.
 
-## Phase 1 — Core MVP
+## Product P1 — Core MVP
 
 Deliverables:
 
 - Authentication.
 - Profiles.
-- Guest browsing.
+- Guest browsing and limited-time guest voting/playing (Guest Session Rule, §6.4).
 - Discovery feeds.
 - Posts.
 - Anonymous publishing.
@@ -2188,7 +2246,7 @@ Completion gate:
 
 All MVP requirements implemented and tested.
 
-## Phase 2 — Private Beta
+## Product P2 — Private Beta
 
 Deliverables:
 
@@ -2204,7 +2262,7 @@ Completion gate:
 
 The core experience demonstrates repeat usage and acceptable safety.
 
-## Phase 3 — Public Launch
+## Product P3 — Public Launch
 
 Deliverables:
 
@@ -2213,6 +2271,7 @@ Deliverables:
 - Digital footprints.
 - Mystery Drops.
 - Community challenges.
+- Achievements, collectibles, progression and personalization.
 - Referral functionality.
 - Improved discovery.
 
@@ -2220,7 +2279,7 @@ Completion gate:
 
 Stable public product and measurable organic engagement.
 
-## Phase 4 — Commercialization
+## Product P4 — Commercialization
 
 Deliverables:
 
@@ -2234,7 +2293,7 @@ Completion gate:
 
 Commercial functionality is legally reviewed, operationally ready and tested.
 
-## Phase 5 — Expansion
+## Product P5 — Expansion
 
 Deliverables:
 
@@ -2260,7 +2319,7 @@ The MVP cannot be considered complete until the following are verified.
 | AUTH-001 | Registration | Valid user can register and verify account |
 | AUTH-002 | Age eligibility | Underage registration is rejected |
 | AUTH-003 | Profile | User can securely manage permitted profile data |
-| AUTH-004 | Guest browsing | Public content is accessible without registration |
+| AUTH-004 | Guest browsing and limited participation | Public content is accessible without registration; guests can vote and play within the 60-minute guest participation window |
 | UI-001 | Navigation | All required navigation works |
 | UI-003 | Responsiveness | Required layouts work across target breakpoints |
 | DISC-001 | Nearby feed | Location selection and approximate discovery work |
@@ -2294,28 +2353,20 @@ Evidence must be attached to each acceptance result.
 
 # 31. AI CODING AGENT EXECUTION PROTOCOL
 
-This section is mandatory for any AI coding agent implementing MOMENT.
+This section is mandatory for any AI coding agent implementing Kea Parrot.
 
 ## 31.1 Before Development
 
 The agent MUST:
 
 1. Read the entire Master PRD.
-2. Inspect the existing repository.
-3. Identify the existing framework and installed dependencies.
-4. Identify existing database configuration.
-5. Inspect existing database migrations.
-6. Identify authentication and authorization mechanisms.
-7. Identify existing design conventions.
-8. Identify unfinished or conflicting implementations.
-9. Produce an implementation readiness report.
-10. Present architectural conflicts before making changes.
+2. Confirm the greenfield baseline: no prototype exists yet (confirmed 2026-11-20). The repository contains specification documents only; there is no existing code, framework, database, migration, authentication mechanism, or design convention to inspect. Product P0 is a greenfield foundation phase, not a prototype-to-production audit.
+3. Produce an implementation readiness report. (Formerly item 9 in v1.0; now item 3 after the greenfield rewrite of this section — any citation of "§31.1 item 9" means this item.)
+4. Present architectural conflicts before making changes.
 
-If the repository already contains code, preserve working functionality unless an approved requirement explicitly changes it.
+Preservation rules (no destructive operations, no disabling RLS, no inventing requirements) still apply to all work from Product P1 onward. Nothing is preserved because nothing exists yet.
 
-Do not assume that the repository is empty.
-
-## 31.2 Before Every Development Phase
+## 31.2 Before Every Development Stage (Product P0–P5)
 
 Produce:
 
@@ -2358,7 +2409,7 @@ The agent MUST NOT:
 - Skip tests.
 - Claim a task is complete without verification.
 
-## 31.4 After Every Development Phase
+## 31.4 After Every Development Stage (Product P0–P5)
 
 Produce a completion report containing:
 
@@ -2407,6 +2458,8 @@ Never perform destructive production database operations without explicit author
 
 # 32. DEFINITION OF DONE
 
+Canonical DoD: KEA-RDY-006 §17 (merged 2026-11-20) — that section holds the single canonical Definition of Done (28 checkboxes, the union of this document's list and KEA-TPR-005 §9). The checklist below is this document's PRD-specific view of it and must not be read as a competing DoD.
+
 A feature is complete only when all applicable conditions are satisfied.
 
 - [ ] Requirement implemented.
@@ -2438,7 +2491,7 @@ A successful build without passing required tests is NOT a completed release.
 
 # 33. PRODUCT SUCCESS CRITERIA
 
-MOMENT's success must be measured by meaningful user value rather than vanity metrics.
+Kea Parrot's success must be measured by meaningful user value rather than vanity metrics.
 
 ## Primary success metric
 
@@ -2463,7 +2516,7 @@ Weekly Meaningful Interactions.
 
 ## Product validation question
 
-The product must demonstrate that people voluntarily return to MOMENT because they find its experiences interesting and valuable.
+The product must demonstrate that people voluntarily return to Kea Parrot because they find its experiences interesting and valuable.
 
 Growth generated exclusively by notifications, artificial rewards or aggressive engagement mechanics is insufficient evidence of product-market fit.
 
@@ -2471,12 +2524,12 @@ Growth generated exclusively by notifications, artificial rewards or aggressive 
 
 # 34. FINAL PRODUCT REQUIREMENTS SUMMARY
 
-MOMENT is a web-first global social discovery platform.
+Kea Parrot is a web-first global social discovery platform.
 
 Its initial MVP must deliver:
 
 1. A fast and responsive web application.
-2. Guest browsing.
+2. Guest browsing and limited-time guest voting/playing.
 3. Secure authentication.
 4. User profiles.
 5. Nearby discovery.
@@ -2504,7 +2557,7 @@ All future functionality must follow approved phase-specific specifications.
 
 # 35. FINAL INSTRUCTIONS TO THE IMPLEMENTATION AGENT
 
-You are responsible for implementing MOMENT as a complete, secure, maintainable and scalable product.
+You are responsible for implementing Kea Parrot as a complete, secure, maintainable and scalable product.
 
 You are not being asked to create a prototype, landing-page-only implementation, UI mockup or collection of disconnected features.
 
@@ -2535,14 +2588,14 @@ If a technical limitation, ambiguity or contradiction prevents implementation, s
 
 Maintain a complete audit trail of implementation progress.
 
-**The objective is not to finish writing code as quickly as possible. The objective is to deliver MOMENT correctly, safely and in accordance with the approved product requirements.**
+**The objective is not to finish writing code as quickly as possible. The objective is to deliver Kea Parrot correctly, safely and in accordance with the approved product requirements.**
 
 ---
 
 **END OF MASTER PRODUCT REQUIREMENTS DOCUMENT**
 
-**Document version:** 1.0  
-**Product:** MOMENT  
-**Status:** Master implementation baseline  
-**Next required document:** System Architecture Document (SAD)  
-**Implementation policy:** Phase-gated, requirement-driven, security-first development.
+**Document version:** 1.1  
+**Product:** Kea Parrot  
+**Status:** Restructured baseline — contradictions resolved 2026-11-20  
+**Next required document:** System Architecture Document (KEA-SAD-001)  
+**Implementation policy:** Product P-gated, requirement-driven, security-first development.

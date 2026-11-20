@@ -1,14 +1,36 @@
-# MOMENT — SYSTEM ARCHITECTURE DOCUMENT (SAD)
+# Kea Parrot — SYSTEM ARCHITECTURE DOCUMENT (SAD)
 
-**Document ID:** MOMENT-SAD-001  
-**Version:** 1.0  
-**Status:** Architecture Baseline — Subject to Existing-System Verification  
-**Product:** MOMENT  
+**Title:** Kea Parrot — System Architecture Document (SAD)  
+**Document ID:** KEA-SAD-001  
+**Version:** 1.1  
+**Date:** 2026-11-20  
+**Status:** Restructured baseline — contradictions resolved 2026-11-20  
+**Decisions applied:** D-01–D-22 (as applicable)  
+**Supersedes:** v1.0  
+**Former working name:** MOMENT (superseded 2026-11-20 by owner decision).  
+**Product:** Kea Parrot  
 **Platform:** Responsive Web Application / Progressive Web Application  
 **Architecture Style:** Modular Monolith  
 **Primary Stack:** Next.js, TypeScript, Supabase, PostgreSQL, PostGIS  
 **Deployment Target:** Vercel + Supabase  
-**Governing Documents:** MOMENT Master PRD; MOMENT Prototype-to-Production Readiness PRD
+**Governing Documents:** Kea Parrot Master PRD (KEA-PRD-001); Kea Parrot Prototype-to-Production Readiness PRD (KEA-RDY-006)
+
+## Restructure note — 2026-11-20
+
+This file was restructured to resolve contradictions found in the 2026-11-20 audit.
+Product name is Kea Parrot (D-01; Kea Parrot is the superseded working name, kept only in
+the header note above). No prototype exists — this is a target specification for a
+greenfield build, and Product P0 is a greenfield foundation phase, not a
+prototype-to-production audit (D-04). phase numbering uses Product P- / Readiness R-
+prefixes, never a bare phase number (D-05). Guest access follows the Guest Session Rule:
+guests may browse, vote and play within a 60-minute window; guests may not change a
+vote (D-03, D-11). Roles are resolved server-side from the `user_roles` table only;
+`profiles` has no role column (D-18). The authoritative-store list (§8.1) now covers
+all 27 tables (D-19). The repo tree is the canonical tree in §7 (D-10). CI gates are
+the merged 15-gate list in §16.3 (D-07). Environments are the four in §16.1 (D-08).
+Numbers marked TBD (trending coefficients, retention, RPO/RTO) were NOT invented
+(D-22). See README.md for the full decision log (D-01–D-22) and the consolidated
+Open Decisions register.
 
 ---
 
@@ -16,17 +38,17 @@
 
 ## 1.1 Objective
 
-This document defines the approved target system architecture for MOMENT.
+This document defines the approved target system architecture for Kea Parrot.
 
-It establishes the architectural boundaries, application layers, infrastructure, service responsibilities, data flows, integration patterns, security boundaries, realtime architecture and deployment model required to transform MOMENT into a production-ready application.
+It establishes the architectural boundaries, application layers, infrastructure, service responsibilities, data flows, integration patterns, security boundaries, realtime architecture and deployment model required to build Kea Parrot as a production-ready application from a greenfield start.
 
 The document is an implementation contract for the engineering team and AI coding agents.
 
-It must be used alongside the MOMENT Master PRD.
+It must be used alongside the Kea Parrot Master PRD.
 
 ## 1.2 Architectural principle
 
-MOMENT must be developed as a modular monolith with clearly separated business domains.
+Kea Parrot must be developed as a modular monolith with clearly separated business domains.
 
 The application must remain straightforward to develop, test, deploy and maintain without introducing unnecessary distributed-system complexity.
 
@@ -34,20 +56,21 @@ The architecture must support future expansion without requiring an early migrat
 
 ## 1.3 Important implementation rule
 
-This document defines the target architecture, not an assumption that the existing prototype already follows it.
+This document defines the target architecture for a greenfield build. No prototype
+exists (confirmed by the owner 2026-11-20): there is no existing repository,
+infrastructure, or implementation to inspect, preserve, or migrate. Product P0 is a
+greenfield foundation phase, not a prototype-to-production audit (D-04).
 
-Before implementation, inspect the current repository and infrastructure.
+Preservation rules (no destructive operations, no disabling RLS, no inventing
+requirements) still apply — to all work from Product P1 onward. Nothing is preserved
+because nothing exists yet.
 
-If the existing implementation differs from this target:
+Do not claim in any phase report that an existing system was audited in this repo.
+When the first implementation is created in Product P0, verify it against this target
+and record any deviation with its cost, risk, and approval before changing it.
 
-1. Document the difference.
-2. Determine whether the existing implementation is functional and secure.
-3. Identify the migration cost and risks.
-4. Propose the required change.
-5. Obtain approval for material architectural changes.
-6. Implement progressively.
-
-Never replace a working implementation simply to match a preferred folder structure or architectural pattern.
+Never introduce complexity simply to match a preferred folder structure or
+architectural pattern.
 
 ---
 
@@ -72,7 +95,7 @@ The architecture must satisfy the following objectives.
 
 # 3. TARGET TECHNOLOGY STACK
 
-The following is the approved target stack established by the MOMENT Master PRD.
+The following is the approved target stack established by the Kea Parrot Master PRD.
 
 | Layer | Technology | Responsibility |
 |---|---|---|
@@ -90,7 +113,7 @@ The following is the approved target stack established by the MOMENT Master PRD.
 | Hosting | Vercel | Web application deployment |
 | Monitoring | Sentry | Error and performance monitoring |
 | Version control | Git | Source history and checkpoints |
-| Testing | Existing compatible test stack | Automated quality assurance |
+| Testing | Approved test stack (pinned in Product P0) | Automated quality assurance |
 
 Package versions must be pinned and maintained.
 
@@ -102,7 +125,7 @@ Redis, external message brokers, microservices and dedicated orchestration syste
 
 An additional infrastructure service may only be introduced when:
 
-- A measurable requirement cannot be met adequately by the existing stack.
+- A measurable requirement cannot be met adequately by the approved stack.
 - Its operational cost is justified.
 - Its security implications are assessed.
 - Its failure and recovery behaviour are documented.
@@ -114,7 +137,7 @@ An additional infrastructure service may only be introduced when:
 
 ## 4.1 Architecture overview
 
-MOMENT uses a modular monolith supported by managed infrastructure.
+Kea Parrot uses a modular monolith supported by managed infrastructure.
 
 The Next.js application provides the user interface and trusted server-side application operations.
 
@@ -133,7 +156,7 @@ flowchart TB
     CDN[Hosting CDN and Edge]
     WEB[Next.js Application]
 
-    subgraph APP["MOMENT Application Layer"]
+    subgraph APP["Kea Parrot Application Layer"]
         UI[Presentation Layer]
         API[API and Server Actions]
         AUTH[Identity and Authorization]
@@ -232,7 +255,7 @@ All privileged operations must be checked server-side.
 
 ### Layer 4: Domain modules
 
-Responsible for MOMENT's business rules.
+Responsible for Kea Parrot's business rules.
 
 Each module owns its operations and exposes controlled interfaces to other modules.
 
@@ -318,7 +341,7 @@ Responsibilities:
 - Content visibility.
 - Ownership checks.
 
-Anonymous content must remain associated with an authenticated internal account.
+Anonymous content must remain associated with an authenticated internal account. Guests cannot post, so anonymous posting is authenticated-only (Guest Session Rule, §9.4).
 
 ## 5.5 Polls module
 
@@ -333,6 +356,13 @@ Responsibilities:
 
 The database remains authoritative for votes and results.
 
+Vote replacement (D-11, decided 2026-11-20): a registered user may change their vote
+while a poll is open — one active submission per user per poll; changing replaces the
+previous submission atomically; no change after close/expiry. A guest may NOT change
+or remove a vote: one final submission per guest session per poll. Guest voting
+follows the Guest Session Rule (§9.4): one vote per poll per guest session, within a
+60-minute participation window; guest votes are counted.
+
 ## 5.6 Games module
 
 Responsibilities:
@@ -345,6 +375,10 @@ Responsibilities:
 - Completion status.
 
 Scoring must be calculated and validated on the trusted server side.
+
+Guests may play the 3 games within the Guest Session Rule (§9.4): a guest game session
+is tied to the guest session only, never to an account; guest scores are not saved to
+a profile and do not appear on leaderboards.
 
 ## 5.7 Communities module
 
@@ -469,7 +503,7 @@ Updated User Interface
 The target logical structure is:
 
 ```text
-moment/
+kea-parrot/
 │
 ├── apps/
 │   ├── web/
@@ -500,7 +534,7 @@ moment/
 │   │   ├── styles/
 │   │   └── tests/
 │   │
-│   └── worker/
+│   └── worker/            (only if approved workloads need it)
 │       ├── jobs/
 │       ├── processors/
 │       └── tests/
@@ -520,12 +554,19 @@ moment/
 │   └── monitoring/
 │
 ├── docs/
-│   ├── architecture/
-│   ├── database/
-│   ├── api/
-│   ├── security/
-│   ├── deployment/
-│   └── testing/
+│   ├── PRD/
+│   ├── ARCHITECTURE/
+│   ├── DATABASE/
+│   ├── SECURITY/
+│   ├── API/
+│   ├── ADR/
+│   └── TESTING/
+│
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+│   └── security/
 │
 ├── scripts/
 ├── .github/
@@ -533,11 +574,11 @@ moment/
 └── README.md
 ```
 
-This is a target organisation, not permission to restructure the existing repository automatically.
+This is the canonical repo tree (D-10: the Master PRD tree plus the foundation's
+`modules/` under `apps/web/`). It is the tree Product P0 creates; there is no existing
+repository to preserve, because no prototype exists (D-04).
 
-Preserve the existing project structure if it already provides equivalent separation and maintainability.
-
-The worker application is only required if approved background workloads cannot be handled safely by the existing application and platform facilities.
+The worker application is only required if approved background workloads cannot be handled safely by the application and platform facilities.
 
 ---
 
@@ -545,25 +586,37 @@ The worker application is only required if approved background workloads cannot 
 
 ## 8.1 Authoritative data store
 
-PostgreSQL is MOMENT's authoritative persistent data store.
+PostgreSQL is Kea Parrot's authoritative persistent data store.
 
-It owns:
+It owns all 27 tables' records (KEA-DBS-002 §4):
 
-- User profile records.
-- Posts.
-- Comments.
-- Reactions.
-- Polls.
-- Votes.
-- Games.
-- Game sessions.
-- Communities.
-- Memberships.
-- Notifications.
-- Reports.
-- Moderation records.
-- Administrative audit records.
-- Approved analytics records.
+- Profiles (`profiles`).
+- User preferences (`user_preferences`).
+- User consents (`user_consents`).
+- User blocks (`user_blocks`).
+- User roles (`user_roles`).
+- Posts (`posts`).
+- Post reactions (`post_reactions`).
+- Comments (`comments`).
+- Polls (`polls`).
+- Poll options (`poll_options`).
+- Poll votes (`poll_votes`).
+- Games (`games`).
+- Game questions (`game_questions`).
+- Game options (`game_options`).
+- Game sessions (`game_sessions`).
+- Game answers (`game_answers`).
+- Communities (`communities`).
+- Community memberships (`community_members`).
+- Locations (`locations`).
+- User location preferences (`user_location_preferences`).
+- Notifications (`notifications`).
+- Notification preferences (`notification_preferences`).
+- Reports (`reports`).
+- Moderation actions (`moderation_actions`).
+- Moderation audit records (`moderation_audit_logs`).
+- Administrative audit records (`admin_audit_logs`).
+- Approved analytics records (`analytics_events`).
 
 ## 8.2 Data ownership
 
@@ -600,7 +653,7 @@ Use approximate user-selected or permission-based locations.
 
 Public responses must not expose precise coordinates.
 
-The implementation must follow the data minimisation and retention requirements defined in the Database Design & Security Specification.
+The implementation must follow the data minimisation and retention requirements defined in the Database Design & Security Specification (KEA-DBS-002).
 
 ---
 
@@ -616,7 +669,7 @@ Authentication flow:
 sequenceDiagram
     participant U as User
     participant B as Browser
-    participant A as MOMENT Server
+    participant A as Kea Parrot Server
     participant S as Supabase Auth
     participant D as PostgreSQL
 
@@ -632,7 +685,7 @@ sequenceDiagram
     B-->>U: Updated interface
 ```
 
-The actual session transport and cookie strategy must be verified against the installed Supabase and Next.js integration versions.
+The session transport and cookie strategy must be defined in Product P0 against the pinned Supabase and Next.js versions.
 
 ## 9.2 Security boundaries
 
@@ -673,15 +726,32 @@ The system must support:
 - Administrator.
 - Super administrator.
 
-Every privileged operation must verify the user's actual permissions.
+Roles are resolved server-side from the `user_roles` table only (KEA-DBS-002 §4.9.2).
+`profiles` has NO role column. A role is never taken from client claims, and no user
+may assign privileges to themselves through a profile update or direct API request.
 
-No user may assign privileges to themselves through a profile update or direct API request.
+Guest Session Rule (D-03, decided 2026-11-20): a guest is an unauthenticated visitor,
+identified by a server-issued guest-session token stored in the browser. A guest is
+NOT an account. A guest MAY browse public discovery, view polls/results and game
+descriptions, vote in polls, and play the 3 games. A guest may NOT post, comment,
+react, join communities, report content, or create any game record associated with an
+account (guest game sessions are tied to the guest session only, never to an account).
+LIMITED TIME: a guest participation window lasts 60 minutes from the guest session's
+first vote or game start, and ends on browser close, whichever is first. After expiry
+the guest must register / log in to vote or play again. One vote per poll per guest
+session; guest votes are counted. Guest game scores are not saved to a profile and do
+not appear on leaderboards. After registration, guest-session votes/scores do NOT
+transfer to the new account (no merge in the MVP). Rate limits apply per guest
+session + IP (thresholds TBD in Product P1 config — do not invent). Guests may NOT
+change or remove a vote (D-11).
+
+Every privileged operation must verify the user's actual permissions.
 
 ## 9.5 Row Level Security
 
 RLS is a mandatory database security layer.
 
-The detailed table-by-table policies, SQL and test scenarios will be defined in Document 02.
+The detailed table-by-table policies, SQL and test scenarios will be defined in KEA-DBS-002.
 
 Application-layer authorisation and database-layer authorisation must complement one another.
 
@@ -716,7 +786,7 @@ MVP use cases include:
 ```mermaid
 sequenceDiagram
     participant U1 as User A
-    participant API as MOMENT API
+    participant API as Kea Parrot API
     participant DB as PostgreSQL
     participant RT as Supabase Realtime
     participant U2 as User B
@@ -732,7 +802,7 @@ sequenceDiagram
     API-->>U2: Updated poll data
 ```
 
-The exact event delivery mechanism, subscriptions and payloads are specified in Document 04.
+The exact event delivery mechanism, subscriptions and payloads are specified in KEA-API-004.
 
 ## 10.4 Realtime failure behaviour
 
@@ -758,7 +828,7 @@ Potential responsibilities:
 - Analytics aggregation.
 - Data cleanup.
 
-The implementation may use Supabase scheduled functions, database functions or a dedicated worker depending on the existing deployment and operational requirements.
+The implementation may use Supabase scheduled functions, database functions or a dedicated worker depending on the approved deployment and operational requirements (decided in Product P0).
 
 ## 11.1 Job requirements
 
@@ -819,7 +889,7 @@ Examples:
 /api/v1/admin
 ```
 
-Exact request and response contracts belong in Document 04.
+Exact request and response contracts belong in KEA-API-004.
 
 ## 12.2 API responsibilities
 
@@ -839,7 +909,7 @@ The API layer must:
 
 All APIs must use a consistent error format.
 
-The standard contract will be established in Document 04.
+The standard contract will be established in KEA-API-004.
 
 Errors must not reveal:
 
@@ -879,7 +949,7 @@ All upload restrictions must be defined in the UI/UX and security specifications
 
 ## 14.1 Feed types
 
-MOMENT supports:
+Kea Parrot supports:
 
 - Nearby.
 - Global.
@@ -911,7 +981,7 @@ Potential inputs established in the product requirements include:
 - Moderation signals.
 - Spam indicators.
 
-Exact coefficients and thresholds must not be invented.
+Exact coefficients and thresholds must not be invented (TBD — see README Open Decisions register).
 
 ## 14.4 Location-aware discovery
 
@@ -971,7 +1041,7 @@ Monitor:
 - Storage usage.
 - Core user journeys.
 
-Detailed monitoring thresholds will be finalised in Document 05.
+Detailed monitoring thresholds will be finalised in KEA-TPR-005 (TBD — see README Open Decisions register).
 
 ---
 
@@ -979,15 +1049,16 @@ Detailed monitoring thresholds will be finalised in Document 05.
 
 ## 16.1 Environments
 
-Maintain three distinct environments:
+Maintain four distinct environments (D-08):
 
 1. Local development.
-2. Staging.
-3. Production.
+2. Automated testing (ephemeral, CI-run).
+3. Staging.
+4. Production.
 
-Each environment must have independently managed configuration and credentials.
-
-Never use production credentials for ordinary development or testing.
+Each environment must have independently managed configuration and credentials, and
+its own database, auth, and storage. Never use production credentials for ordinary
+development or testing, and never connect local or staging to production resources.
 
 ## 16.2 Deployment topology
 
@@ -1015,19 +1086,26 @@ flowchart TB
 
 ## 16.3 CI/CD requirements
 
-The pipeline must verify:
+The pipeline must verify, in this order (D-07 merged CI list):
 
-- Dependency installation.
-- Formatting.
-- Linting.
-- Type checking.
-- Unit tests.
-- Integration tests.
-- Build.
-- Security checks.
-- Migration validation.
+1. Dependency install.
+2. Formatting.
+3. Linting.
+4. Type checking.
+5. Unit tests.
+6. Component tests.
+7. Integration tests.
+8. API tests.
+9. Database & RLS tests.
+10. Production build.
+11. Security & dependency scans.
+12. Migration validation.
+13. Deployment checks.
+14. Post-deployment smoke tests.
+15. Required approval gates.
 
-Critical failures must block release.
+Failed critical gates must block release; pipelines must not silently ignore failing
+critical tests.
 
 ## 16.4 Database migrations
 
@@ -1083,7 +1161,7 @@ Do not split the application into microservices without measurable evidence and 
 
 ## 17.2 Capacity planning
 
-Expected concurrent users, request rates, database capacity and realtime connection targets must be established before production load testing.
+Expected concurrent users, request rates, database capacity and realtime connection targets must be established before production load testing (TBD — see README Open Decisions register; do not invent).
 
 ---
 
@@ -1119,30 +1197,32 @@ Initial decisions:
 | ADR-009 | No microservices in MVP | Approved |
 | ADR-010 | Background worker only when justified | Conditional |
 
-A target decision does not authorise an immediate migration of the existing system.
+A target decision does not authorise an immediate change to a system that does not exist yet: no prototype exists (D-04).
 
 ---
 
-# 19. OPEN ARCHITECTURAL DECISIONS
+## 19. OPEN ARCHITECTURAL DECISIONS
 
-The following must be confirmed during Phase 0 of the Prototype-to-Production Readiness PRD.
+The following must be confirmed during Readiness R0 of the Prototype-to-Production
+Readiness PRD (KEA-RDY-006). No prototype exists (D-04), so these are greenfield
+verification tasks for Product P0 — establishing the first implementation against
+this target — not audits of an existing system. None may be answered through
+guesswork.
 
 | ID | Question | Required evidence |
 |---|---|---|
-| OAD-001 | Does the current repository already follow a modular architecture? | Repository audit |
-| OAD-002 | Is the existing Supabase integration server-side and correctly configured? | Authentication and code audit |
-| OAD-003 | Which database environments currently exist? | Infrastructure audit |
-| OAD-004 | Are existing migrations authoritative and complete? | Migration audit |
-| OAD-005 | Does the application already have a background processing mechanism? | Code and infrastructure audit |
-| OAD-006 | Which realtime patterns are currently implemented? | Realtime audit |
-| OAD-007 | What are the actual launch capacity requirements? | Product and load assumptions |
+| OAD-001 | Does the Product P0 repository follow the canonical modular architecture (§7)? | Product P0 repo verification |
+| OAD-002 | Is the Product P0 Supabase integration server-side and correctly configured? | Product P0 authentication and code verification |
+| OAD-003 | Which database environments exist for the greenfield build? | Product P0 infrastructure verification (four environments, §16.1) |
+| OAD-004 | Is the initial migration set authoritative and complete against KEA-DBS-002? | Product P0 migration verification |
+| OAD-005 | Which background processing mechanism is approved for Product P0? | Product P0 design decision |
+| OAD-006 | Which realtime patterns are implemented in Product P0? | Product P0 realtime verification |
+| OAD-007 | What are the actual launch capacity requirements? | Product and load assumptions (TBD — see README Open Decisions register) |
 | OAD-008 | Which file-upload use cases are approved? | Product scope confirmation |
-| OAD-009 | Which monitoring and analytics services are already configured? | Infrastructure audit |
-| OAD-010 | Does the current deployment support the target architecture? | Deployment audit |
+| OAD-009 | Which monitoring and analytics services are configured in Product P0? | Product P0 infrastructure verification |
+| OAD-010 | Does the Product P0 deployment support the target architecture? | Product P0 deployment verification |
 
 These questions must not be answered through guesswork.
-
----
 
 # 20. ARCHITECTURAL ACCEPTANCE CRITERIA
 
@@ -1161,7 +1241,7 @@ The architecture is accepted when:
 - [ ] Monitoring responsibilities are defined.
 - [ ] Deployment environments are documented.
 - [ ] Migration and recovery principles are established.
-- [ ] Existing architecture has been compared against the target.
+- [ ] The Product P0 greenfield implementation has been verified against the target (no existing architecture exists to compare — D-04).
 - [ ] Material architecture changes have approval.
 - [ ] No unresolved critical architectural risks remain.
 
@@ -1169,16 +1249,17 @@ The architecture is accepted when:
 
 # 21. FINAL INSTRUCTIONS TO THE AI CODING AGENT
 
-Treat this document as the approved target architecture for MOMENT.
+Treat this document as the approved target architecture for Kea Parrot.
 
-Your responsibility is to implement and maintain this architecture without introducing unnecessary complexity or damaging the existing application.
+Your responsibility is to implement and maintain this architecture without introducing unnecessary complexity. No prototype exists (D-04): Product P0 creates the first
+implementation; there is no existing application to damage or preserve.
 
 Before changing the architecture:
 
-1. Inspect the actual repository.
-2. Inspect the actual database.
-3. Inspect authentication and security.
-4. Map existing module boundaries.
+1. Verify the Product P0 implementation against this target.
+2. Verify the database against KEA-DBS-002.
+3. Verify authentication and security.
+4. Map the implemented module boundaries.
 5. Identify architectural deviations.
 6. Assess migration risks.
 7. Propose changes.
@@ -1197,6 +1278,6 @@ Do not:
 - Change database schemas without migrations.
 - Make unapproved production changes.
 
-Maintain consistency with the MOMENT Master PRD and the Prototype-to-Production Readiness PRD.
+Maintain consistency with the Kea Parrot Master PRD (KEA-PRD-001) and the Prototype-to-Production Readiness PRD (KEA-RDY-006).
 
 **Architecture completion means that the actual implementation follows verified architectural boundaries, not merely that the repository contains folders with the correct names.**

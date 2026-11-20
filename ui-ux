@@ -1,21 +1,61 @@
-# kea parrot — UI/UX IMPLEMENTATION SPECIFICATION
+# KEA PARROT — UI/UX IMPLEMENTATION SPECIFICATION
 
-**Document ID:** kea parrot-UX-003  
-**Version:** 1.0  
-**Status:** Implementation Specification — Subject to Product and Design Approval  
-**Product:** kea parrot  
-**Platform:** Responsive Web Application / Progressive Web App (PWA)  
+**Document ID:** KEA-UX-003
+**Document Title:** UI/UX Implementation Specification
+**Version:** 1.1
+**Date:** 2026-11-20
+**Status:** Restructured baseline — contradictions resolved 2026-11-20
+**Decisions applied:** D-01, D-02, D-03, D-04, D-05, D-11, D-12, D-21, D-22 (as applicable)
+**Supersedes:** v1.0
+**Product:** Kea Parrot
+**Former working name:** MOMENT (superseded 2026-11-20 by owner decision).
+**Platform:** Responsive Web Application / Progressive Web App (PWA)
 **Related Documents:**
-- MOMENT Master Product Requirements Document (MOMENT-PRD-001)
-- MOMENT Database Design & Security Specification (MOMENT-DBS-002)
+- Kea Parrot Master Product Requirements Document (KEA-PRD-001)
+- Kea Parrot Database Design & Security Specification (KEA-DBS-002)
+- Kea Parrot API & Realtime Specification (KEA-API-004)
 
 ---
+
+## Restructure note — 2026-11-20
+
+This file was restructured 2026-11-20 under the canonical decisions in README.md
+(D-01–D-22). Contradictions resolved in this file:
+
+- **D-01 Name:** Kea Parrot everywhere; doc ID is now KEA-UX-003; cross-references
+  use the new KEA-* IDs. The former working name appears only in the header note above.
+- **D-02 Age:** MVP audience is 16+ (see §6.2). Users aged 16–17 are included; there
+  is no adult-only content in the MVP; Act 843 / DPC review is still required before
+  public launch. No parental-consent mechanism is invented.
+- **D-03 Guests:** the Guest Session Rule now governs guest flows (§3.2, §6.5, §6.9,
+  §6.11–§6.16, §6.20, §6.21) — guests may browse, vote, and play within a 60-minute
+  guest session; they may not post, comment, react, report, or join.
+- **D-04 Prototype:** no prototype exists. Routes, screens, and components in this
+  document are PROPOSED for a greenfield build; audit steps are reframed as
+  greenfield verification (§18 Step 0). Nothing is preserved because nothing exists yet.
+- **D-05 Numbering:** the steps in §18 are UI sub-plan steps 0–8, not standalone
+  phase numbers; each step maps to a Readiness R-phase in the §18 mapping table.
+  Product track is P0–P5 and Readiness track is R0–R10 (KEA-PRD-001, KEA-RDY-006).
+- **D-11 Vote replacement:** decided — registered users may change a vote while a
+  poll is open; guest votes are final (§6.12, §7.5).
+- **D-12 Endpoints (as relevant to UI):** account settings use `PATCH /api/v1/me`
+  (account fields only); public profile editing uses `PATCH /api/v1/profiles/me`;
+  notification preferences use `/me/notification-preferences` (§6.17, §6.19).
+- **D-22 Not invented:** numeric limits, design-token values, and thresholds remain
+  TBD with owner and phase (see §17 and the README Open Decisions register); nothing
+  was invented in this pass.
+- **Evolve (MVP):** Evolve shows profile and approved account experiences only.
+  Achievements, collectibles, progression, and personalization are Product P3 scope
+  and must not be presented as functioning MVP features (§3.1).
+
+---
+
 
 # 1. DOCUMENT PURPOSE
 
 ## 1.1 Purpose
 
-This document defines how MOMENT's approved product requirements must be translated into a consistent, responsive, accessible, and production-ready user interface.
+This document defines how Kea Parrot's approved product requirements must be translated into a consistent, responsive, accessible, and production-ready user interface.
 
 It provides the implementation blueprint for:
 
@@ -46,7 +86,7 @@ If any conflict exists:
 1. Master PRD controls product scope and functional requirements.
 2. Database Specification controls database and data-security requirements.
 3. This document controls approved interface and interaction requirements.
-4. Existing production behavior and data must be investigated before changes are made.
+4. No production system exists yet (D-04); Product P0 is a greenfield foundation step. Preservation rules apply to all work from Product P1 onward.
 
 The implementation agent must not use this document to justify introducing unapproved functionality.
 
@@ -71,7 +111,7 @@ Every interface must follow these principles:
 
 ## 2.1 Product experience
 
-MOMENT should feel like a modern social discovery and micro-entertainment platform.
+Kea Parrot should feel like a modern social discovery and micro-entertainment platform.
 
 The interface should communicate:
 
@@ -114,16 +154,16 @@ Avoid:
 
 ## 2.3 Brand and design decisions requiring approval
 
-The following values must not be treated as approved brand decisions unless confirmed by the existing project or product owner:
+The following values must not be treated as approved brand decisions unless confirmed by the product owner:
 
 | Design decision | Status |
 |---|---|
-| Official brand logo | Inspect existing assets |
+| Official brand logo | No assets exist yet (D-04); owner approval required in P0 |
 | Primary brand color | Approval required |
 | Secondary brand color | Approval required |
 | Accent colors | Approval required |
 | Typography family | Approval required |
-| Official icon style | Inspect existing implementation |
+| Official icon style | No implementation exists yet (D-04); owner approval required in P0 |
 | Border radius system | Proposed |
 | Shadow system | Proposed |
 | Animation language | Proposed |
@@ -131,9 +171,11 @@ The following values must not be treated as approved brand decisions unless conf
 | Light mode | Product decision required |
 | Final illustrations | Approval required |
 
-The agent must first inspect existing branding, assets, design tokens, and implemented screens.
+No branding, assets, design tokens, or implemented screens exist yet (D-04).
+The agent must obtain owner approval for brand decisions in P0. Design-token values
+(hex colours, font family, sizes) are TBD — owner approval (D-22); do not invent values.
 
-Do not replace an existing approved brand identity simply because a different visual direction seems more attractive.
+Do not invent a brand identity; brand decisions require owner approval.
 
 ---
 
@@ -161,13 +203,13 @@ These pillars must be represented consistently in the interface, but their prese
 | Explore | Discovery through available communities and approved location experiences |
 | Evolve | Profile, activity-related information, and currently approved account experiences |
 
-**Important:** Evolve must not expose future-only achievements, collectible economies, virtual pets, or progression systems as functioning MVP features.
+**Important:** Evolve must not expose future-only achievements, collectible economies, virtual pets, or progression systems as functioning MVP features. In the MVP, Evolve shows profile and approved account experiences only. Achievements, collectibles, progression, and personalization are Product P3 scope (D-05); do not present them as functioning MVP features, placeholders, or coming-soon tiles.
 
 The implementation agent must verify the Master PRD's exact MVP feature mapping before assigning additional functionality to these navigation destinations.
 
 ## 3.2 Proposed route structure
 
-The following is a proposed route map, not permission to break existing routes or routing conventions.
+The following is a proposed route map for the greenfield build (D-04) — no routes exist yet.
 
 | Route | Screen | Access |
 |---|---|---|
@@ -176,16 +218,16 @@ The following is a proposed route map, not permission to break existing routes o
 | `/signup` | Registration | Public |
 | `/forgot-password` | Password recovery | Public |
 | `/reset-password` | Password reset | Recovery flow |
-| `/discover` | Discovery feed | Guest/authenticated, subject to PRD |
-| `/discover/nearby` | Nearby feed | Authenticated/location permission where required |
-| `/discover/global` | Global feed | Guest/authenticated, subject to PRD |
-| `/discover/trending` | Trending feed | Guest/authenticated, subject to PRD |
+| `/discover` | Discovery feed | Guest (browse; vote/play within 60-min guest session, D-03) or authenticated |
+| `/discover/nearby` | Nearby feed | Guest or authenticated; location permission where required |
+| `/discover/global` | Global feed | Guest (browse; vote/play within 60-min guest session, D-03) or authenticated |
+| `/discover/trending` | Trending feed | Guest (browse; vote/play within 60-min guest session, D-03) or authenticated |
 | `/post/[id]` | Post details | According to content visibility |
 | `/poll/[id]` | Poll details | According to content visibility |
-| `/play` | Games hub | According to PRD |
-| `/play/quickmind` | QuickMind | Authenticated |
-| `/play/this-or-that` | This or That | Authenticated |
-| `/play/mystery-word` | Mystery Word | Authenticated |
+| `/play` | Games hub | Guest (60-min guest session, D-03) or authenticated |
+| `/play/quickmind` | QuickMind | Guest (60-min guest session, D-03) or authenticated |
+| `/play/this-or-that` | This or That | Guest (60-min guest session, D-03) or authenticated |
+| `/play/mystery-word` | Mystery Word | Guest (60-min guest session, D-03) or authenticated |
 | `/notifications` | Notifications | Authenticated |
 | `/profile/[username]` | Public profile | According to profile visibility |
 | `/settings` | Account settings | Authenticated |
@@ -200,7 +242,7 @@ The following is a proposed route map, not permission to break existing routes o
 | `/admin/content` | Content moderation | Authorized administrators |
 | `/admin/audit-logs` | Audit records | Authorized administrators with permission |
 
-The agent must reconcile this proposed route map with the existing repository before implementation.
+No repository routes exist yet (D-04).
 
 Do not create empty or nonfunctional routes simply to make every route appear implemented.
 
@@ -233,7 +275,7 @@ The navigation may use a sidebar or another established project pattern, provide
 - Navigation does not consume excessive horizontal space.
 - The layout adapts to narrower desktop and tablet widths.
 
-Do not maintain two independent implementations of the same navigation behavior unless required by the existing architecture.
+Do not maintain two independent implementations of the same navigation behavior unless required by the architecture chosen in P0.
 
 ---
 
@@ -268,7 +310,7 @@ The landing page and authentication screens may use a separate public shell.
 
 ## 4.3 Responsive breakpoints
 
-The following are proposed implementation breakpoints. The agent should inspect existing project tokens and reuse them where possible.
+The following are proposed implementation breakpoints. No project tokens exist yet (D-04); define tokens in P0 (values TBD — owner approval; D-22).
 
 | Device category | Proposed width |
 |---|---|
@@ -470,7 +512,7 @@ The implementation should create or reuse components for the following:
 - `ModerationStatus`
 - `AuditLogTable`
 
-These names are suggested component boundaries, not mandatory filenames. The implementation agent must follow the repository's existing component organization.
+These names are suggested component boundaries, not mandatory filenames. The implementation agent must follow the canonical repo tree (KEA-PRD-001 §21.3, D-10).
 
 ## 5.3 Component requirements
 
@@ -497,11 +539,11 @@ Do not create abstractions that add complexity without improving maintainability
 
 **Route:** `/`
 
-**Purpose:** Introduce MOMENT and communicate its value to visitors.
+**Purpose:** Introduce Kea Parrot and communicate its value to visitors.
 
 ### Required interface elements
 
-- MOMENT logo and brand identity.
+- Kea Parrot logo and brand identity.
 - Primary headline.
 - Short product explanation.
 - Primary call to action.
@@ -548,12 +590,13 @@ Do not create abstractions that add complexity without improving maintainability
 
 ### Required interface elements
 
-- MOMENT branding.
+- Kea Parrot branding.
 - Registration form.
 - Email field.
 - Password field.
 - Required account fields defined in the Master PRD.
 - Required consent and eligibility controls.
+- Eligibility: registration is open to users aged 16+ (D-02). Users aged 16–17 are included in the 16+ audience; there is no adult-only content in the MVP; Ghana Data Protection Act 2012 (Act 843) / DPC review is still required before public launch. Do not invent a parental-consent mechanism — it is a legal-review item (TBD, owner Dennis, before public launch).
 - Password visibility control.
 - Submit button.
 - Link to sign in.
@@ -664,11 +707,13 @@ Each content card must support the appropriate approved actions:
 - React.
 - Comment.
 - Open poll.
-- Vote where applicable.
-- Report.
+- Vote where applicable (guests: within a 60-minute guest session, D-03).
+- Report (authenticated users only — guests may not report, D-03).
 - Access author profile where permitted.
 
 Anonymous content must not expose the author's identity.
+
+Guests may not post, comment, or react (D-03); those actions must prompt registration/login.
 
 ### Interaction requirements
 
@@ -735,7 +780,7 @@ Anonymous content must not expose the author's identity.
 - Do not imply continuous background tracking.
 - Do not request location unnecessarily.
 - Do not block Global discovery when location permission is denied.
-- Follow the Database Specification for location precision, storage, and retention.
+- Follow the Database Specification (KEA-DBS-002) for location precision, storage, and retention (precision/retention TBD — owner Dennis, P1; D-22).
 
 ### Acceptance criteria
 
@@ -769,17 +814,19 @@ Global discovery must remain accessible even if the user denies location permiss
 ### Requirements
 
 - Display content returned by the backend trending process.
-- Reuse existing content cards.
+- Reuse the content cards defined in §6.5.
 - Support approved interactions.
 - Handle empty and unavailable trending results.
 
-Do not invent trending scores or implement arbitrary client-side popularity calculations.
+Do not invent trending scores or implement arbitrary client-side popularity calculations. (Trending formula TBD — owner Dennis, P1; D-22.)
 
 # 6.9 Create Post
 
 **Interface:** Creation flow from the discovery experience.
 
 **Purpose:** Allow eligible users to publish an approved post.
+
+Guests cannot create posts (D-03); the creation flow must prompt guests to register/log in.
 
 ### Required elements
 
@@ -793,7 +840,7 @@ Do not invent trending scores or implement arbitrary client-side popularity calc
 ### Requirements
 
 - Enforce post length using the authoritative server-side limit.
-- Do not assume an unapproved character limit.
+- Do not assume an unapproved character limit. (Character limit TBD — owner Dennis, P1; D-22.)
 - Clearly show whether the post will be anonymous or attributed.
 - Explain anonymous identity visibility accurately.
 - Do not imply that anonymous posting makes the user untraceable to the platform.
@@ -823,7 +870,7 @@ If a submission times out, the UI must avoid encouraging accidental duplicate po
 - Comment count.
 - Comment list.
 - Comment composer.
-- Report action.
+- Report action (authenticated users only — guests may not report, D-03).
 
 ### Requirements
 
@@ -864,6 +911,8 @@ If a submission times out, the UI must avoid encouraging accidental duplicate po
 
 The frontend must never assume that a reaction was permanently stored merely because the user tapped a button.
 
+Guests cannot comment or react (D-03); the composer and reaction controls must prompt guests to register/log in.
+
 # 6.12 Polls
 
 **Routes:** Poll cards within feeds and `/poll/[id]`.
@@ -887,6 +936,8 @@ The frontend must never assume that a reaction was permanently stored merely bec
 - Prevent accidental duplicate submissions.
 - Display the confirmed result after server acceptance.
 
+Guest Session Rule (D-03): guests may vote within a 60-minute guest session; one vote per poll per guest session; guest votes are final. Vote replacement (D-11): registered users MAY change their vote while a poll is open (one active submission per poll, replaced atomically); guests may NOT change or remove a vote.
+
 ### Results
 
 - Display the approved result representation.
@@ -899,7 +950,7 @@ The frontend must never assume that a reaction was permanently stored merely bec
 - Not voted.
 - Submitting.
 - Vote accepted.
-- Already voted.
+- Already voted (registered users may change their vote while the poll is open — D-11; guest votes are final — D-03).
 - Poll expired.
 - Poll closed.
 - Poll unavailable.
@@ -939,6 +990,8 @@ Each card should contain:
 
 Do not invent rewards, cash prizes, currencies, or game features.
 
+Guests may play within a 60-minute guest session (D-03). Guest scores are not saved to a profile and do not appear on leaderboards.
+
 ### Acceptance criteria
 
 - Exactly the three approved MVP games are presented as playable games.
@@ -970,6 +1023,7 @@ Do not invent rewards, cash prizes, currencies, or game features.
 - Record answers through the authoritative backend flow.
 - Do not calculate final scores solely in the browser.
 - Handle session expiration and interrupted gameplay.
+- Guest sessions follow the Guest Session Rule (D-03): 60-minute window, scores not saved to a profile, not on leaderboards.
 - Show the confirmed result after the server calculates it.
 
 ### States
@@ -1012,6 +1066,7 @@ Do not invent rewards, cash prizes, currencies, or game features.
 - Use backend-confirmed results.
 - Handle expired or unavailable sessions.
 - Do not invent social comparison features or global statistics unless approved.
+- Guest sessions follow the Guest Session Rule (D-03).
 
 # 6.16 Mystery Word
 
@@ -1036,6 +1091,7 @@ Do not invent rewards, cash prizes, currencies, or game features.
 - Keep authoritative game state on the backend.
 - Do not expose the answer through client-side data before it should be revealed.
 - Handle session expiration and network interruption.
+- Guest sessions follow the Guest Session Rule (D-03).
 
 # 6.17 Notifications
 
@@ -1061,7 +1117,7 @@ Do not invent rewards, cash prizes, currencies, or game features.
 
 ### Notification preferences
 
-The user must be able to manage the notification preferences supported by the Master PRD.
+The user must be able to manage the notification preferences supported by the Master PRD (KEA-PRD-001), via `GET/PATCH /api/v1/me/notification-preferences` (KEA-API-004 §12.9, D-12).
 
 Do not invent new notification categories or channels.
 
@@ -1122,6 +1178,8 @@ Settings should provide clear access to the approved account-management areas.
 
 Only implement settings that have an approved backend behavior.
 
+Endpoint split (D-12, KEA-API-004 §12.1/§12.9): account settings use `PATCH /api/v1/me` (account fields only); public profile editing uses `PATCH /api/v1/profiles/me`; notification preferences use `/me/notification-preferences`; the generic `/me/preferences` covers non-notification preferences only.
+
 Do not introduce unsupported profile customization or account-management features.
 
 # 6.20 Communities
@@ -1153,12 +1211,13 @@ Do not introduce unsupported profile customization or account-management feature
 - Prevent duplicate join actions.
 - Do not present unapproved community messaging functionality.
 - Do not introduce community owner privileges beyond the approved authorization model.
+- Guests may browse public communities but may not join (D-03).
 
 # 6.21 Reporting and Blocking
 
 ### Report interface
 
-Reports may be initiated from supported content and user interfaces.
+Reports may be initiated from supported content and user interfaces. Guests cannot submit reports (D-03); the report action must prompt guests to register/log in.
 
 The report dialog must:
 
@@ -1305,7 +1364,7 @@ Requirements:
 
 Never use optimistic updates to bypass server validation or authorization.
 
-Voting, game scoring, account status, moderation actions, and other consequential operations must remain authoritative on the backend.
+Voting, game scoring, account status, moderation actions, and other consequential operations must remain authoritative on the backend. (Registered users may change a vote while the poll is open; guest votes are final — D-11.)
 
 ---
 
@@ -1472,7 +1531,7 @@ The agent must also test intermediate widths and real mobile browser behavior.
 - Use server components where appropriate.
 - Keep client components focused on genuine interactivity.
 - Avoid loading large libraries unnecessarily.
-- Reuse existing optimized assets.
+- Reuse optimized assets created in earlier sub-plan steps.
 
 ## 11.2 Images and media
 
@@ -1506,7 +1565,7 @@ Performance targets must be measured against the actual deployed application and
 
 # 12. REALTIME UI REQUIREMENTS
 
-MOMENT must reflect approved live changes without requiring users to refresh constantly.
+Kea Parrot must reflect approved live changes without requiring users to refresh constantly.
 
 Where realtime functionality is implemented:
 
@@ -1515,7 +1574,7 @@ Where realtime functionality is implemented:
 - Clean up subscriptions when components unmount.
 - Handle reconnection.
 - Avoid duplicate subscriptions.
-- Reconcile realtime events with existing UI state.
+- Reconcile realtime events with current UI state.
 - Prevent duplicate notifications or feed entries.
 - Respect authorization and RLS.
 
@@ -1656,7 +1715,7 @@ Verify:
 - Anonymous and attributed presentation.
 - Reactions.
 - Comments.
-- Poll voting.
+- Poll voting (registered change-vote; guest final; guest-session expiry — D-03, D-11).
 - Game sessions.
 - Notification actions.
 - Reporting.
@@ -1708,54 +1767,66 @@ Track the following as open decisions.
 | UX-OD-003 | Light mode, dark mode, or both | Yes |
 | UX-OD-004 | Final desktop navigation pattern | Yes |
 | UX-OD-005 | Final mobile navigation labels and ordering | Yes |
-| UX-OD-006 | Exact post and comment character limits | Use PRD |
-| UX-OD-007 | Exact poll option and selection limits | Use PRD |
+| UX-OD-006 | Exact post and comment character limits | TBD — owner Dennis, P1 (D-22) |
+| UX-OD-007 | Exact poll option and selection limits | TBD — owner Dennis, P1 (D-22); vote replacement DECIDED — D-11 |
 | UX-OD-008 | Final game visuals and approved game mechanics | Use PRD |
-| UX-OD-009 | Whether guest users can interact or only browse | Use PRD |
+| UX-OD-009 | Guest access | DECIDED — D-03: guests browse + vote + play within a 60-minute guest session; no post/comment/react/report/join |
 | UX-OD-010 | Profile visibility and public activity rules | Use PRD |
 | UX-OD-011 | Final animation and transition language | Yes |
 | UX-OD-012 | Exact empty-state illustrations and copy | Yes |
 | UX-OD-013 | PWA installation prompt behavior | Yes |
-| UX-OD-014 | Exact content pagination behavior | Coordinate with API specification |
+| UX-OD-014 | Exact content pagination behavior | Coordinate with KEA-API-004 §10; defaults/max TBD — owner Dennis, P1 (D-22) |
 
-The agent must inspect the existing application for decisions that have already been made.
+No application exists yet (D-04); decisions already made are those in the Restructure Decisions (README) and the approved PRD (KEA-PRD-001).
 
-Do not repeatedly ask for approval on a decision that is already explicitly established in the approved PRD or existing approved design system.
+Do not repeatedly ask for approval on a decision that is already explicitly established in the approved PRD or the design system approved in P0.
 
 ---
 
-# 18. IMPLEMENTATION PHASES
+# 18. IMPLEMENTATION SUB-PLAN
 
-UI implementation must be performed in controlled phases.
+UI implementation must be performed in controlled sub-plan steps. These are UI
+sub-plan steps 0–8 (D-05), not standalone phase numbers: each step serves a
+Readiness R-phase (KEA-RDY-006), and the Product track is P0–P5 (KEA-PRD-001).
+Never cite a step as a bare phase number outside this section.
 
-## Phase 0 — Existing UI Audit
+| UI sub-plan step | Serves Readiness phase |
+|---|---|
+| Step 0 — Greenfield UI Verification | R0 |
+| Step 1 — Design System and Application Shell | R0 / R4 |
+| Step 2 — Authentication and Account Screens | R1 / R4 |
+| Step 3 — Discovery and Social Interfaces | R1 / R4 |
+| Step 4 — Polls | R1 / R4 |
+| Step 5 — Games | R1 / R4 |
+| Step 6 — Notifications, Profiles and Communities | R1 / R4 |
+| Step 7 — Moderation UI | R1 / R3 / R4 |
+| Step 8 — Production UI Audit | R4 / R7 |
 
-Before changing anything:
+## Step 0 — Greenfield UI Verification (serves Readiness R0)
 
-1. Inspect the entire repository.
-2. Identify the current framework and UI architecture.
-3. Inspect existing routes and page layouts.
-4. Inspect existing components.
-5. Inspect styling and design tokens.
-6. Identify existing brand assets.
-7. Inspect authentication and navigation behavior.
-8. Inspect existing mobile and desktop implementations.
-9. Identify broken layouts and duplicated components.
-10. Produce a UI gap analysis.
+No prototype exists (D-04). Verify the greenfield baseline instead of auditing an
+existing UI:
+
+1. Verify the spec: screens (§6), routes (§3.2, proposed), components (§5.2), and design-token plan (values TBD — owner approval; D-22).
+2. Verify the guest flows (D-03) and vote-replacement flows (D-11) are specified on every affected screen.
+3. Verify the Evolve scope: profile and approved account experiences only; no future-only features presented as functioning (§3.1).
+4. Verify brand decisions outstanding (owner approval in P0, §2.3).
+5. Verify accessibility, responsive, and realtime requirements (§9–§12).
+6. Produce a UI gap analysis against KEA-PRD-001.
 
 Deliverables:
 
-- Existing screen inventory.
-- Route inventory.
-- Component inventory.
-- Responsive behavior report.
-- Accessibility findings.
-- Design inconsistency report.
+- Proposed screen inventory.
+- Proposed route inventory.
+- Proposed component inventory.
+- Responsive behavior plan.
+- Accessibility plan.
+- Design inconsistency report (spec-level; no screens exist yet to inspect).
 - Proposed implementation plan.
 
-Do not begin with a complete redesign.
+Do not begin with a complete redesign — there is nothing to redesign yet.
 
-## Phase 1 — Design System and Application Shell
+## Step 1 — Design System and Application Shell (serves Readiness R0 / R4)
 
 Implement:
 
@@ -1777,12 +1848,12 @@ Acceptance:
 - Correct responsive behavior.
 - Reusable component foundation.
 
-## Phase 2 — Authentication and Account Screens
+## Step 2 — Authentication and Account Screens (serves Readiness R1 / R4)
 
 Implement:
 
 - Landing page.
-- Registration.
+- Registration (16+ eligibility, D-02).
 - Login.
 - Password recovery.
 - Account settings foundation.
@@ -1794,7 +1865,7 @@ Acceptance:
 - Responsive behavior is correct.
 - Protected routes behave correctly.
 
-## Phase 3 — Discovery and Social Interfaces
+## Step 3 — Discovery and Social Interfaces (serves Readiness R1 / R4)
 
 Implement:
 
@@ -1815,8 +1886,9 @@ Acceptance:
 - Visibility rules are respected.
 - Anonymous identity is protected.
 - Pagination and error states work.
+- Guest browsing works; guest voting follows the Guest Session Rule (D-03); guests cannot post, comment, react, report, or join.
 
-## Phase 4 — Polls
+## Step 4 — Polls (serves Readiness R1 / R4)
 
 Implement:
 
@@ -1829,12 +1901,12 @@ Implement:
 
 Acceptance:
 
-- Poll behavior matches backend rules.
+- Poll behavior matches backend rules (registered: changeable while open; guest: final — D-11).
 - Results are accurate.
 - Duplicate submissions are handled.
 - Realtime behavior is consistent where enabled.
 
-## Phase 5 — Games
+## Step 5 — Games (serves Readiness R1 / R4)
 
 Implement:
 
@@ -1849,8 +1921,9 @@ Acceptance:
 - Exactly three approved MVP games are playable.
 - Backend-controlled scoring works.
 - Session states are handled correctly.
+- Guest play follows the Guest Session Rule (D-03).
 
-## Phase 6 — Notifications, Profiles and Communities
+## Step 6 — Notifications, Profiles and Communities (serves Readiness R1 / R4)
 
 Implement the approved interfaces for:
 
@@ -1866,7 +1939,7 @@ Acceptance:
 - Actions work against real backend functionality.
 - Empty and restricted states are implemented.
 
-## Phase 7 — Moderation UI
+## Step 7 — Moderation UI (serves Readiness R1 / R3 / R4)
 
 Implement:
 
@@ -1882,7 +1955,7 @@ Acceptance:
 - Administrative actions are auditable.
 - No unauthorized data is exposed.
 
-## Phase 8 — Production UI Audit
+## Step 8 — Production UI Audit (serves Readiness R4 / R7)
 
 Perform:
 
@@ -1895,18 +1968,16 @@ Perform:
 - Realtime behavior testing.
 - Error-state verification.
 
-No phase should be declared complete based only on successful compilation.
-
----
+No step should be declared complete based only on successful compilation.
 
 # 19. NON-NEGOTIABLE IMPLEMENTATION RULES
 
 The coding agent MUST:
 
 1. Read the Master PRD and Database Specification before implementation.
-2. Audit the existing repository before changing UI architecture.
-3. Preserve existing working functionality unless a documented change is approved.
-4. Reuse existing components where appropriate.
+2. Verify the greenfield baseline (no repository UI exists yet — D-04) before building UI architecture.
+3. Preserve functionality built in earlier sub-plan steps unless a documented change is approved (no prototype existed — D-04).
+4. Reuse components built in earlier sub-plan steps where appropriate.
 5. Use the approved design system consistently.
 6. Keep components maintainable and appropriately scoped.
 7. Implement every required state for each major screen.
@@ -1936,8 +2007,8 @@ The coding agent MUST NOT:
 - Add unsupported game modes.
 - Add unapproved monetization interfaces.
 - Change the approved brand identity without approval.
-- Replace the existing UI architecture without justification.
-- Remove existing routes without impact analysis.
+- Replace the UI architecture established in P0 without justification.
+- Remove routes without impact analysis.
 - Hide backend errors by pretending actions succeeded.
 - Use client-side authorization as a security boundary.
 - Introduce fake content to make screens look complete.
@@ -1945,6 +2016,8 @@ The coding agent MUST NOT:
 ---
 
 # 20. DEFINITION OF DONE
+
+Canonical DoD: KEA-RDY-006 §17 (merged 2026-11-20) — the single canonical Definition of Done. The checklist below is this document's UI-specific view of it and must not be read as a competing DoD.
 
 The UI/UX implementation is complete only when all applicable criteria below are satisfied.
 
@@ -2014,13 +2087,13 @@ The UI/UX implementation is complete only when all applicable criteria below are
 
 ---
 
-# 21. REQUIRED PHASE COMPLETION REPORT
+# 21. REQUIRED SUB-PLAN COMPLETION REPORT
 
-At the end of every implementation phase, the coding agent must produce a report using this structure:
+At the end of every sub-plan step, the coding agent must produce a report using this structure:
 
-## MOMENT UI/UX IMPLEMENTATION REPORT
+## KEA PARROT UI/UX IMPLEMENTATION REPORT
 
-**Phase:**  
+**Sub-plan step (UI 0–8; serves Readiness R—):**  
 **Status:**  
 **Date:**  
 **Git checkpoint:**  
@@ -2056,13 +2129,13 @@ List unresolved defects and their severity.
 List decisions requiring product owner approval.
 
 ### 11. Regression findings
-Identify existing functionality affected by the changes.
+Identify functionality from earlier sub-plan steps affected by the changes.
 
 ### 12. Build and test results
 Provide actual command results and test outcomes.
 
 ### 13. Release readiness
-State whether the phase is ready for review, blocked, or approved for the next phase.
+State whether the sub-plan step is ready for review, blocked, or approved for the next step.
 
 Never report a test as passed unless it was actually executed.
 
@@ -2070,20 +2143,20 @@ Never report a test as passed unless it was actually executed.
 
 # 22. FINAL INSTRUCTION TO THE IMPLEMENTATION AGENT
 
-Treat this document as the authoritative UI/UX implementation specification for MOMENT, subordinate to the Master PRD and consistent with the Database Design & Security Specification.
+Treat this document as the authoritative UI/UX implementation specification for Kea Parrot, subordinate to the Master PRD (KEA-PRD-001) and consistent with the Database Design & Security Specification (KEA-DBS-002).
 
 Your responsibility is not simply to make the application visually attractive.
 
-Your responsibility is to transform MOMENT into a cohesive, usable, responsive, accessible, reliable, and production-ready application.
+Your responsibility is to transform Kea Parrot into a cohesive, usable, responsive, accessible, reliable, and production-ready application.
 
-Begin with Phase 0: Existing UI Audit.
+Begin with Sub-plan Step 0: Greenfield UI Verification (serves Readiness R0).
 
 Do not immediately redesign the application.
 
-First establish what already exists, what works, what is incomplete, what is broken, and what must be preserved.
+No UI exists yet (D-04). First establish the greenfield baseline: the approved screens, routes, components, and design tokens to be built, and the step-by-step implementation plan.
 
-Then produce a detailed gap analysis and phase-by-phase implementation plan.
+Then produce a detailed gap analysis.
 
-Implement one approved phase at a time. Test each phase before proceeding. Preserve existing production functionality and data. Do not invent features, make silent product decisions, or declare work complete without evidence.
+Implement one approved sub-plan step at a time. Test each step before proceeding. Preserve functionality built in earlier sub-plan steps. Do not invent features, make silent product decisions, or declare work complete without evidence.
 
-**The objective is a production-quality MOMENT experience that faithfully implements the approved product—not a visually impressive prototype with incomplete functionality.**
+**The objective is a production-quality Kea Parrot experience that faithfully implements the approved product—not a visually impressive prototype with incomplete functionality.**

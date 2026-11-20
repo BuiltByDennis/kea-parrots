@@ -1,27 +1,47 @@
-# KEA PARROT — PROTOTYPE-TO-PRODUCTION READINESS
-## MASTER PRODUCT REQUIREMENTS DOCUMENT (PRD)
+# Kea Parrot — Production Readiness PRD
 
-**Document Type:** Product Hardening, Stabilisation & Production Readiness Specification  
-**Product:** KEA PARROT  
-**Version:** 1.0  
-**Status:** Implementation Baseline  
-**Target:** Existing MOMENT prototype → Production-ready application  
-**Platform:** Responsive Web Application / Progressive Web App (PWA)  
-**Initial Market:** Ghana  
-**Long-Term Vision:** Global  
-**Governing Document:** MOMENT Master Product Requirements Document (PRD)
+**Document ID:** KEA-RDY-006
+**Version:** 1.1
+**Date:** 2026-11-20
+**Status:** Restructured baseline — contradictions resolved 2026-11-20
+**Decisions applied:** D-01–D-22 (as applicable)
+**Supersedes:** v1.0
+**Former working name:** MOMENT (superseded 2026-11-20 by owner decision).
+**Document Type:** Product Hardening, Stabilisation & Production Readiness Specification
+**Product:** Kea Parrot
+**Platform:** Responsive Web Application / Progressive Web App (PWA)
+**Initial Market:** Ghana
+**Long-Term Vision:** Global
+**Governing Document:** Kea Parrot Master Product Requirements Document (PRD) (KEA-PRD-001)
+**Target:** Greenfield foundation → production-ready application (no prototype exists; see Restructure note and Readiness R0)
 
 ---
+
+# Restructure note — 2026-11-20
+
+This file was restructured 2026-11-20 under the canonical decisions in `README.md` (D-01–D-22). What changed in this file:
+
+- Product name Kea Parrot; this document is assigned ID KEA-RDY-006 (it previously had none) (D-01).
+- No prototype exists (confirmed 2026-11-20). Readiness R0 is a greenfield foundation step, not a prototype-to-production audit; the first deliverable is the Kea Parrot Greenfield Foundation Baseline Report. Preservation rules apply from Product P1 / Readiness R1 onward (D-04).
+- Numbering: the former numbered phases 0–10 are now Readiness R0–R10 throughout; no bare numbered phase is used (D-05).
+- Severity P0–P3 was already the scale used here; confirmed unchanged (D-06).
+- CI gates replaced with the merged 15-step list (D-07); four environments (D-08).
+- §17 is now the canonical merged Definition of Done (28 items, merged 2026-11-20 from KEA-TPR-005 §9 and this §17) (D-09).
+- Age eligibility is 16+ (§6.6), with the note for users aged 16–17 (D-02). Guest Journey A now reflects the Guest Session Rule: guests may vote/play within a 60-minute window (D-03).
+- The PR-01–PR-16 acceptance gates are unchanged (nothing renumbered).
+- Unresolved numbers (RPO/RTO, retention, load targets, alert thresholds, rate limits, coverage) are left TBD with owner Dennis; nothing was invented (D-22).
+
+Full decision log: `README.md` (D-01–D-22, 2026-11-20).
 
 # 1. EXECUTIVE OBJECTIVE
 
 ## 1.1 Purpose
 
-MOMENT has an existing prototype and an established product direction. The objective of this project is to transform that prototype into a complete, dependable, secure, maintainable, performant and production-ready application.
+Kea Parrot has no prototype yet (confirmed 2026-11-20). The objective of this project is to build it from a greenfield foundation (Readiness R0) into a complete, dependable, secure, maintainable, performant and production-ready application.
 
-This is not a request to redesign the entire product, rebuild everything from scratch, or introduce new features indiscriminately.
+This is not a request to introduce new features indiscriminately beyond the approved Master PRD (KEA-PRD-001).
 
-The coding agent must investigate the existing implementation, determine what works, identify what is incomplete or defective, and progressively bring every approved component to production standards.
+The coding agent must build from the Readiness R0 foundation, following the approved Master PRD (KEA-PRD-001), and progressively bring every approved component to production standards. There is no existing implementation to investigate.
 
 The transformation must cover:
 
@@ -43,7 +63,7 @@ The transformation must cover:
 
 ## 1.2 Final objective
 
-At completion, MOMENT must no longer behave like a demonstration or experimental prototype.
+At completion, Kea Parrot must function as a real application, not a demonstration or experimental prototype.
 
 It must function as a real application where:
 
@@ -58,7 +78,7 @@ It must function as a real application where:
 9. Critical user journeys are tested and demonstrably functional.
 10. The application can be deployed, monitored, maintained and recovered.
 
-**Definition of success:** A user should be able to use MOMENT as a real product, not encounter a collection of partially functional screens.
+**Definition of success:** A user should be able to use Kea Parrot as a real product, not encounter a collection of partially functional screens.
 
 ---
 
@@ -66,25 +86,25 @@ It must function as a real application where:
 
 These requirements are mandatory.
 
-## 2.1 Existing implementation comes first
+## 2.1 Foundation first — no existing implementation
 
-The coding agent MUST inspect the existing repository before making changes.
+The coding agent MUST work from the Readiness R0 foundation (repository skeleton, pinned versions, environments). There is no existing repository implementation to inspect — no prototype exists (confirmed 2026-11-20).
 
 It must not assume:
 
-- The project is empty.
+- A prototype, implementation, or production data already exists.
 - The current architecture is incorrect.
-- Existing database tables can be replaced.
-- Existing authentication can be discarded.
-- Existing components need to be rewritten.
-- Existing features are incomplete without testing them.
-- Existing production data is disposable.
+- Database tables, once built from Product P1 onward, can be replaced without an approved migration.
+- Authentication, once built, can be discarded.
+- Components need to be rewritten without evidence.
+- Features are incomplete without testing them.
+- User data, once it exists, is disposable.
 
-Existing working functionality must be preserved unless a documented defect or approved improvement requires a change.
+Working functionality, once built from Product P1 onward, must be preserved unless a documented defect or approved improvement requires a change.
 
 ## 2.2 No invented functionality
 
-The existing MOMENT Master PRD remains the source of truth for product functionality.
+The Kea Parrot Master PRD (KEA-PRD-001) remains the source of truth for product functionality.
 
 The agent MUST NOT independently introduce:
 
@@ -118,11 +138,11 @@ Completion requires a verified end-to-end workflow, including the frontend, back
 
 The agent MUST NOT:
 
-- Drop existing production tables.
+- Drop production tables.
 - Reset production databases.
-- Delete existing user records.
-- Replace existing authentication identifiers.
-- Remove existing database policies without reviewing their effects.
+- Delete user records.
+- Replace authentication identifiers.
+- Remove database policies without reviewing their effects.
 - Disable security policies to make features work.
 - Replace real backend functionality with mock data.
 - Bypass failing tests by removing the tests.
@@ -132,46 +152,46 @@ All potentially destructive changes require a documented impact assessment, back
 
 ---
 
-# 3. PHASE 0 — FULL SYSTEM DISCOVERY AND BASELINE AUDIT
+# 3. READINESS R0 — GREENFIELD FOUNDATION
 
 **Priority: Critical**
 
-No implementation changes should begin until the agent understands the current system.
+No Product P1 implementation work should begin until the Readiness R0 foundation is complete. There is no current system to understand — no prototype exists (confirmed 2026-11-20).
 
 ## 3.1 Repository investigation
 
-Inspect:
+Establish:
 
-- Complete repository structure.
+- Complete repository structure (kea-parrot/ tree, D-10).
 - Application entry points.
 - Frontend framework and configuration.
 - Backend architecture.
 - Shared libraries and components.
 - Routing and navigation.
 - State management.
-- API endpoints and server actions.
-- Authentication implementation.
-- Database integration.
-- Realtime subscriptions.
+- API endpoints and server actions (planned, KEA-API-004).
+- Authentication implementation (planned).
+- Database integration (planned, KEA-DBS-002).
+- Realtime subscriptions (planned).
 - File storage.
-- Environment configuration.
-- Background jobs and scheduled tasks.
-- Existing tests.
+- Environment configuration (four environments: local, automated testing, staging, production).
+- Background jobs and scheduled tasks (planned).
+- Test framework and structure.
 - Build and deployment configuration.
-- Dependency versions.
-- Existing documentation.
+- Dependency versions (pinned).
+- Documentation.
 
-Identify abandoned, duplicated, disconnected, experimental and unused code.
+Identify gaps between the foundation and the approved specifications, and any duplicated or disconnected planned components.
 
-Do not delete anything merely because it appears unused. Establish whether it is referenced or required first.
+Do not remove foundation items merely because they appear unused. Establish whether they are referenced or required first.
 
 ## 3.2 Database investigation
 
-Inspect the actual connected database and migration history.
+Design and plan the database from KEA-DBS-002. The first migration creates the schema; there is no connected database or migration history to inspect yet.
 
 Review:
 
-- All existing tables.
+- All planned tables.
 - Columns and data types.
 - Primary and foreign keys.
 - Unique constraints.
@@ -184,8 +204,7 @@ Review:
 - Database permissions.
 - Storage buckets and policies.
 - Realtime publication configuration.
-- Existing records and relationships.
-- Migration ordering and inconsistencies.
+- Migration ordering (first migration, then expand-and-contract).
 
 Identify:
 
@@ -197,21 +216,21 @@ Identify:
 6. Orphaned records.
 7. Inconsistent data.
 8. Incorrect assumptions between frontend and database.
-9. Schema differences between environments.
+9. Schema consistency across environments.
 10. Potential migration and data-loss risks.
 
-The audit must be read-only unless an independently approved audit operation requires otherwise.
+Audits of live data, from Product P1 onward, must be read-only unless an independently approved audit operation requires otherwise. No production system exists yet in Readiness R0.
 
 ## 3.3 Feature inventory
 
-Create a complete inventory of every existing application feature.
+Create a complete inventory of every planned Product P1 feature (no features exist yet).
 
 For each feature, document:
 
 | Field | Required information |
 |---|---|
 | Feature ID | Unique identifier |
-| Feature name | Existing feature |
+| Feature name | Planned feature |
 | Frontend status | Implemented, partial, missing |
 | Backend status | Implemented, partial, missing |
 | Database status | Implemented, partial, missing |
@@ -232,22 +251,24 @@ Use these implementation classifications:
 - **Unsafe:** Functionality exists but fails security or data-integrity requirements.
 - **Unverified:** Evidence is insufficient to establish its status.
 
+In Readiness R0 every feature is Missing or Unverified by definition — no prototype exists. That is the expected R0 state, not a defect.
+
 ## 3.4 Audit deliverables
 
 Before implementation, produce:
 
-1. Repository Architecture Audit.
-2. Database and Data Integrity Audit.
-3. Authentication and Authorisation Audit.
-4. Feature Completeness Matrix.
-5. Security Vulnerability Report.
-6. UI/UX and Accessibility Audit.
-7. Performance Audit.
-8. Realtime and Notification Audit.
-9. Test Coverage Report.
-10. Deployment and Infrastructure Audit.
-11. Technical Debt Register.
-12. Prioritised Remediation Roadmap.
+1. Greenfield Foundation Baseline Report.
+2. Target Database and First-Migration Plan.
+3. Authentication and Authorisation Design (target).
+4. Feature Completeness Matrix (planned Product P1 scope).
+5. Security Baseline Report (target controls).
+6. UI/UX and Accessibility Plan (target, KEA-UX-003).
+7. Performance Plan (targets; no system to measure yet).
+8. Realtime and Notification Plan (target, KEA-API-004).
+9. Test Framework and Coverage Plan.
+10. Deployment and Infrastructure Plan (four environments, CI).
+11. Risk and Open Decisions Register (TBD items, owner Dennis).
+12. Prioritised R0 Foundation Plan (decisions, skeleton, environments, pinned versions).
 
 Each finding must contain:
 
@@ -264,28 +285,28 @@ Each finding must contain:
 
 Do not report speculative defects as confirmed vulnerabilities.
 
-### Phase 0 exit gate
+### Readiness R0 exit gate
 
-Implementation cannot begin until:
+Product P1 implementation cannot begin until:
 
-- The existing system has been mapped.
+- The R0 foundation is complete (repository skeleton, pinned versions, four environments, CI with the merged 15-step gates).
 - Critical data risks have been identified.
-- Existing functionality has been classified.
-- Production and staging environments have been identified.
-- A remediation plan has been produced.
+- Planned Product P1 functionality has been classified (Missing/Unverified is the expected R0 state).
+- Production, staging, automated-testing and local environments have been established with separate credentials.
+- An R0 foundation plan has been produced and reviewed.
 - Destructive or architectural changes have been flagged for approval.
 - A Git checkpoint has been created or its absence documented.
-- Database backup and recovery arrangements have been verified before risky work.
+- Database backup and recovery arrangements have been defined (RPO/RTO TBD, owner Dennis) and will be verified before risky work from Product P1 onward.
 
 ---
 
-# 4. PHASE 1 — FUNCTIONAL COMPLETENESS AND INTEGRATION
+# 4. READINESS R1 — FUNCTIONAL COMPLETENESS AND INTEGRATION
 
 **Priority: Critical**
 
 The goal is to make every approved MVP feature genuinely functional.
 
-Use the existing MOMENT Master PRD to determine the expected functionality.
+Use the Kea Parrot Master PRD (KEA-PRD-001) to determine the expected functionality.
 
 ## 4.1 Application shell and navigation
 
@@ -296,7 +317,7 @@ Verify:
 - Mobile navigation works.
 - Desktop navigation works.
 - Protected routes enforce authentication.
-- Guest restrictions are respected.
+- Guest restrictions are respected (Guest Session Rule: guests may browse, vote and play within a 60-minute window; see Journey A, §10.3, and KEA-TPR-005 §5.30).
 - Loading and error states are implemented.
 - Page refreshes do not break routing.
 - Deep links work.
@@ -389,7 +410,7 @@ Verify:
 - Blocking.
 - Authorisation and ownership checks.
 
-Anonymous posts must remain internally associated with their authenticated creator for moderation and abuse prevention. The creator's identity must not be exposed publicly.
+Anonymous posts must remain internally associated with their authenticated creator for moderation and abuse prevention. The creator's identity must not be exposed publicly. Guests cannot post; anonymous posting is for authenticated users only.
 
 ## 4.6 Polls
 
@@ -400,7 +421,7 @@ Verify:
 - Single-choice voting.
 - Multiple-choice voting.
 - Vote submission.
-- Vote updates, where permitted.
+- Vote updates: registered users may change a vote while the poll is open (one active submission per user per poll; change replaces the previous submission atomically; no change after close/expiry). Guests may NOT change or remove a vote (D-11).
 - Poll expiration.
 - Result calculation.
 - Duplicate vote prevention.
@@ -433,11 +454,11 @@ Verify:
 - Duplicate submission prevention.
 - Invalid session handling.
 
-The agent must not invent scoring formulas, question difficulty, game rules or attempt limits where the governing specification has not approved them.
+The agent must not invent scoring formulas, question difficulty, game rules or attempt limits where the governing specification has not approved them (TBD — see Open Decisions register).
 
 ## 4.8 Communities
 
-Verify all existing MVP community functionality against the governing PRD.
+Verify all approved MVP community functionality against the governing PRD.
 
 Where implemented, confirm:
 
@@ -448,7 +469,7 @@ Where implemented, confirm:
 - Community activity.
 - Visibility and permissions.
 
-Do not silently introduce advanced community-management functionality reserved for a later phase.
+Do not silently introduce advanced community-management functionality reserved for a later product phase (see KEA-PRD-001).
 
 ## 4.9 Notifications
 
@@ -482,7 +503,7 @@ Any incomplete part must be documented and resolved before that feature is marke
 
 ---
 
-# 5. PHASE 2 — DATABASE, BACKEND AND DATA INTEGRITY HARDENING
+# 5. READINESS R2 — DATABASE, BACKEND AND DATA INTEGRITY HARDENING
 
 **Priority: Critical**
 
@@ -533,7 +554,7 @@ Requirements:
 - Avoid leaking private information.
 - Apply rate limits to abuse-prone endpoints.
 
-Use the existing approved validation approach unless a documented change is necessary.
+Use the approved validation approach (KEA-API-004) unless a documented change is necessary.
 
 ## 5.4 Row Level Security
 
@@ -570,11 +591,11 @@ For each migration, provide:
 
 Production migrations must be reviewed and approved before execution.
 
-A migration that could destroy or invalidate existing user data must never be executed without explicit approval.
+A migration that could destroy or invalidate user data must never be executed without explicit approval.
 
 ---
 
-# 6. PHASE 3 — SECURITY AND PRIVACY HARDENING
+# 6. READINESS R3 — SECURITY AND PRIVACY HARDENING
 
 **Priority: Critical — Release Blocking**
 
@@ -685,7 +706,7 @@ Assess readiness for:
 - Appropriate terms of service.
 - Privacy policy.
 - Cookie and tracking disclosures where applicable.
-- Age eligibility and consent requirements.
+- Age eligibility (16+) and consent requirements. Users aged 16–17 are included in the 16+ audience; there is no adult-only content in the MVP; Ghana Data Protection Act 2012 (Act 843) / DPC review is still required before public launch. Parental-consent mechanism: none defined — legal-review item (TBD, owner Dennis, before public launch).
 
 Obtain qualified legal review where necessary.
 
@@ -693,13 +714,13 @@ Do not describe the application as legally compliant merely because technical co
 
 ---
 
-# 7. PHASE 4 — UI/UX, RESPONSIVENESS AND ACCESSIBILITY
+# 7. READINESS R4 — UI/UX, RESPONSIVENESS AND ACCESSIBILITY
 
 **Priority: High**
 
-The objective is to make the existing application feel coherent, polished and dependable across devices.
+The objective is to make the application feel coherent, polished and dependable across devices.
 
-This phase is not permission to redesign the product's identity or introduce new features.
+This Readiness phase (R4) is not permission to redesign the product's identity or introduce new features.
 
 ## 7.1 Design system consistency
 
@@ -807,11 +828,11 @@ Accessibility must be tested, not assumed.
 
 ---
 
-# 8. PHASE 5 — REALTIME, BACKGROUND PROCESSING AND RELIABILITY
+# 8. READINESS R5 — REALTIME, BACKGROUND PROCESSING AND RELIABILITY
 
 **Priority: High**
 
-MOMENT must provide dependable updates without requiring users to refresh pages manually.
+Kea Parrot must provide dependable updates without requiring users to refresh pages manually.
 
 ## 8.1 Realtime functionality
 
@@ -868,7 +889,7 @@ Critical operations must not be silently repeated in a way that duplicates data.
 
 ---
 
-# 9. PHASE 6 — PERFORMANCE AND SCALABILITY
+# 9. READINESS R6 — PERFORMANCE AND SCALABILITY
 
 **Priority: High**
 
@@ -950,7 +971,7 @@ Do not claim scalability without evidence.
 
 ---
 
-# 10. PHASE 7 — TESTING AND QUALITY ASSURANCE
+# 10. READINESS R7 — TESTING AND QUALITY ASSURANCE
 
 **Priority: Critical**
 
@@ -988,11 +1009,14 @@ Create automated user journeys.
 
 ### Journey A: Guest
 
-1. Open MOMENT.
+1. Open Kea Parrot.
 2. Browse public content.
 3. Navigate feeds.
-4. Attempt a protected action.
-5. Receive the correct authentication requirement.
+4. Vote in a poll as a guest (within the 60-minute guest window).
+5. Play a game as a guest (within the 60-minute guest window).
+6. Attempt a protected action (post, comment, react).
+7. Receive the correct authentication requirement.
+8. Confirm the guest window ends on expiry or browser close, and guest votes/scores do not transfer on registration.
 
 ### Journey B: Registration and login
 
@@ -1085,7 +1109,7 @@ The following failures block production release:
 
 ---
 
-# 11. PHASE 8 — OBSERVABILITY, ADMINISTRATION AND OPERATIONS
+# 11. READINESS R8 — OBSERVABILITY, ADMINISTRATION AND OPERATIONS
 
 **Priority: High**
 
@@ -1154,7 +1178,7 @@ Establish alerts for:
 - Critical security events.
 - Storage capacity concerns.
 
-Alert thresholds must be documented and configurable.
+Alert thresholds must be documented and configurable. Thresholds remain TBD (owner: Dennis) — see the consolidated Open Decisions register; do not invent them.
 
 ## 11.5 Administration
 
@@ -1173,15 +1197,16 @@ Administrative interfaces must enforce backend permissions and record privileged
 
 ---
 
-# 12. PHASE 9 — DEPLOYMENT AND PRODUCTION INFRASTRUCTURE
+# 12. READINESS R9 — DEPLOYMENT AND PRODUCTION INFRASTRUCTURE
 
 **Priority: Critical**
 
 ## 12.1 Environment separation
 
-Maintain clearly separated:
+Maintain clearly separated four environments:
 
 - Local development.
+- Automated testing (ephemeral, CI-run).
 - Staging.
 - Production.
 
@@ -1210,18 +1235,23 @@ Verify:
 
 ## 12.3 Continuous integration
 
-The CI pipeline must include:
+The CI pipeline must include the merged canonical CI gates (D-07; the same list appears in KEA-TPR-005 §5.57), in this order:
 
 1. Dependency installation.
-2. Formatting checks.
+2. Formatting.
 3. Linting.
 4. Type checking.
 5. Unit tests.
-6. Integration tests.
-7. Build verification.
-8. Security and dependency checks.
-9. Migration validation.
-10. Required approval gates.
+6. Component tests.
+7. Integration tests.
+8. API tests.
+9. Database and RLS tests.
+10. Production build.
+11. Security and dependency scans.
+12. Migration validation.
+13. Deployment checks.
+14. Post-deployment smoke tests.
+15. Required approval gates.
 
 A failed critical check must prevent deployment.
 
@@ -1249,8 +1279,8 @@ Document:
 - Application rollback procedure.
 - Database recovery strategy.
 - Migration recovery strategy.
-- Backup schedule.
-- Backup retention.
+- Backup schedule (frequency TBD — owner Dennis).
+- Backup retention (TBD — owner Dennis).
 - Recovery access.
 - Incident escalation.
 
@@ -1280,7 +1310,7 @@ After deployment, verify:
 
 ---
 
-# 13. PHASE 10 — DOCUMENTATION AND MAINTAINABILITY
+# 13. READINESS R10 — DOCUMENTATION AND MAINTAINABILITY
 
 **Priority: Medium**
 
@@ -1355,25 +1385,25 @@ No P0 or P1 issue may remain unresolved at production release.
 
 # 15. IMPLEMENTATION ROADMAP
 
-The work must be executed in controlled phases.
+The work must be executed in controlled Readiness phases (R0–R10).
 
-| Phase | Scope | Exit requirement |
+| Readiness phase | Scope | Exit requirement |
 |---|---|---|
-| 0 | System discovery and audits | Approved baseline and remediation plan |
-| 1 | Functional completion and integration | Approved MVP features work end to end |
-| 2 | Database and backend hardening | Integrity and permissions verified |
-| 3 | Security and privacy | Critical security findings resolved |
-| 4 | UI/UX and accessibility | Responsive and accessible primary journeys |
-| 5 | Realtime and reliability | Verified updates and recovery |
-| 6 | Performance and scalability | Measured targets achieved or formally approved |
-| 7 | Testing and regression | Required test suites pass |
-| 8 | Monitoring and operations | Operational visibility established |
-| 9 | Deployment and infrastructure | Release and recovery processes verified |
-| 10 | Documentation and final sign-off | Production readiness approved |
+| R0 | Greenfield foundation (no prototype exists) | R0 foundation complete; Product P1 ready to start |
+| R1 | Functional completion and integration | Approved MVP features work end to end |
+| R2 | Database and backend hardening | Integrity and permissions verified |
+| R3 | Security and privacy | Critical security findings resolved |
+| R4 | UI/UX and accessibility | Responsive and accessible primary journeys |
+| R5 | Realtime and reliability | Verified updates and recovery |
+| R6 | Performance and scalability | Measured targets achieved or formally approved |
+| R7 | Testing and regression | Required test suites pass |
+| R8 | Monitoring and operations | Operational visibility established |
+| R9 | Deployment and infrastructure | Release and recovery processes verified |
+| R10 | Documentation and final sign-off | Production readiness approved |
 
-Phases may overlap only where dependencies permit and the change is documented.
+Readiness phases (R0–R10) may overlap only where dependencies permit and the change is documented.
 
-The agent must not skip a phase simply because the implementation appears visually complete.
+The agent must not skip a Readiness phase (R0–R10) simply because the implementation appears visually complete.
 
 ---
 
@@ -1381,9 +1411,9 @@ The agent must not skip a phase simply because the implementation appears visual
 
 These instructions govern every implementation session.
 
-## 16.1 Before each phase
+## 16.1 Before each Readiness phase (R0–R10)
 
-Produce a phase execution plan containing:
+Produce a Readiness phase execution plan containing:
 
 - Objectives.
 - Requirement IDs.
@@ -1424,7 +1454,7 @@ Before risky work:
 - Do not overwrite unrelated work.
 - Create an appropriate checkpoint after confirming the working tree is safe.
 
-After completing each phase:
+After completing each Readiness phase:
 
 - Review the diff.
 - Run relevant tests.
@@ -1434,11 +1464,11 @@ After completing each phase:
 
 Never use destructive Git operations to clean up the repository without explicit approval.
 
-## 16.4 Phase completion report
+## 16.4 Readiness phase completion report
 
-Every phase must end with a formal report:
+Every Readiness phase (R0–R10) must end with a formal report:
 
-1. Phase name.
+1. Readiness phase (R0–R10) and name.
 2. Objectives completed.
 3. Requirement IDs addressed.
 4. Files created.
@@ -1478,9 +1508,11 @@ Obtain explicit approval before:
 
 # 17. FINAL DEFINITION OF DONE
 
-MOMENT can be declared production-ready only when all the following are true:
+**Canonical Definition of Done (merged 2026-11-20):** the merged union of KEA-TPR-005 §9 (v1.0, 19 items) and this §17 (v1.0, 23 checkboxes). This list is the only Definition of Done for Kea Parrot. KEA-TPR-005 §9 now references this section.
 
-- [ ] Existing application has been fully audited.
+Kea Parrot can be declared production-ready only when all the following are true:
+
+- [ ] Readiness R0 greenfield foundation is complete (repository skeleton, pinned versions, four environments, CI gates verified; no prototype existed to audit).
 - [ ] All approved MVP features have verified implementation status.
 - [ ] All required MVP user journeys work end to end.
 - [ ] No critical feature depends on mock data.
@@ -1503,26 +1535,31 @@ MOMENT can be declared production-ready only when all the following are true:
 - [ ] No P0 or P1 defects remain.
 - [ ] Documentation reflects the actual system.
 - [ ] Final production readiness report is approved.
+- [ ] Business logic is implemented as specified (not only the interface).
+- [ ] API behaviour matches the approved contract.
+- [ ] Input validation is implemented; error, loading and empty states are handled.
+- [ ] The change has been reviewed.
+- [ ] A Git checkpoint is created after each feature.
 
 ---
 
 # 18. FINAL INSTRUCTION TO THE AI CODING AGENT
 
-You are responsible for transforming the existing MOMENT prototype into a production-ready application.
+You are responsible for building Kea Parrot from its greenfield foundation (Readiness R0) into a production-ready application. No prototype exists.
 
-You are not authorised to independently reinterpret the product, expand its scope, replace its architecture or discard existing implementation.
+You are not authorised to independently reinterpret the product, expand its scope, replace its architecture or discard implementation built from Product P1 onward.
 
-Your first responsibility is to understand the system exactly as it currently exists.
+Your first responsibility is to complete the Readiness R0 foundation exactly as specified.
 
-Your second responsibility is to establish the gap between the current implementation and the approved MOMENT product requirements.
+Your second responsibility is to establish the gap between the Readiness R0 foundation and the approved Kea Parrot product requirements (KEA-PRD-001).
 
 Your third responsibility is to close those gaps systematically, safely and with verifiable evidence.
 
 **Execution rules:**
 
-1. Begin with Phase 0 only.
-2. Do not begin large-scale implementation before completing the audit.
-3. Do not assume that an existing feature is broken or complete without verification.
+1. Begin with Readiness R0 only.
+2. Do not begin large-scale implementation before completing the Readiness R0 foundation.
+3. Do not assume that a planned feature is broken or complete without verification.
 4. Do not replace working functionality simply because you prefer another implementation.
 5. Do not introduce unapproved features.
 6. Do not compromise security to make a feature work.
@@ -1533,22 +1570,22 @@ Your third responsibility is to close those gaps systematically, safely and with
 11. Maintain a requirement-to-implementation-to-test traceability record.
 12. Report blockers honestly and request decisions when requirements are ambiguous.
 
-**Your first deliverable must be the MOMENT Prototype-to-Production Baseline Audit Report.**
+**Your first deliverable must be the Kea Parrot Greenfield Foundation Baseline Report (Readiness R0).**
 
 It must establish:
 
-- What currently exists.
-- What genuinely works.
-- What is partially implemented.
-- What is broken.
+- What the Readiness R0 foundation contains (no prototype existed).
+- What is established in the Readiness R0 foundation.
+- What is partially established.
+- What is missing from the foundation.
 - What is missing.
 - What is unsafe.
-- What must be preserved.
-- What must be repaired.
+- What must be preserved (from Product P1 onward; nothing exists yet in Readiness R0).
+- What must be completed in Readiness R0.
 - What must be completed.
 - What requires approval.
 - The recommended implementation sequence.
 
-Do not start modifying the application until the baseline audit and Phase 0 exit criteria have been reviewed and approved.
+Do not start Product P1 implementation until the Readiness R0 foundation and Readiness R0 exit criteria have been reviewed and approved.
 
-**The ultimate standard is not whether MOMENT builds successfully. It is whether MOMENT works reliably, securely and consistently as a real application for real users.**
+**The ultimate standard is not whether Kea Parrot builds successfully. It is whether Kea Parrot works reliably, securely and consistently as a real application for real users.**
