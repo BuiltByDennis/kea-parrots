@@ -1,0 +1,2548 @@
+# KEA PARROT
+# MASTER PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+**Document Type:** Master Product Requirements & Engineering Execution Specification  
+**Product:** KEA PARROT  
+**Version:** 1.0  
+**Status:** Approved baseline for implementation  
+**Initial Platform:** Responsive Web Application + Progressive Web App (PWA)  
+**Initial Launch Market:** Ghana  
+**Long-Term Market:** Global  
+**Initial Audience:** Adults aged 16+  
+**Product Category:** Social Discovery, Real-Time Interaction & Micro-Entertainment  
+**Document Authority:** Single Source of Truth for Product and Engineering  
+**Primary Implementation Target:** AI Coding Agents and Professional Engineering Teams
+
+---
+
+# 1. EXECUTIVE SUMMARY
+
+## 1.1 Product Overview
+
+KEA PARROT is a web-first social discovery and micro-entertainment platform that transforms idle moments into opportunities for discovery, participation, entertainment and human connection.
+
+The platform enables users to:
+
+- Discover interesting conversations and activities.
+- Publish anonymous or attributed content.
+- Participate in real-time polls.
+- Play short interactive games.
+- Discover trending conversations and global activities.
+- Participate in community challenges.
+- Discover location-associated digital content.
+- Build a digital identity through achievements and contributions.
+
+KEA PARROT is not intended to become another conventional social media platform built primarily around followers, influencers and passive content consumption.
+
+Its central philosophy is:
+
+**Every idle moment should offer an opportunity to discover, participate, contribute or play.**
+
+## 1.2 Product Vision
+
+Become the world's most accessible platform for spontaneous digital and real-world social experiences.
+
+## 1.3 Product Mission
+
+Transform everyday idle moments into meaningful discoveries, entertainment and human connections through lightweight, interactive and accessible experiences.
+
+## 1.4 Product Positioning
+
+KEA PARROT is an instant social discovery platform combining real-time community activity, anonymous participation, location-aware discovery and bite-sized entertainment.
+
+## 1.5 Core Product Promise
+
+A user should be able to open KEA PARROT, discover something interesting and participate in an experience within seconds.
+
+## 1.6 Primary Product Pillars
+
+KEA PARROT consists of five interconnected product pillars:
+
+1. DISCOVER — Social discovery.
+2. INTERACT — Real-time participation.
+3. PLAY — Micro-entertainment.
+4. EXPLORE — Digital footprints and location-based discovery.
+5. EVOLVE — Personal progression and achievements.
+
+---
+
+# 2. PRODUCT DEVELOPMENT GOVERNANCE
+
+This section establishes mandatory implementation rules for every AI coding agent, developer and engineering contributor.
+
+## 2.1 Source of Truth
+
+This document is the authoritative product specification.
+
+The implementation team MUST NOT:
+
+- Invent additional product features.
+- Remove documented functionality without approval.
+- Change established business rules.
+- Introduce alternative technology stacks without authorization.
+- Replace database technologies or architectural patterns independently.
+- Modify established database schemas without reviewing dependencies.
+- Introduce unnecessary third-party services.
+- Change authentication or authorization behaviour without approval.
+- Implement placeholder functionality and represent it as complete.
+- Skip acceptance criteria because a feature appears visually functional.
+- Introduce mock data into production functionality.
+- Make destructive database changes without an approved migration plan.
+
+## 2.2 Requirement Interpretation
+
+Every requirement uses the following classifications:
+
+- **MUST:** Mandatory for compliance and release.
+- **SHOULD:** Expected unless an explicitly documented reason prevents implementation.
+- **MAY:** Optional and not required for the current release.
+- **OUT OF SCOPE:** Must not be implemented in the current phase.
+
+When a requirement is ambiguous, the coding agent MUST:
+
+1. Identify the ambiguity.
+2. Inspect related requirements and existing implementation.
+3. Document the conflict.
+4. Propose a resolution.
+5. Obtain approval before implementing a decision that changes product behaviour or architecture.
+
+The agent must not silently guess.
+
+## 2.3 Change Management
+
+Every material change must include:
+
+- Change description.
+- Reason.
+- Affected requirements.
+- Affected database tables.
+- Affected APIs.
+- Security implications.
+- Backward-compatibility implications.
+- Required tests.
+- Migration strategy, where applicable.
+
+Maintain an Architecture Decision Record (ADR) for approved architectural deviations.
+
+## 2.4 Implementation Traceability
+
+Every requirement must have a unique identifier.
+
+Examples:
+
+- AUTH-001: Account registration.
+- DISC-001: Discovery feed.
+- POLL-001: Poll creation.
+- SAFE-001: Content reporting.
+
+The implementation team must maintain a requirements traceability matrix connecting:
+
+1. Requirement ID.
+2. Implementation module.
+3. Database dependencies.
+4. API dependencies.
+5. Test cases.
+6. Completion status.
+7. Evidence of verification.
+
+No requirement may be marked complete solely because its interface has been created.
+
+---
+
+# 3. PRODUCT SCOPE
+
+## 3.1 MVP Scope
+
+The first public MVP MUST include:
+
+### Core application
+- Responsive web application.
+- PWA foundations.
+- Landing page.
+- Guest browsing.
+- Authentication.
+- User profiles.
+- Desktop and mobile navigation.
+
+### Discovery
+- Nearby discovery.
+- Global discovery.
+- Trending discovery.
+- Content cards.
+- Feed pagination.
+- Content filtering.
+
+### Social interaction
+- Anonymous posts.
+- Attributed posts.
+- Comments.
+- Reactions.
+- Reporting.
+- Blocking.
+
+### Polling
+- Poll creation.
+- Poll voting.
+- Single-choice voting.
+- Multiple-choice voting.
+- Poll expiration.
+- Results visualization.
+- Real-time result updates.
+
+### Micro-games
+- QuickMind trivia.
+- This or That.
+- Mystery Word.
+- Game sessions.
+- Score calculation.
+- Results sharing.
+
+### Real-time infrastructure
+- Live poll updates.
+- Relevant notifications.
+- Live interaction updates where specified.
+- Connection and reconnection handling.
+
+### Administration and safety
+- Moderation dashboard.
+- Report management.
+- Content removal.
+- User restrictions.
+- Account suspension.
+- Audit logs.
+
+### Analytics
+- User activation.
+- Engagement.
+- Retention.
+- Content creation.
+- Community activity.
+- Error monitoring.
+
+## 3.2 Phase 2 Scope
+
+- Digital footprints.
+- Location-associated notes.
+- Mystery Drops.
+- Community challenges.
+- Community leaderboards.
+- Referral system.
+- Enhanced creator tools.
+
+## 3.3 Phase 3 Scope
+
+- Achievements.
+- Collectibles.
+- User progression.
+- Personal customization.
+- Expanded game ecosystem.
+- Enhanced community experiences.
+
+## 3.4 Phase 4 Scope
+
+- MOMENT Business.
+- Sponsored experiences.
+- Business accounts.
+- Campaign management.
+- Premium subscriptions.
+- Creator monetization experiments.
+
+## 3.5 Explicitly Out of Scope for MVP
+
+The following MUST NOT be implemented in the MVP:
+
+- Direct messaging.
+- Voice calls.
+- Video calls.
+- Full social networking follower system.
+- User-generated live streaming.
+- Virtual currency.
+- Cash rewards.
+- Cryptocurrency.
+- NFT integration.
+- Virtual pet economy.
+- User-created virtual worlds.
+- Complex AI recommendation engine.
+- Advanced advertising marketplace.
+- Native Android application.
+- Native iOS application.
+
+These features require separate approved specifications.
+
+---
+
+# 4. TARGET USERS AND PERSONAS
+
+## 4.1 Primary Audience
+
+Adults aged 16 and above who want lightweight entertainment, social discovery and spontaneous interaction.
+
+## 4.2 User Personas
+
+### Persona A: The Casual Explorer
+
+Characteristics:
+- Opens KEA PARROT during idle periods.
+- Wants interesting content immediately.
+- May not want to publish anything.
+- Prefers simple navigation.
+
+Primary needs:
+- Discovery.
+- Quick polls.
+- Trending activities.
+- Games.
+
+### Persona B: The Social Contributor
+
+Characteristics:
+- Enjoys asking questions.
+- Likes sharing opinions.
+- Participates in community discussions.
+
+Primary needs:
+- Anonymous posting.
+- Poll creation.
+- Reactions.
+- Comments.
+
+### Persona C: The Competitive Player
+
+Characteristics:
+- Enjoys short challenges.
+- Likes comparing scores.
+- Enjoys friendly competition.
+
+Primary needs:
+- Trivia.
+- Puzzles.
+- Leaderboards.
+- Shareable results.
+
+### Persona D: The Community Member
+
+Characteristics:
+- Identifies with a university, city or interest community.
+- Enjoys participating in group activities.
+
+Primary needs:
+- Community discovery.
+- Community discussions.
+- Challenges.
+- Community activity.
+
+### Persona E: The Business Customer
+
+Phase 4 persona.
+
+Characteristics:
+- Wants to promote a venue, event or product.
+- Wants measurable user engagement.
+
+Primary needs:
+- Business profile.
+- Sponsored campaigns.
+- Campaign analytics.
+- Audience targeting.
+
+---
+
+# 5. USER ROLES AND PERMISSIONS
+
+MOMENT MUST use centralized, server-enforced authorization.
+
+## 5.1 User Roles
+
+### Guest
+- Browse public content.
+- View public polls and results.
+- View public game descriptions.
+- Open shared public activity links.
+- Cannot publish content.
+- Cannot vote.
+- Cannot comment.
+- Cannot create game records associated with an account.
+- Cannot access private profiles.
+
+### Registered User
+- Create posts.
+- Publish anonymously or with attribution.
+- Comment.
+- React.
+- Vote.
+- Play games.
+- View personal activity.
+- Report content.
+- Block users.
+- Manage privacy settings.
+
+### Moderator
+- Review reports.
+- Hide or remove violating content.
+- Apply authorized restrictions.
+- Review moderation history.
+- Escalate serious incidents.
+
+### Administrator
+- Manage platform configuration.
+- Manage users and moderators.
+- Review audit logs.
+- Manage content and enforcement.
+- Access authorized operational dashboards.
+
+### Super Administrator
+- Manage privileged administrative operations.
+- Assign administrator and moderator roles.
+- Manage critical system configuration.
+- Review security events.
+
+Privileged administrative access MUST be protected by stronger authentication and must never be assignable through ordinary user-facing APIs.
+
+## 5.2 Permission Principles
+
+- Users can modify only their own permitted resources.
+- Anonymous publishing must not remove internal account accountability.
+- Moderators cannot assign themselves administrator privileges.
+- Administrators cannot bypass immutable audit records.
+- All privileged actions must be logged.
+- Authorization must be validated server-side.
+
+---
+
+# 6. AUTHENTICATION AND ACCOUNT MANAGEMENT
+
+## 6.1 Registration
+
+Requirement: AUTH-001.
+
+Users must be able to register using the supported authentication methods:
+
+- Email and password.
+- Supported OAuth providers, when explicitly configured.
+
+MVP authentication will use Supabase Auth.
+
+Requirements:
+
+1. Validate email addresses.
+2. Enforce password policy.
+3. Provide email verification.
+4. Prevent duplicate account creation.
+5. Provide secure login and logout.
+6. Provide password reset.
+7. Provide session management.
+8. Handle expired sessions.
+9. Provide appropriate authentication error messages.
+10. Never expose authentication secrets to the browser.
+
+OAuth providers must not be displayed as available unless configured and tested.
+
+## 6.2 Age Eligibility
+
+Requirement: AUTH-002.
+
+The initial public MVP is restricted to users aged 18+.
+
+Requirements:
+
+- Display the age eligibility notice.
+- Collect the minimum necessary age confirmation.
+- Prevent underage users from completing registration.
+- Record the relevant consent and policy version.
+- Do not expose date of birth publicly.
+- Do not assume that self-declaration constitutes legally sufficient age verification in every market.
+
+Expansion to younger users requires separate legal and safety approval.
+
+## 6.3 User Profiles
+
+Requirement: AUTH-003.
+
+Each registered user must have:
+
+- Unique internal user ID.
+- Unique username.
+- Display name.
+- Optional avatar.
+- Optional biography.
+- Account creation timestamp.
+- Profile visibility setting.
+- Account status.
+- Achievement summary when available.
+
+Profile information must be validated and sanitized.
+
+Public profiles must not expose:
+
+- Email address.
+- Authentication identifiers.
+- Internal moderation records.
+- Private account metadata.
+- Exact location history.
+
+## 6.4 Guest Browsing
+
+Requirement: AUTH-004.
+
+Unauthenticated visitors may browse public discovery content.
+
+When they attempt an authenticated action, display a clear registration or login prompt.
+
+Guest browsing must not expose restricted content or private user information.
+
+---
+
+# 7. CORE APPLICATION EXPERIENCE
+
+## 7.1 Application Navigation
+
+Requirement: UI-001.
+
+Desktop primary navigation:
+
+1. Home.
+2. Nearby.
+3. Global.
+4. Play.
+5. Create.
+6. Profile.
+
+Additional navigation:
+
+- Notifications.
+- Settings.
+- Help and support.
+- Account menu.
+
+Mobile navigation:
+
+- Home.
+- Nearby.
+- Play.
+- Create.
+- Profile.
+
+Additional features must be accessible without overcrowding mobile navigation.
+
+## 7.2 Landing Page
+
+Requirement: UI-002.
+
+The landing page must communicate:
+
+- What KEA PARROT is.
+- What users can do.
+- Why it is different.
+- How to get started.
+
+Required sections:
+
+1. Hero section.
+2. Product explanation.
+3. Discover experience.
+4. Interactive experiences.
+5. Games preview.
+6. Community explanation.
+7. Registration call to action.
+8. Footer.
+
+Do not make the landing page a substitute for the actual product experience.
+
+## 7.3 Responsive Design
+
+Requirement: UI-003.
+
+The entire application must work across:
+
+- Small mobile screens.
+- Large mobile screens.
+- Tablets.
+- Laptops.
+- Desktop monitors.
+
+Requirements:
+
+- No unintended horizontal scrolling.
+- No overlapping navigation.
+- No fixed elements obscuring content.
+- No keyboard obstruction of critical form controls.
+- Touch-friendly controls.
+- Correct safe-area handling.
+- Appropriate loading and empty states.
+- Consistent visual hierarchy.
+
+Target test widths:
+
+- 320px.
+- 360px.
+- 390px.
+- 768px.
+- 1024px.
+- 1440px.
+
+These are test breakpoints, not restrictions on other screen sizes.
+
+---
+
+# 8. DISCOVER MODULE
+
+Module ID: DISC
+
+## 8.1 Purpose
+
+Provide immediate access to interesting content and activities.
+
+## 8.2 Discovery Categories
+
+### Nearby
+
+Shows public content associated with the user's selected or permission-granted approximate location.
+
+### Global
+
+Shows public content from all supported regions.
+
+### Trending
+
+Shows popular and relevant content based on approved engagement-ranking rules.
+
+## 8.3 Nearby Feed
+
+Requirement: DISC-001.
+
+The Nearby feed MUST:
+
+- Support manually selected areas.
+- Support browser location permission where available.
+- Work without location permission.
+- Use approximate location.
+- Never expose exact user GPS coordinates.
+- Respect content visibility.
+- Respect blocked users.
+- Respect moderation status.
+- Support pagination.
+
+If location is unavailable, show a location-selection interface.
+
+Never repeatedly request location permission after denial.
+
+## 8.4 Global Feed
+
+Requirement: DISC-002.
+
+The Global feed must show eligible public content across regions.
+
+It must not require location permission.
+
+## 8.5 Trending Feed
+
+Requirement: DISC-003.
+
+Trending content must be ranked using a transparent, documented initial scoring system.
+
+Initial ranking inputs:
+
+- Recent engagement.
+- Unique participants.
+- Content age.
+- Report and moderation status.
+- Spam indicators.
+
+Initial conceptual score:
+
+`Trending Score = Recency Weight × Engagement Quality × Unique Participation Adjustment`
+
+The exact numerical coefficients must be configuration-controlled and approved before implementation.
+
+Do not introduce undisclosed personalization or AI ranking in the MVP.
+
+## 8.6 Feed Cards
+
+Requirement: DISC-004.
+
+Each content card must display the applicable information:
+
+- Author display name or Anonymous.
+- Content type.
+- Content text.
+- Timestamp.
+- Community or approximate area, when applicable.
+- Reaction count.
+- Comment count.
+- Interaction controls.
+- Moderation or expiry state where relevant.
+
+The card must not reveal private account information.
+
+## 8.7 Feed Pagination
+
+Requirement: DISC-005.
+
+Use cursor-based pagination.
+
+Requirements:
+
+- Stable ordering.
+- No duplicate content across pages.
+- Correct handling of deleted content.
+- Correct handling of expired content.
+- Loading indicators.
+- Retry behaviour.
+- Appropriate empty states.
+
+---
+
+# 9. SOCIAL CONTENT MODULE
+
+Module ID: SOCIAL
+
+## 9.1 Supported Content Types
+
+MVP content types:
+
+1. Text notes.
+2. Questions.
+3. Poll-linked posts.
+
+Image and audio uploads are not included in the initial MVP.
+
+## 9.2 Post Creation
+
+Requirement: SOCIAL-001.
+
+Authenticated users can create posts.
+
+Required fields:
+
+- Content body.
+- Content type.
+- Publishing identity mode.
+- Optional community association.
+- Optional approximate area association.
+
+Publishing identity modes:
+
+- Attributed.
+- Anonymous.
+
+Anonymous posts must still reference the authenticated account internally.
+
+## 9.3 Content Validation
+
+Requirement: SOCIAL-002.
+
+The system must:
+
+- Validate text length.
+- Reject empty posts.
+- Normalize input safely.
+- Prevent executable HTML and script injection.
+- Apply spam controls.
+- Apply rate limits.
+- Apply content moderation.
+- Reject prohibited content under the platform policy.
+
+Exact maximum character limits must be defined in centrally maintained product configuration before implementation.
+
+Do not independently invent different limits in different screens or endpoints.
+
+## 9.4 Reactions
+
+Requirement: SOCIAL-003.
+
+Users may react to eligible posts.
+
+MVP reaction set:
+
+- Like.
+- Funny.
+- Interesting.
+- Surprising.
+
+Rules:
+
+- One active reaction per user per post.
+- Users can change their reaction.
+- Users can remove their reaction.
+- Reaction counts must remain accurate.
+- Reactions must not bypass blocked-user restrictions.
+
+## 9.5 Comments
+
+Requirement: SOCIAL-004.
+
+Authenticated users may comment on eligible posts.
+
+MVP rules:
+
+- Text comments only.
+- Comment ownership.
+- Comment editing within a centrally configured period.
+- Comment deletion by its author.
+- Moderation removal.
+- Reporting.
+- Pagination.
+
+Comments must respect the visibility and moderation state of their parent content.
+
+## 9.6 Content Expiration
+
+Requirement: SOCIAL-005.
+
+MVP posts are persistent unless removed by their owner or moderation action.
+
+Temporary location-based content is reserved for Phase 2.
+
+---
+
+# 10. POLLING MODULE
+
+Module ID: POLL
+
+## 10.1 Purpose
+
+Enable lightweight participation through user-created questions and polls.
+
+## 10.2 Poll Creation
+
+Requirement: POLL-001.
+
+Authenticated users can create polls.
+
+Required fields:
+
+- Question.
+- Answer options.
+- Voting type.
+- Expiration setting.
+- Publishing identity mode.
+- Optional community association.
+
+Supported voting types:
+
+1. Single choice.
+2. Multiple choice.
+
+Poll options must be validated.
+
+A poll must contain at least two valid options.
+
+## 10.3 Voting Rules
+
+Requirement: POLL-002.
+
+- Only authenticated users may vote.
+- Users must be authorized to access the poll.
+- Single-choice polls permit one active option.
+- Multiple-choice polls permit multiple options within the configured limit.
+- A user cannot submit duplicate votes.
+- Vote changes must follow the poll's configured policy.
+- Expired polls reject new votes.
+- Removed polls reject new votes.
+- Voting must be transaction-safe.
+
+The MVP policy is one active vote submission per user per poll, with edits permitted while voting is open.
+
+## 10.4 Results
+
+Requirement: POLL-003.
+
+Results must show:
+
+- Total valid votes.
+- Votes per option.
+- Percentage per option.
+- Voting status.
+- Expiration status.
+
+Percentages must be calculated from authoritative stored vote records.
+
+## 10.5 Real-Time Updates
+
+Requirement: POLL-004.
+
+Connected authorized participants must receive updated poll results without refreshing the page.
+
+Requirements:
+
+- Authorized channel subscription.
+- No exposure of private voter identities.
+- Reconnection handling.
+- Duplicate-event protection.
+- Database-backed result reconciliation.
+
+The database is authoritative. Realtime messages only communicate changes.
+
+## 10.6 Poll Expiration
+
+Requirement: POLL-005.
+
+Expired polls must:
+
+- Stop accepting votes.
+- Display final results.
+- Retain their historical records.
+- Be excluded from active poll discovery.
+- Remain visible according to their parent content's visibility.
+
+---
+
+# 11. MICRO-GAMES MODULE
+
+Module ID: GAME
+
+## 11.1 Purpose
+
+Provide quick entertainment that can be completed within short idle periods.
+
+## 11.2 Initial Games
+
+The MVP contains exactly three games.
+
+### GAME-001: QuickMind
+
+Type: Trivia.
+
+Rules:
+
+- Five questions per standard round.
+- Multiple-choice answers.
+- One accepted answer per question.
+- Score calculated from correct answers.
+- Completion summary.
+- Shareable result.
+
+Questions must come from approved game content.
+
+### GAME-002: This or That
+
+Type: Binary preference challenge.
+
+Rules:
+
+- Present two choices.
+- User selects one.
+- Show relevant aggregate community results where available.
+- Allow progression through a defined round.
+- Show completion summary.
+- Allow sharing.
+
+### GAME-003: Mystery Word
+
+Type: Word guessing.
+
+Rules:
+
+- Display a hidden word challenge.
+- Provide approved clues.
+- Validate guesses.
+- Enforce attempt limits.
+- Calculate score.
+- Display completion summary.
+- Allow sharing.
+
+Exact game difficulty, clue count, scoring weights and attempt limits must be established in the game configuration before release.
+
+## 11.3 Game Sessions
+
+Requirement: GAME-004.
+
+Each authenticated game session must record:
+
+- User ID.
+- Game ID.
+- Start timestamp.
+- Completion timestamp.
+- Score.
+- Session status.
+- Relevant answer or attempt records.
+
+Game submissions must be validated server-side.
+
+Do not trust client-calculated scores.
+
+## 11.4 Game Integrity
+
+Requirement: GAME-005.
+
+- Prevent duplicate session submissions.
+- Validate question identifiers.
+- Validate answer identifiers.
+- Enforce game-session state transitions.
+- Apply request rate limits.
+- Prevent score manipulation.
+- Record suspicious activity.
+
+## 11.5 Game Results
+
+Requirement: GAME-006.
+
+Display:
+
+- Game title.
+- Final score.
+- Correct answers where relevant.
+- Completion time.
+- Personal best, when available.
+- Shareable result URL.
+
+Do not implement cash rewards or financial wagering.
+
+---
+
+# 12. NOTIFICATION MODULE
+
+Module ID: NOTIF
+
+## 12.1 MVP Notification Events
+
+- New comment on the user's post.
+- Reaction to the user's post.
+- Poll-related activity when configured.
+- Moderation notice.
+- Account security event.
+- Important system announcement.
+
+## 12.2 Notification Behaviour
+
+Requirements:
+
+- Authenticated ownership.
+- Read/unread status.
+- Pagination.
+- Duplicate prevention.
+- User notification preferences.
+- Relevant real-time updates.
+- Secure notification retrieval.
+
+## 12.3 Notification Channels
+
+MVP:
+
+- In-app notifications.
+- Optional web push after user permission.
+
+Do not require web push for essential application functionality.
+
+---
+
+# 13. LOCATION AND GEOSPATIAL MODULE
+
+Module ID: LOC
+
+## 13.1 MVP Location Requirements
+
+The initial MVP supports:
+
+- Manually selected areas.
+- Approximate browser-provided location.
+- Area-based discovery.
+- Public content associated with approximate geographic areas.
+
+## 13.2 Privacy Rules
+
+- Exact user coordinates must never appear in public API responses.
+- Exact coordinates must not be displayed to other users.
+- Do not maintain unnecessary historical location records.
+- Do not perform background location tracking.
+- Do not request location permission without a clear user action.
+- Do not expose the identity of users currently occupying a location.
+- Apply minimum aggregation thresholds to sensitive location-based statistics.
+
+## 13.3 Geospatial Technology
+
+Use PostgreSQL with PostGIS.
+
+Use spatial indexes for nearby content queries.
+
+The implementation must document:
+
+- Coordinate reference system.
+- Approximation strategy.
+- Search radius.
+- Geographic boundaries.
+- Index strategy.
+- Query performance.
+
+The precise initial search radius must be a centrally configured product setting approved before implementation.
+
+---
+
+# 14. DIGITAL FOOTPRINTS AND MYSTERY DROPS
+
+Module ID: EXPLORE
+
+**Release: Phase 2 — Not part of MVP.**
+
+## 14.1 Digital Footprints
+
+Users can create location-associated content.
+
+Supported future content:
+
+- Text notes.
+- Questions.
+- Doodles.
+- Audio snippets, subject to moderation and storage approval.
+
+## 14.2 Mystery Drops
+
+Users can discover approved digital experiences associated with public locations.
+
+Potential content:
+
+- Questions.
+- Challenges.
+- Games.
+- Collectibles.
+- Community discoveries.
+
+## 14.3 Rules
+
+- No precise public user location.
+- No dangerous physical-location challenges.
+- No private-property trespassing incentives.
+- No restricted or unsafe location drops.
+- Content must pass moderation.
+- Expiration must be enforced.
+- Publishing must be rate-limited.
+
+A separate Phase 2 specification must define publishing eligibility, discovery radius, rewards, expiration and abuse controls before development begins.
+
+---
+
+# 15. PROGRESSION AND ACHIEVEMENTS
+
+Module ID: EVOLVE
+
+**Release: Phase 3 — Not part of MVP.**
+
+Future progression capabilities:
+
+- Achievement definitions.
+- User achievements.
+- Contribution history.
+- Discovery badges.
+- Game achievements.
+- Community participation achievements.
+- Cosmetic personalization.
+
+The system must reward meaningful contribution.
+
+It must not reward excessive phone unlocking, compulsive engagement or unsafe physical activity.
+
+No financial reward or transferable virtual currency is included in this specification.
+
+---
+
+# 16. COMMUNITY MODULE
+
+Module ID: COMMUNITY
+
+MVP supports basic community associations.
+
+Community categories:
+
+- Universities.
+- Cities.
+- Interest groups.
+- Approved public communities.
+
+## 16.1 Community Requirements
+
+- Public community profile.
+- Community description.
+- Community category.
+- Community activity feed.
+- Membership records.
+- Community-associated posts and polls.
+
+## 16.2 Community Membership
+
+Users can join or leave eligible communities.
+
+Membership must be validated server-side.
+
+Private or restricted communities require separate authorization.
+
+Community creation and advanced management are Phase 2 capabilities unless explicitly approved for an earlier release.
+
+---
+
+# 17. MODERATION AND TRUST & SAFETY
+
+Module ID: SAFE
+
+This module is mandatory for the MVP.
+
+## 17.1 Reporting
+
+Requirement: SAFE-001.
+
+Users must be able to report:
+
+- Posts.
+- Comments.
+- Polls.
+- Profiles.
+- Other prohibited content.
+
+Report reasons:
+
+- Harassment.
+- Bullying.
+- Threats.
+- Hate or abusive content.
+- Sexual exploitation.
+- Spam.
+- Impersonation.
+- Dangerous activity.
+- Privacy violation.
+- Other.
+
+## 17.2 Reporting Workflow
+
+1. User submits a report.
+2. Server validates the request.
+3. Report is stored.
+4. Report enters moderation queue.
+5. Moderator reviews the report.
+6. Moderator selects an approved action.
+7. Action is recorded.
+8. User receives an appropriate notification when applicable.
+
+## 17.3 Moderation Actions
+
+- Dismiss report.
+- Remove content.
+- Hide content pending review.
+- Restrict content publishing.
+- Suspend account.
+- Ban account.
+- Escalate incident.
+
+## 17.4 Blocking
+
+Requirement: SAFE-002.
+
+Users can block other users.
+
+Blocking must prevent applicable interactions and hide blocked-user content from the blocker's discovery experiences.
+
+Blocking must not expose either user's private data.
+
+## 17.5 Audit Logging
+
+Requirement: SAFE-003.
+
+Record:
+
+- Actor.
+- Action.
+- Target resource.
+- Timestamp.
+- Reason.
+- Relevant metadata.
+- Administrative authorization.
+
+Audit records must not be editable through ordinary application interfaces.
+
+## 17.6 Content Moderation
+
+Use a layered approach:
+
+- Input validation.
+- Automated content screening.
+- User reporting.
+- Human review.
+- Enforcement.
+- Appeal and escalation processes.
+
+Automated moderation must not be treated as infallible.
+
+High-risk incidents require an escalation path.
+
+## 17.7 Safety Operations
+
+Before public launch, establish:
+
+- Published community guidelines.
+- Privacy policy.
+- Terms of service.
+- Reporting policy.
+- Moderation procedures.
+- Account enforcement procedures.
+- Incident response procedures.
+- Appeals process.
+- Contact channel for urgent safety reports.
+
+---
+
+# 18. ADMINISTRATION DASHBOARD
+
+Module ID: ADMIN
+
+## 18.1 Overview Dashboard
+
+Display:
+
+- Total registered users.
+- Daily active users.
+- Weekly active users.
+- New registrations.
+- Posts created.
+- Polls created.
+- Votes submitted.
+- Games played.
+- Pending reports.
+- Active restrictions.
+- Platform error indicators.
+
+## 18.2 User Management
+
+Authorized administrators can:
+
+- Search users.
+- View permitted account information.
+- View account status.
+- Suspend accounts.
+- Reinstate accounts.
+- Review enforcement history.
+
+## 18.3 Content Management
+
+Authorized moderators can:
+
+- Search reported content.
+- Review reports.
+- Remove violating content.
+- Restore content when appropriate.
+- Record moderation decisions.
+
+## 18.4 Administrative Security
+
+- No public administrator registration.
+- Privileged role assignment requires authorization.
+- Strong authentication required.
+- Sensitive actions require audit logging.
+- Administrative routes require server-side authorization.
+- Administrative data must not be exposed to ordinary users.
+
+---
+
+# 19. ANALYTICS AND PRODUCT INTELLIGENCE
+
+Module ID: ANALYTICS
+
+## 19.1 North Star Metric
+
+Weekly Meaningful Interactions (WMI).
+
+Definition:
+
+The number of unique users completing meaningful interactions with other users or user-generated experiences during a seven-day period.
+
+Qualifying interactions:
+
+- Poll participation.
+- Meaningful content contribution.
+- Comment submission.
+- Game completion.
+- Challenge participation, when introduced.
+
+Passive page views do not qualify.
+
+## 19.2 Required Events
+
+- user_registered
+- user_logged_in
+- guest_content_viewed
+- discovery_feed_opened
+- nearby_feed_opened
+- global_feed_opened
+- post_created
+- post_reacted
+- comment_created
+- poll_created
+- poll_voted
+- poll_completed
+- game_started
+- game_completed
+- activity_shared
+- content_reported
+- user_blocked
+
+## 19.3 Analytics Requirements
+
+- Do not collect unnecessary personal information.
+- Do not send passwords or authentication secrets to analytics.
+- Avoid recording exact coordinates.
+- Respect applicable consent requirements.
+- Define event schemas centrally.
+- Prevent duplicate event processing where relevant.
+- Document event retention.
+
+## 19.4 Initial Product Targets
+
+These are validation hypotheses, not guaranteed outcomes:
+
+- Day-1 retention: 35% or higher.
+- Day-7 retention: 20% or higher.
+- Day-30 retention: 10% or higher.
+- At least three meaningful interactions per active session.
+- At least 20% of active users contribute content weekly.
+
+Targets should be evaluated against real cohort data and revised through approved product decisions.
+
+---
+
+# 20. MONETIZATION
+
+Module ID: MONETIZATION
+
+**Release: Later commercial phases.**
+
+## 20.1 Future Revenue Streams
+
+1. Sponsored experiences.
+2. Premium membership.
+3. Business accounts.
+4. Event campaigns.
+5. Creator monetization.
+6. Native advertising.
+
+## 20.2 Sponsored Experiences
+
+Businesses can eventually sponsor approved:
+
+- Polls.
+- Challenges.
+- Trivia.
+- Events.
+- Discovery experiences.
+
+Sponsored content must be clearly labelled.
+
+Paid placement must not secretly manipulate organic discovery ranking.
+
+## 20.3 Premium Membership
+
+Potential features:
+
+- Profile customization.
+- Enhanced creator tools.
+- Personal statistics.
+- Cosmetic collectibles.
+- Additional personalization.
+
+Core safety features, reporting, basic participation and account protection must remain free.
+
+## 20.4 Monetization Restrictions
+
+- No selling precise user location information.
+- No hidden sponsored ranking.
+- No financial wagering.
+- No deceptive advertising.
+- No advertising targeted to minors.
+- No payment collection without approved payment architecture.
+
+Pricing, billing, refunds, tax treatment and creator payouts require separate specifications.
+
+---
+
+# 21. TECHNICAL ARCHITECTURE
+
+## 21.1 Mandatory Technology Stack
+
+The following stack is the approved initial baseline.
+
+| Component | Technology |
+|---|---|
+| Frontend | Next.js |
+| Language | TypeScript |
+| Rendering | Next.js App Router |
+| Styling | Tailwind CSS |
+| UI components | shadcn/ui |
+| Form validation | Zod |
+| Server data validation | Zod |
+| Database | Supabase PostgreSQL |
+| Authentication | Supabase Auth |
+| Realtime | Supabase Realtime |
+| Geospatial | PostGIS |
+| Storage | Supabase Storage |
+| Initial hosting | Vercel |
+| Error monitoring | Sentry |
+| Product analytics | Privacy-conscious analytics provider |
+| Version control | Git |
+
+All package versions must be pinned through the package manager lockfile.
+
+The implementation team must verify compatibility before installing dependencies.
+
+Do not replace the approved technologies without an ADR and approval.
+
+## 21.2 Architecture Pattern
+
+Use a modular monolith.
+
+Do not introduce microservices in the MVP.
+
+Backend modules must maintain clear domain boundaries.
+
+Approved domains:
+
+- Identity.
+- Profiles.
+- Discovery.
+- Social.
+- Posts.
+- Polls.
+- Games.
+- Communities.
+- Locations.
+- Notifications.
+- Moderation.
+- Administration.
+- Analytics.
+
+## 21.3 Repository Structure
+
+```text
+moment/
+├── apps/
+│   ├── web/
+│   └── worker/
+│
+├── packages/
+│   ├── database/
+│   ├── shared-types/
+│   ├── validation/
+│   ├── ui/
+│   └── analytics/
+│
+├── infrastructure/
+│   ├── migrations/
+│   ├── policies/
+│   ├── jobs/
+│   └── monitoring/
+│
+├── docs/
+│   ├── PRD.md
+│   ├── ARCHITECTURE.md
+│   ├── DATABASE.md
+│   ├── SECURITY.md
+│   ├── API.md
+│   ├── ADR/
+│   └── TESTING.md
+│
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+│   └── security/
+│
+└── README.md
+```
+
+This is the target logical organization. Adapt folder placement only where required by Next.js framework conventions, without changing domain boundaries.
+
+## 21.4 Backend Rules
+
+- Use server-side authorization.
+- Validate all external input.
+- Use database transactions for multi-record operations.
+- Use idempotency for sensitive write operations.
+- Avoid direct database access for privileged operations.
+- Centralize business rules.
+- Use structured error responses.
+- Avoid exposing internal database errors.
+- Implement request rate limiting.
+- Use secure environment variables.
+
+## 21.5 Realtime Rules
+
+Use Supabase Realtime for approved realtime use cases.
+
+Use:
+
+- Broadcast for targeted live events.
+- Presence only for appropriate ephemeral participation states.
+- Database persistence for authoritative application data.
+
+Do not broadcast unrestricted database changes globally.
+
+Do not trust client-generated events as proof of successful transactions.
+
+## 21.6 Caching
+
+The MVP may use framework-level caching for appropriate public, non-sensitive data.
+
+Redis is not mandatory for the initial MVP.
+
+When introduced, Redis must be used for documented caching, rate-limiting or queue requirements.
+
+Do not cache sensitive user-specific data without appropriate isolation.
+
+## 21.7 Background Processing
+
+The worker application is responsible for approved asynchronous tasks.
+
+Examples:
+
+- Expiration processing.
+- Notification delivery.
+- Analytics processing.
+- Scheduled maintenance.
+- Moderation-related background tasks.
+
+Background tasks must be retry-safe and idempotent.
+
+---
+
+# 22. DATABASE DESIGN REQUIREMENTS
+
+The initial database must use PostgreSQL.
+
+All application-owned tables must have appropriate primary keys, timestamps, constraints and indexes.
+
+Use UUID identifiers for application-owned primary keys unless an approved exception is documented.
+
+## 22.1 Core Tables
+
+### Identity
+
+- profiles
+- user_preferences
+- user_blocks
+- user_consents
+
+Authentication identity remains managed by Supabase Auth.
+
+### Social
+
+- posts
+- post_reactions
+- comments
+
+### Polling
+
+- polls
+- poll_options
+- poll_votes
+
+### Games
+
+- games
+- game_questions
+- game_options
+- game_sessions
+- game_answers
+
+### Communities
+
+- communities
+- community_members
+
+### Notifications
+
+- notifications
+- notification_preferences
+
+### Safety
+
+- reports
+- moderation_actions
+- moderation_audit_logs
+
+### Locations
+
+- locations
+- user_location_preferences
+
+### Administration
+
+- admin_audit_logs
+
+### Analytics
+
+- analytics_events
+
+Future modules may introduce:
+
+- location_drops
+- challenges
+- challenge_entries
+- achievements
+- user_achievements
+- subscriptions
+- ad_campaigns
+- creator_payouts
+
+Future tables must not be introduced into the MVP merely because they appear in the broader architecture.
+
+## 22.2 Database Integrity Requirements
+
+- Foreign keys for relationships.
+- Unique constraints for usernames.
+- Unique constraints preventing duplicate active reactions.
+- Unique constraints preventing duplicate poll votes under the applicable voting rules.
+- Appropriate cascade and restriction behaviour.
+- Indexes for feed queries.
+- Indexes for ownership queries.
+- Indexes for moderation queues.
+- Spatial indexes for geospatial queries.
+- Transaction-safe voting.
+- Explicit content status management.
+
+## 22.3 Row-Level Security
+
+RLS must be enabled for exposed application tables.
+
+Policies must cover:
+
+- Public reads.
+- Authenticated reads.
+- Ownership-based writes.
+- Moderator access.
+- Administrator access.
+- Anonymous publication.
+- Private user information.
+
+The frontend must never receive the Supabase service-role key.
+
+RLS policies must be tested using actual user roles and unauthorized requests.
+
+## 22.4 Migration Requirements
+
+- Every schema change must be version-controlled.
+- Migrations must be ordered.
+- Production migrations must be reviewed.
+- Destructive changes require an explicit migration plan.
+- Existing data must be preserved.
+- Rollback or recovery procedures must be documented.
+- Database backups must be configured and tested.
+
+Never drop, recreate or truncate production tables to resolve migration problems.
+
+---
+
+# 23. API CONTRACT REQUIREMENTS
+
+All application endpoints must be versioned.
+
+Base path:
+
+`/api/v1`
+
+Required endpoint groups:
+
+## Authentication and profile
+
+- GET /profiles/me
+- PATCH /profiles/me
+- GET /profiles/:id
+
+## Discovery
+
+- GET /discovery/nearby
+- GET /discovery/global
+- GET /discovery/trending
+
+## Posts
+
+- POST /posts
+- GET /posts/:id
+- DELETE /posts/:id
+- POST /posts/:id/reactions
+- DELETE /posts/:id/reactions
+- POST /posts/:id/comments
+- GET /posts/:id/comments
+
+## Polls
+
+- POST /polls
+- GET /polls/:id
+- POST /polls/:id/votes
+- GET /polls/:id/results
+
+## Games
+
+- GET /games
+- GET /games/:id
+- POST /games/:id/sessions
+- POST /game-sessions/:id/answers
+- POST /game-sessions/:id/complete
+
+## Communities
+
+- GET /communities
+- GET /communities/:id
+- POST /communities/:id/members
+- DELETE /communities/:id/members
+
+## Notifications
+
+- GET /notifications
+- PATCH /notifications/:id/read
+
+## Safety
+
+- POST /reports
+- POST /users/:id/block
+- DELETE /users/:id/block
+
+## Administration
+
+- GET /admin/reports
+- PATCH /admin/reports/:id
+- PATCH /admin/users/:id/status
+
+The final endpoint implementation must document request schemas, response schemas, authorization requirements, error codes and rate limits.
+
+Do not create undocumented alternative endpoints for the same business operation.
+
+---
+
+# 24. NON-FUNCTIONAL REQUIREMENTS
+
+## 24.1 Performance
+
+Initial targets under representative test conditions:
+
+- Core page Largest Contentful Paint: 2.5 seconds or less at the 75th percentile.
+- Interaction responsiveness: INP 200ms or less at the 75th percentile.
+- Cumulative Layout Shift: 0.1 or less at the 75th percentile.
+- Initial API response target: p95 below 500ms for standard non-realtime reads.
+- Poll result updates: normally visible within 2 seconds under healthy network conditions.
+
+These are engineering targets, not guarantees across every device and network.
+
+## 24.2 Availability
+
+Initial production objective:
+
+99.5% monthly application availability.
+
+Define monitoring, incident reporting and recovery procedures.
+
+## 24.3 Security
+
+Mandatory controls:
+
+- HTTPS.
+- Secure session management.
+- Password and authentication security.
+- RLS.
+- Input validation.
+- Output encoding.
+- CSRF protection where applicable.
+- XSS prevention.
+- SQL injection prevention.
+- Rate limiting.
+- Privileged access controls.
+- Secrets management.
+- Audit logging.
+- Dependency vulnerability scanning.
+
+## 24.4 Accessibility
+
+Target WCAG 2.2 AA.
+
+Requirements:
+
+- Keyboard navigation.
+- Visible focus states.
+- Appropriate contrast.
+- Accessible form labels.
+- Screen-reader support.
+- Reduced-motion support.
+- Semantic HTML.
+- Accessible error messages.
+
+## 24.5 Browser Compatibility
+
+Support current stable versions of:
+
+- Chrome.
+- Edge.
+- Firefox.
+- Safari.
+
+Test mobile browser behaviour separately.
+
+## 24.6 Internationalization
+
+MVP interface language: English.
+
+Architecture must support future localization.
+
+Store timestamps in UTC and display them in the user's local timezone.
+
+Store monetary values using explicit currency codes and appropriate decimal precision.
+
+---
+
+# 25. UI/UX DESIGN REQUIREMENTS
+
+## 25.1 Design Philosophy
+
+MOMENT must feel:
+
+- Modern.
+- Fast.
+- Friendly.
+- Social.
+- Playful.
+- Premium.
+- Accessible.
+- Intuitive.
+
+Avoid making it look like a conventional corporate dashboard.
+
+## 25.2 Design System
+
+Create centralized tokens for:
+
+- Colors.
+- Typography.
+- Spacing.
+- Border radius.
+- Shadows.
+- Elevation.
+- Animation.
+- Breakpoints.
+- Component states.
+
+Do not hardcode inconsistent styles across individual components.
+
+## 25.3 Required UI States
+
+Every major component must account for:
+
+- Loading.
+- Success.
+- Error.
+- Empty.
+- Disabled.
+- Unauthorized.
+- Expired.
+- Offline.
+- Reconnecting.
+
+## 25.4 Interaction Requirements
+
+- Avoid unnecessary page reloads.
+- Provide immediate interaction feedback.
+- Use optimistic updates only when rollback is correctly implemented.
+- Prevent double submissions.
+- Preserve user input when recoverable errors occur.
+- Provide accessible confirmation for destructive operations.
+- Respect reduced-motion preferences.
+
+## 25.5 Mobile-First Quality
+
+The application must be fully functional on mobile browsers.
+
+Do not simply shrink desktop components.
+
+Mobile navigation, forms, feeds, dialogs and interaction controls must be designed specifically for touch interaction.
+
+---
+
+# 26. PRIVACY AND LEGAL COMPLIANCE
+
+MOMENT must follow privacy-by-design principles.
+
+## 26.1 Data Minimization
+
+Only collect information necessary for defined product functionality.
+
+## 26.2 User Rights
+
+Provide appropriate mechanisms for:
+
+- Access requests.
+- Profile correction.
+- Account deletion.
+- Data deletion requests.
+- Consent management.
+- Privacy preference management.
+
+## 26.3 Account Deletion
+
+Deletion must follow a documented lifecycle.
+
+Requirements:
+
+- Verify account ownership.
+- Revoke active sessions.
+- Remove or anonymize eligible personal data.
+- Handle associated content according to published policy.
+- Retain only legally justified records.
+- Record completion.
+- Avoid accidental deletion of unrelated users' content.
+
+## 26.4 Legal Review
+
+Before Ghanaian public launch, obtain qualified review of:
+
+- Data Protection Act, 2012 (Act 843).
+- Applicable Data Protection Commission obligations.
+- Consumer protection.
+- Electronic transactions.
+- Online safety.
+- Advertising.
+- Intellectual property.
+
+Before entering additional countries, assess their applicable privacy, platform and child-safety laws.
+
+---
+
+# 27. TESTING REQUIREMENTS
+
+Testing is mandatory at every phase.
+
+## 27.1 Unit Testing
+
+Test:
+
+- Validation.
+- Business rules.
+- Permission checks.
+- Vote calculations.
+- Game scoring.
+- Expiration.
+- Feed ranking.
+- Moderation transitions.
+
+## 27.2 Integration Testing
+
+Test:
+
+- Database transactions.
+- Authentication.
+- RLS.
+- API behaviour.
+- Realtime subscriptions.
+- Notification creation.
+- Moderation workflows.
+
+## 27.3 End-to-End Testing
+
+Test complete journeys:
+
+1. Guest visits landing page.
+2. Guest browses public content.
+3. User registers.
+4. User completes onboarding.
+5. User opens discovery.
+6. User creates anonymous post.
+7. Another user views the post.
+8. Another user reacts.
+9. User creates a poll.
+10. Another user votes.
+11. Results update without refresh.
+12. User completes a game.
+13. User reports prohibited content.
+14. Moderator reviews the report.
+15. Administrator reviews the audit history.
+
+## 27.4 Security Testing
+
+Test:
+
+- Unauthorized access.
+- Privilege escalation.
+- IDOR.
+- RLS bypass attempts.
+- SQL injection.
+- XSS.
+- CSRF where applicable.
+- Rate-limit bypass.
+- Duplicate voting.
+- Session manipulation.
+- Administrative endpoint abuse.
+- Anonymous publishing abuse.
+
+## 27.5 Performance Testing
+
+Test:
+
+- Feed loading.
+- Concurrent poll voting.
+- Realtime fan-out.
+- Database query performance.
+- Connection failures.
+- Reconnection.
+- High request volume.
+- Background processing.
+
+## 27.6 Test Completion Rules
+
+No release may be approved with:
+
+- Critical security vulnerabilities.
+- Unresolved critical data-integrity failures.
+- Broken authentication.
+- Unauthorized access to private information.
+- Incorrect voting integrity.
+- Unrecoverable production data loss risks.
+- Critical mobile usability defects.
+
+---
+
+# 28. RELEASE AND DEPLOYMENT REQUIREMENTS
+
+## 28.1 Environments
+
+Maintain:
+
+- Local development.
+- Staging.
+- Production.
+
+Each environment must use appropriate independent credentials and configuration.
+
+## 28.2 CI/CD
+
+The deployment pipeline must include:
+
+1. Dependency installation.
+2. Type checking.
+3. Linting.
+4. Unit tests.
+5. Integration tests.
+6. Production build.
+7. Security checks.
+8. Migration validation.
+9. Deployment approval where required.
+
+## 28.3 Production Readiness
+
+Before launch:
+
+- Verify environment variables.
+- Verify database migrations.
+- Verify RLS.
+- Verify backups.
+- Verify monitoring.
+- Verify error tracking.
+- Verify security controls.
+- Verify domain and HTTPS.
+- Verify authentication.
+- Verify mobile responsiveness.
+- Verify privacy documents.
+- Verify moderation operations.
+- Verify rollback procedures.
+
+## 28.4 Feature Flags
+
+Use feature flags for functionality requiring controlled rollout.
+
+A disabled feature must not expose incomplete UI or unsupported API operations.
+
+---
+
+# 29. PHASED IMPLEMENTATION PLAN
+
+## Phase 0 — Foundation
+
+Deliverables:
+
+- Approved PRD.
+- Architecture document.
+- Database design.
+- Design system.
+- Repository.
+- Development environments.
+- CI pipeline.
+- Security baseline.
+
+Completion gate:
+
+Architecture and foundation approved.
+
+## Phase 1 — Core MVP
+
+Deliverables:
+
+- Authentication.
+- Profiles.
+- Guest browsing.
+- Discovery feeds.
+- Posts.
+- Anonymous publishing.
+- Comments.
+- Reactions.
+- Polls.
+- Voting.
+- Realtime results.
+- Three games.
+- Notifications.
+- Reporting.
+- Blocking.
+- Moderation dashboard.
+- Analytics.
+
+Completion gate:
+
+All MVP requirements implemented and tested.
+
+## Phase 2 — Private Beta
+
+Deliverables:
+
+- Controlled user onboarding.
+- Campus community activation.
+- Production-like testing.
+- Abuse testing.
+- Performance testing.
+- User feedback.
+- Retention analysis.
+
+Completion gate:
+
+The core experience demonstrates repeat usage and acceptable safety.
+
+## Phase 3 — Public Launch
+
+Deliverables:
+
+- Public registration.
+- PWA installation.
+- Digital footprints.
+- Mystery Drops.
+- Community challenges.
+- Referral functionality.
+- Improved discovery.
+
+Completion gate:
+
+Stable public product and measurable organic engagement.
+
+## Phase 4 — Commercialization
+
+Deliverables:
+
+- Business accounts.
+- Sponsored experiences.
+- Campaign management.
+- Premium membership.
+- Business analytics.
+
+Completion gate:
+
+Commercial functionality is legally reviewed, operationally ready and tested.
+
+## Phase 5 — Expansion
+
+Deliverables:
+
+- Expanded markets.
+- Creator ecosystem.
+- Advanced discovery.
+- Native mobile assessment.
+- Scalable infrastructure.
+- Internationalization.
+
+Completion gate:
+
+Repeatable acquisition, retention and monetization.
+
+---
+
+# 30. ACCEPTANCE CRITERIA
+
+The MVP cannot be considered complete until the following are verified.
+
+| ID | Requirement | Acceptance condition |
+|---|---|---|
+| AUTH-001 | Registration | Valid user can register and verify account |
+| AUTH-002 | Age eligibility | Underage registration is rejected |
+| AUTH-003 | Profile | User can securely manage permitted profile data |
+| AUTH-004 | Guest browsing | Public content is accessible without registration |
+| UI-001 | Navigation | All required navigation works |
+| UI-003 | Responsiveness | Required layouts work across target breakpoints |
+| DISC-001 | Nearby feed | Location selection and approximate discovery work |
+| DISC-002 | Global feed | Public global content loads correctly |
+| DISC-003 | Trending | Approved ranking rules work |
+| SOCIAL-001 | Post creation | Authenticated users can publish valid posts |
+| SOCIAL-002 | Anonymous identity | Public identity is hidden while internal ownership remains |
+| SOCIAL-003 | Reactions | Users can react and update reactions correctly |
+| SOCIAL-004 | Comments | Authorized users can comment |
+| POLL-001 | Poll creation | Valid polls can be created |
+| POLL-002 | Voting | Duplicate voting is prevented |
+| POLL-003 | Results | Percentages and totals are correct |
+| POLL-004 | Realtime | Results update without page refresh |
+| GAME-001 | QuickMind | Complete trivia session works |
+| GAME-002 | This or That | Complete preference session works |
+| GAME-003 | Mystery Word | Complete word session works |
+| GAME-005 | Game integrity | Client cannot arbitrarily manipulate scores |
+| NOTIF-001 | Notifications | Relevant notifications are delivered |
+| SAFE-001 | Reporting | Users can report eligible content |
+| SAFE-002 | Blocking | Block restrictions are enforced |
+| SAFE-003 | Audit logs | Privileged moderation actions are recorded |
+| ADMIN-001 | Dashboard | Authorized staff can manage reports |
+| SEC-001 | RLS | Unauthorized database access is denied |
+| SEC-002 | Secrets | Privileged credentials are not exposed |
+| PERF-001 | Performance | Agreed performance targets are tested |
+| PWA-001 | Installation | Supported browsers can install the application |
+
+Evidence must be attached to each acceptance result.
+
+---
+
+# 31. AI CODING AGENT EXECUTION PROTOCOL
+
+This section is mandatory for any AI coding agent implementing MOMENT.
+
+## 31.1 Before Development
+
+The agent MUST:
+
+1. Read the entire Master PRD.
+2. Inspect the existing repository.
+3. Identify the existing framework and installed dependencies.
+4. Identify existing database configuration.
+5. Inspect existing database migrations.
+6. Identify authentication and authorization mechanisms.
+7. Identify existing design conventions.
+8. Identify unfinished or conflicting implementations.
+9. Produce an implementation readiness report.
+10. Present architectural conflicts before making changes.
+
+If the repository already contains code, preserve working functionality unless an approved requirement explicitly changes it.
+
+Do not assume that the repository is empty.
+
+## 31.2 Before Every Development Phase
+
+Produce:
+
+- Scope of the phase.
+- Requirement IDs being implemented.
+- Dependencies.
+- Files and modules expected to change.
+- Database changes.
+- API changes.
+- Security implications.
+- Test plan.
+- Release criteria.
+
+## 31.3 During Implementation
+
+The agent MUST:
+
+- Follow the approved architecture.
+- Implement complete backend functionality.
+- Implement database constraints.
+- Implement server-side validation.
+- Implement authorization.
+- Implement appropriate error handling.
+- Implement loading and empty states.
+- Implement mobile responsiveness.
+- Write tests.
+- Update technical documentation.
+- Keep requirements traceability current.
+
+The agent MUST NOT:
+
+- Create fake functionality.
+- Hardcode production users.
+- Fake API responses.
+- Replace failed backend operations with local state.
+- Ignore errors.
+- Disable security controls to make tests pass.
+- Use client-side-only permission checks.
+- Introduce unapproved architectural dependencies.
+- Skip tests.
+- Claim a task is complete without verification.
+
+## 31.4 After Every Development Phase
+
+Produce a completion report containing:
+
+1. Requirements completed.
+2. Requirements not completed.
+3. Files created.
+4. Files modified.
+5. Database changes.
+6. API changes.
+7. Tests executed.
+8. Test results.
+9. Security findings.
+10. Performance findings.
+11. Known defects.
+12. Outstanding blockers.
+13. Deployment status.
+14. Git commit reference.
+
+## 31.5 Failure Handling
+
+When implementation fails:
+
+1. Reproduce the issue.
+2. Identify the root cause.
+3. Determine affected requirements.
+4. Assess data and security impact.
+5. Implement the smallest safe correction.
+6. Run relevant regression tests.
+7. Document the outcome.
+
+Never hide failed tests or downgrade severity simply to obtain a successful build.
+
+## 31.6 Git and Database Protection
+
+Before risky modifications:
+
+- Establish a clean Git checkpoint.
+- Review the current database state.
+- Back up affected production data.
+- Review migration impact.
+- Verify rollback or recovery procedures.
+
+Never perform destructive production database operations without explicit authorization.
+
+---
+
+# 32. DEFINITION OF DONE
+
+A feature is complete only when all applicable conditions are satisfied.
+
+- [ ] Requirement implemented.
+- [ ] User interface completed.
+- [ ] Backend logic completed.
+- [ ] Database operations completed.
+- [ ] Validation implemented.
+- [ ] Authorization implemented.
+- [ ] Error handling implemented.
+- [ ] Loading and empty states implemented.
+- [ ] Mobile responsiveness verified.
+- [ ] Accessibility checked.
+- [ ] Unit tests passed.
+- [ ] Integration tests passed.
+- [ ] Relevant E2E tests passed.
+- [ ] Security checks passed.
+- [ ] Documentation updated.
+- [ ] No known critical defects.
+- [ ] Acceptance criteria demonstrated.
+- [ ] Git changes reviewed.
+
+A visually complete interface without functional backend integration is NOT a completed feature.
+
+A functioning endpoint without correct authorization is NOT a completed feature.
+
+A successful build without passing required tests is NOT a completed release.
+
+---
+
+# 33. PRODUCT SUCCESS CRITERIA
+
+MOMENT's success must be measured by meaningful user value rather than vanity metrics.
+
+## Primary success metric
+
+Weekly Meaningful Interactions.
+
+## Supporting metrics
+
+- Daily active users.
+- Weekly active users.
+- Day-1 retention.
+- Day-7 retention.
+- Day-30 retention.
+- First-session activation.
+- Posts per active user.
+- Poll participation.
+- Game completion.
+- Referral conversion.
+- Community activity density.
+- Moderation response time.
+- User-reported safety incidents.
+- Revenue per paying user.
+
+## Product validation question
+
+The product must demonstrate that people voluntarily return to MOMENT because they find its experiences interesting and valuable.
+
+Growth generated exclusively by notifications, artificial rewards or aggressive engagement mechanics is insufficient evidence of product-market fit.
+
+---
+
+# 34. FINAL PRODUCT REQUIREMENTS SUMMARY
+
+MOMENT is a web-first global social discovery platform.
+
+Its initial MVP must deliver:
+
+1. A fast and responsive web application.
+2. Guest browsing.
+3. Secure authentication.
+4. User profiles.
+5. Nearby discovery.
+6. Global discovery.
+7. Trending discovery.
+8. Anonymous and attributed posts.
+9. Comments and reactions.
+10. Interactive polls.
+11. Real-time poll results.
+12. Three micro-games.
+13. In-app notifications.
+14. Community associations.
+15. Content reporting.
+16. User blocking.
+17. Moderation dashboard.
+18. Administrative controls.
+19. Analytics.
+20. Production-grade security and testing.
+
+Future phases will introduce digital footprints, mystery drops, achievements, business accounts, sponsored experiences and creator monetization.
+
+All future functionality must follow approved phase-specific specifications.
+
+---
+
+# 35. FINAL INSTRUCTIONS TO THE IMPLEMENTATION AGENT
+
+You are responsible for implementing MOMENT as a complete, secure, maintainable and scalable product.
+
+You are not being asked to create a prototype, landing-page-only implementation, UI mockup or collection of disconnected features.
+
+You are being asked to build a functioning product that follows this specification.
+
+Your implementation priorities, in order, are:
+
+1. Correctness.
+2. Security.
+3. Data integrity.
+4. Complete functionality.
+5. User experience.
+6. Performance.
+7. Scalability.
+8. Maintainability.
+
+Do not prioritize visual appearance over functionality.
+
+Do not prioritize speed of development over database integrity or security.
+
+Do not introduce unapproved features to make the application appear more impressive.
+
+Do not make independent architectural decisions where this specification has already established the decision.
+
+Do not skip requirements without documenting and obtaining approval.
+
+If a technical limitation, ambiguity or contradiction prevents implementation, stop the affected work, explain the issue and request a decision.
+
+Maintain a complete audit trail of implementation progress.
+
+**The objective is not to finish writing code as quickly as possible. The objective is to deliver MOMENT correctly, safely and in accordance with the approved product requirements.**
+
+---
+
+**END OF MASTER PRODUCT REQUIREMENTS DOCUMENT**
+
+**Document version:** 1.0  
+**Product:** MOMENT  
+**Status:** Master implementation baseline  
+**Next required document:** System Architecture Document (SAD)  
+**Implementation policy:** Phase-gated, requirement-driven, security-first development.
